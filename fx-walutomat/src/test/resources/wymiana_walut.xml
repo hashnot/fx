@@ -1,0 +1,6579 @@
+<offers>
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1609</rate>
+        <ammount>250,00</ammount>
+        <users>1</users>
+        <min_date>24 minuty</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1630</rate>
+        <ammount>1 600,00</ammount>
+        <users>1</users>
+        <min_date>24 minuty</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1649</rate>
+        <ammount>350,00</ammount>
+        <users>1</users>
+        <min_date>24 minuty</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1669</rate>
+        <ammount>274,61</ammount>
+        <users>1</users>
+        <min_date>45 minut</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1699</rate>
+        <ammount>330,18</ammount>
+        <users>1</users>
+        <min_date>1 godzina</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1700</rate>
+        <ammount>25 679,87</ammount>
+        <users>6</users>
+        <min_date>4 godziny</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1701</rate>
+        <ammount>3 000,00</ammount>
+        <users>1</users>
+        <min_date>4 godziny</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1703</rate>
+        <ammount>1 746,49</ammount>
+        <users>2</users>
+        <min_date>13 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1709</rate>
+        <ammount>500,00</ammount>
+        <users>1</users>
+        <min_date>13 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1717</rate>
+        <ammount>50,00</ammount>
+        <users>1</users>
+        <min_date>13 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1718</rate>
+        <ammount>500,00</ammount>
+        <users>1</users>
+        <min_date>13 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1719</rate>
+        <ammount>16 102,95</ammount>
+        <users>2</users>
+        <min_date>13 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1720</rate>
+        <ammount>20 000,00</ammount>
+        <users>1</users>
+        <min_date>13 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1724</rate>
+        <ammount>100,00</ammount>
+        <users>1</users>
+        <min_date>13 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1725</rate>
+        <ammount>250,00</ammount>
+        <users>1</users>
+        <min_date>13 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1728</rate>
+        <ammount>250,00</ammount>
+        <users>1</users>
+        <min_date>13 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1735</rate>
+        <ammount>50,00</ammount>
+        <users>1</users>
+        <min_date>13 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1744</rate>
+        <ammount>1 996,00</ammount>
+        <users>1</users>
+        <min_date>13 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1745</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>13 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1747</rate>
+        <ammount>962,13</ammount>
+        <users>1</users>
+        <min_date>13 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1748</rate>
+        <ammount>3 000,00</ammount>
+        <users>1</users>
+        <min_date>13 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1750</rate>
+        <ammount>4 506,77</ammount>
+        <users>6</users>
+        <min_date>25 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1752</rate>
+        <ammount>479,00</ammount>
+        <users>1</users>
+        <min_date>25 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1762</rate>
+        <ammount>239,96</ammount>
+        <users>1</users>
+        <min_date>25 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1789</rate>
+        <ammount>500,00</ammount>
+        <users>1</users>
+        <min_date>26 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1790</rate>
+        <ammount>2 989,60</ammount>
+        <users>2</users>
+        <min_date>27 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1798</rate>
+        <ammount>480,00</ammount>
+        <users>2</users>
+        <min_date>27 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1799</rate>
+        <ammount>19 251,13</ammount>
+        <users>5</users>
+        <min_date>30 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1800</rate>
+        <ammount>43 544,15</ammount>
+        <users>29</users>
+        <min_date>30 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1801</rate>
+        <ammount>5 124,43</ammount>
+        <users>1</users>
+        <min_date>30 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1819</rate>
+        <ammount>50,00</ammount>
+        <users>1</users>
+        <min_date>30 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1844</rate>
+        <ammount>500,00</ammount>
+        <users>1</users>
+        <min_date>30 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1849</rate>
+        <ammount>500,00</ammount>
+        <users>1</users>
+        <min_date>30 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1850</rate>
+        <ammount>5 800,00</ammount>
+        <users>3</users>
+        <min_date>30 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1859</rate>
+        <ammount>11 667,11</ammount>
+        <users>1</users>
+        <min_date>30 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1860</rate>
+        <ammount>100,00</ammount>
+        <users>1</users>
+        <min_date>30 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1861</rate>
+        <ammount>50,00</ammount>
+        <users>1</users>
+        <min_date>30 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1884</rate>
+        <ammount>100,00</ammount>
+        <users>1</users>
+        <min_date>30 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1888</rate>
+        <ammount>1 150,00</ammount>
+        <users>1</users>
+        <min_date>30 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1890</rate>
+        <ammount>150,00</ammount>
+        <users>1</users>
+        <min_date>30 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1891</rate>
+        <ammount>1 199,52</ammount>
+        <users>1</users>
+        <min_date>30 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1897</rate>
+        <ammount>202,72</ammount>
+        <users>1</users>
+        <min_date>30 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1898</rate>
+        <ammount>300,00</ammount>
+        <users>1</users>
+        <min_date>30 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1899</rate>
+        <ammount>48 000,00</ammount>
+        <users>2</users>
+        <min_date>30 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1900</rate>
+        <ammount>31 980,46</ammount>
+        <users>21</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1902</rate>
+        <ammount>50,00</ammount>
+        <users>1</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1903</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1905</rate>
+        <ammount>176,86</ammount>
+        <users>1</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1910</rate>
+        <ammount>849,90</ammount>
+        <users>1</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1919</rate>
+        <ammount>500,00</ammount>
+        <users>1</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1920</rate>
+        <ammount>2 000,00</ammount>
+        <users>1</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1921</rate>
+        <ammount>200,00</ammount>
+        <users>1</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1933</rate>
+        <ammount>31 366,89</ammount>
+        <users>1</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1935</rate>
+        <ammount>500,00</ammount>
+        <users>1</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1944</rate>
+        <ammount>1 550,00</ammount>
+        <users>2</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1950</rate>
+        <ammount>2 440,00</ammount>
+        <users>4</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1959</rate>
+        <ammount>3 400,00</ammount>
+        <users>2</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1960</rate>
+        <ammount>273,29</ammount>
+        <users>2</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1979</rate>
+        <ammount>3 000,00</ammount>
+        <users>1</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1980</rate>
+        <ammount>6 200,00</ammount>
+        <users>2</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1986</rate>
+        <ammount>50,00</ammount>
+        <users>1</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1987</rate>
+        <ammount>1 274,99</ammount>
+        <users>1</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1988</rate>
+        <ammount>500,00</ammount>
+        <users>1</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1989</rate>
+        <ammount>4 988,90</ammount>
+        <users>3</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1990</rate>
+        <ammount>14 100,00</ammount>
+        <users>2</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1994</rate>
+        <ammount>343,08</ammount>
+        <users>1</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1995</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1996</rate>
+        <ammount>2 000,00</ammount>
+        <users>2</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1997</rate>
+        <ammount>7 840,04</ammount>
+        <users>5</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1998</rate>
+        <ammount>48 541,41</ammount>
+        <users>8</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.1999</rate>
+        <ammount>54 143,32</ammount>
+        <users>11</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2000</rate>
+        <ammount>172 039,34</ammount>
+        <users>74</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2001</rate>
+        <ammount>400,00</ammount>
+        <users>1</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2010</rate>
+        <ammount>8 914,03</ammount>
+        <users>4</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2019</rate>
+        <ammount>1 302,00</ammount>
+        <users>2</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2020</rate>
+        <ammount>1 500,00</ammount>
+        <users>2</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2022</rate>
+        <ammount>701,00</ammount>
+        <users>1</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2028</rate>
+        <ammount>250,00</ammount>
+        <users>2</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2043</rate>
+        <ammount>877,15</ammount>
+        <users>1</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2045</rate>
+        <ammount>100,00</ammount>
+        <users>1</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2049</rate>
+        <ammount>100,00</ammount>
+        <users>1</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2050</rate>
+        <ammount>7 545,00</ammount>
+        <users>5</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2051</rate>
+        <ammount>9 500,00</ammount>
+        <users>1</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2055</rate>
+        <ammount>1 200,00</ammount>
+        <users>1</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2057</rate>
+        <ammount>1 190,00</ammount>
+        <users>1</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2058</rate>
+        <ammount>819,86</ammount>
+        <users>1</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2060</rate>
+        <ammount>16 972,22</ammount>
+        <users>2</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2062</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2063</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2064</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2070</rate>
+        <ammount>1 550,00</ammount>
+        <users>2</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2075</rate>
+        <ammount>442,96</ammount>
+        <users>1</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2080</rate>
+        <ammount>1 133,60</ammount>
+        <users>3</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2084</rate>
+        <ammount>2 000,00</ammount>
+        <users>1</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2085</rate>
+        <ammount>3 200,00</ammount>
+        <users>1</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2089</rate>
+        <ammount>500,00</ammount>
+        <users>1</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2090</rate>
+        <ammount>4 244,23</ammount>
+        <users>3</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2092</rate>
+        <ammount>200,00</ammount>
+        <users>1</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2095</rate>
+        <ammount>2 222,97</ammount>
+        <users>2</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2097</rate>
+        <ammount>1 444,21</ammount>
+        <users>3</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2098</rate>
+        <ammount>1 980,00</ammount>
+        <users>5</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2099</rate>
+        <ammount>47 172,40</ammount>
+        <users>8</users>
+        <min_date>1 miesiąc</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2100</rate>
+        <ammount>148 074,78</ammount>
+        <users>39</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2101</rate>
+        <ammount>9 900,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2103</rate>
+        <ammount>2 000,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2105</rate>
+        <ammount>484,32</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2109</rate>
+        <ammount>30,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2111</rate>
+        <ammount>30,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2112</rate>
+        <ammount>50,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2114</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2115</rate>
+        <ammount>12 000,00</ammount>
+        <users>2</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2116</rate>
+        <ammount>30,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2119</rate>
+        <ammount>30,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2130</rate>
+        <ammount>2 006,00</ammount>
+        <users>2</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2135</rate>
+        <ammount>600,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2136</rate>
+        <ammount>30,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2139</rate>
+        <ammount>200,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2140</rate>
+        <ammount>18 023,73</ammount>
+        <users>2</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2142</rate>
+        <ammount>1 240,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2143</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2147</rate>
+        <ammount>450,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2148</rate>
+        <ammount>4 898,82</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2149</rate>
+        <ammount>3 500,00</ammount>
+        <users>2</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2150</rate>
+        <ammount>8 600,00</ammount>
+        <users>5</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2157</rate>
+        <ammount>30,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2160</rate>
+        <ammount>668,12</ammount>
+        <users>3</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2162</rate>
+        <ammount>500,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2168</rate>
+        <ammount>1 500,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2170</rate>
+        <ammount>300,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2178</rate>
+        <ammount>1 800,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2181</rate>
+        <ammount>1 012,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2186</rate>
+        <ammount>7 136,34</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2187</rate>
+        <ammount>30,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2190</rate>
+        <ammount>8 530,00</ammount>
+        <users>2</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2194</rate>
+        <ammount>1 140,95</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2197</rate>
+        <ammount>10 003,69</ammount>
+        <users>2</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2198</rate>
+        <ammount>500,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2199</rate>
+        <ammount>2 204,86</ammount>
+        <users>3</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2200</rate>
+        <ammount>109 789,76</ammount>
+        <users>29</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2205</rate>
+        <ammount>541,33</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2213</rate>
+        <ammount>200,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2221</rate>
+        <ammount>3 000,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2222</rate>
+        <ammount>2 042,14</ammount>
+        <users>5</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2235</rate>
+        <ammount>750,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2240</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2243</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2245</rate>
+        <ammount>9 221,03</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2250</rate>
+        <ammount>5 393,13</ammount>
+        <users>4</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2259</rate>
+        <ammount>450,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2266</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2270</rate>
+        <ammount>3 308,65</ammount>
+        <users>3</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2293</rate>
+        <ammount>1 512,89</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2295</rate>
+        <ammount>2 087,16</ammount>
+        <users>2</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2296</rate>
+        <ammount>500,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2297</rate>
+        <ammount>3 650,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2298</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2299</rate>
+        <ammount>1 708,92</ammount>
+        <users>2</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2300</rate>
+        <ammount>52 929,72</ammount>
+        <users>20</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2311</rate>
+        <ammount>2 000,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2322</rate>
+        <ammount>2 000,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2325</rate>
+        <ammount>5 000,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2343</rate>
+        <ammount>2 000,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2347</rate>
+        <ammount>500,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2348</rate>
+        <ammount>4 000,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2349</rate>
+        <ammount>32 414,41</ammount>
+        <users>2</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2350</rate>
+        <ammount>16 743,25</ammount>
+        <users>4</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2356</rate>
+        <ammount>1 500,18</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2366</rate>
+        <ammount>108,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2370</rate>
+        <ammount>3 300,00</ammount>
+        <users>2</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2382</rate>
+        <ammount>4 755,56</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2385</rate>
+        <ammount>100,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2387</rate>
+        <ammount>1 499,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2389</rate>
+        <ammount>500,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2390</rate>
+        <ammount>10 000,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2392</rate>
+        <ammount>500,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2393</rate>
+        <ammount>2 677,20</ammount>
+        <users>3</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2394</rate>
+        <ammount>1 600,00</ammount>
+        <users>2</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2396</rate>
+        <ammount>5 000,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2397</rate>
+        <ammount>4 450,50</ammount>
+        <users>4</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2399</rate>
+        <ammount>2 169,17</ammount>
+        <users>6</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2400</rate>
+        <ammount>84 713,76</ammount>
+        <users>21</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2410</rate>
+        <ammount>23,60</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2411</rate>
+        <ammount>119,33</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2421</rate>
+        <ammount>649,95</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2446</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2449</rate>
+        <ammount>473,00</ammount>
+        <users>1</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2450</rate>
+        <ammount>5 097,76</ammount>
+        <users>2</users>
+        <min_date>3 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2462</rate>
+        <ammount>2 954,12</ammount>
+        <users>1</users>
+        <min_date>4 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2470</rate>
+        <ammount>75,00</ammount>
+        <users>1</users>
+        <min_date>4 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2476</rate>
+        <ammount>10 000,00</ammount>
+        <users>1</users>
+        <min_date>4 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2480</rate>
+        <ammount>3 500,00</ammount>
+        <users>2</users>
+        <min_date>4 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2485</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>4 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2489</rate>
+        <ammount>30,00</ammount>
+        <users>1</users>
+        <min_date>4 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2490</rate>
+        <ammount>18 929,27</ammount>
+        <users>1</users>
+        <min_date>4 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2493</rate>
+        <ammount>3 000,00</ammount>
+        <users>1</users>
+        <min_date>4 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2495</rate>
+        <ammount>1 500,00</ammount>
+        <users>1</users>
+        <min_date>4 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2496</rate>
+        <ammount>8 000,00</ammount>
+        <users>1</users>
+        <min_date>4 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2497</rate>
+        <ammount>8 550,50</ammount>
+        <users>3</users>
+        <min_date>4 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2498</rate>
+        <ammount>4 250,00</ammount>
+        <users>4</users>
+        <min_date>4 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2499</rate>
+        <ammount>5 060,00</ammount>
+        <users>3</users>
+        <min_date>4 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2500</rate>
+        <ammount>123 202,61</ammount>
+        <users>47</users>
+        <min_date>4 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2501</rate>
+        <ammount>3,58</ammount>
+        <users>1</users>
+        <min_date>4 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2505</rate>
+        <ammount>300,00</ammount>
+        <users>1</users>
+        <min_date>4 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2509</rate>
+        <ammount>5 000,00</ammount>
+        <users>1</users>
+        <min_date>4 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2510</rate>
+        <ammount>3 134,47</ammount>
+        <users>2</users>
+        <min_date>4 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2512</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>4 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2517</rate>
+        <ammount>50,00</ammount>
+        <users>1</users>
+        <min_date>4 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2520</rate>
+        <ammount>6 736,00</ammount>
+        <users>3</users>
+        <min_date>4 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2521</rate>
+        <ammount>50,00</ammount>
+        <users>1</users>
+        <min_date>4 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2525</rate>
+        <ammount>500,00</ammount>
+        <users>1</users>
+        <min_date>4 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2530</rate>
+        <ammount>3 000,00</ammount>
+        <users>1</users>
+        <min_date>4 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2537</rate>
+        <ammount>200,00</ammount>
+        <users>1</users>
+        <min_date>4 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2540</rate>
+        <ammount>3 252,00</ammount>
+        <users>2</users>
+        <min_date>4 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2550</rate>
+        <ammount>3 700,00</ammount>
+        <users>2</users>
+        <min_date>4 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2560</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>4 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2567</rate>
+        <ammount>90,00</ammount>
+        <users>1</users>
+        <min_date>4 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2570</rate>
+        <ammount>357,59</ammount>
+        <users>1</users>
+        <min_date>8 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2571</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>8 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2575</rate>
+        <ammount>2 000,00</ammount>
+        <users>1</users>
+        <min_date>8 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2578</rate>
+        <ammount>60,00</ammount>
+        <users>1</users>
+        <min_date>8 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2579</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>8 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2585</rate>
+        <ammount>2 000,00</ammount>
+        <users>1</users>
+        <min_date>8 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2587</rate>
+        <ammount>212,00</ammount>
+        <users>1</users>
+        <min_date>8 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2588</rate>
+        <ammount>2 450,00</ammount>
+        <users>1</users>
+        <min_date>8 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2589</rate>
+        <ammount>1 760,00</ammount>
+        <users>2</users>
+        <min_date>8 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2597</rate>
+        <ammount>607,87</ammount>
+        <users>1</users>
+        <min_date>8 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2599</rate>
+        <ammount>2 000,00</ammount>
+        <users>2</users>
+        <min_date>8 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2600</rate>
+        <ammount>24 187,35</ammount>
+        <users>13</users>
+        <min_date>8 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2605</rate>
+        <ammount>2,60</ammount>
+        <users>1</users>
+        <min_date>8 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2620</rate>
+        <ammount>1 700,00</ammount>
+        <users>2</users>
+        <min_date>8 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2631</rate>
+        <ammount>1 188,05</ammount>
+        <users>1</users>
+        <min_date>8 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2650</rate>
+        <ammount>5 275,95</ammount>
+        <users>2</users>
+        <min_date>8 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2660</rate>
+        <ammount>20 997,73</ammount>
+        <users>1</users>
+        <min_date>8 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2662</rate>
+        <ammount>531,82</ammount>
+        <users>1</users>
+        <min_date>8 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2678</rate>
+        <ammount>2 500,00</ammount>
+        <users>1</users>
+        <min_date>8 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2689</rate>
+        <ammount>30,00</ammount>
+        <users>1</users>
+        <min_date>8 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2696</rate>
+        <ammount>3 340,85</ammount>
+        <users>1</users>
+        <min_date>8 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2698</rate>
+        <ammount>50,98</ammount>
+        <users>1</users>
+        <min_date>8 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2700</rate>
+        <ammount>2 250,30</ammount>
+        <users>5</users>
+        <min_date>9 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2740</rate>
+        <ammount>250,00</ammount>
+        <users>1</users>
+        <min_date>9 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2742</rate>
+        <ammount>3,52</ammount>
+        <users>1</users>
+        <min_date>9 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2789</rate>
+        <ammount>30,00</ammount>
+        <users>1</users>
+        <min_date>9 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2797</rate>
+        <ammount>155,58</ammount>
+        <users>1</users>
+        <min_date>9 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2798</rate>
+        <ammount>3 758,92</ammount>
+        <users>2</users>
+        <min_date>9 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2800</rate>
+        <ammount>1 766,00</ammount>
+        <users>4</users>
+        <min_date>9 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2845</rate>
+        <ammount>50,92</ammount>
+        <users>1</users>
+        <min_date>9 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2850</rate>
+        <ammount>269,02</ammount>
+        <users>2</users>
+        <min_date>9 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2855</rate>
+        <ammount>2 000,00</ammount>
+        <users>1</users>
+        <min_date>9 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2877</rate>
+        <ammount>469,00</ammount>
+        <users>1</users>
+        <min_date>9 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2898</rate>
+        <ammount>1 031,29</ammount>
+        <users>1</users>
+        <min_date>9 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2900</rate>
+        <ammount>3 885,18</ammount>
+        <users>6</users>
+        <min_date>9 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2905</rate>
+        <ammount>487,45</ammount>
+        <users>1</users>
+        <min_date>9 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2959</rate>
+        <ammount>100,00</ammount>
+        <users>1</users>
+        <min_date>9 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2981</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>9 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2988</rate>
+        <ammount>700,00</ammount>
+        <users>1</users>
+        <min_date>9 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2990</rate>
+        <ammount>2 164,79</ammount>
+        <users>3</users>
+        <min_date>9 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2991</rate>
+        <ammount>1 375,96</ammount>
+        <users>1</users>
+        <min_date>9 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2996</rate>
+        <ammount>11 005,07</ammount>
+        <users>3</users>
+        <min_date>9 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2997</rate>
+        <ammount>2 000,00</ammount>
+        <users>1</users>
+        <min_date>9 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2998</rate>
+        <ammount>970,57</ammount>
+        <users>1</users>
+        <min_date>9 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.2999</rate>
+        <ammount>2 300,00</ammount>
+        <users>3</users>
+        <min_date>10 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3000</rate>
+        <ammount>45 667,98</ammount>
+        <users>26</users>
+        <min_date>10 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3010</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>10 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3066</rate>
+        <ammount>50,00</ammount>
+        <users>1</users>
+        <min_date>10 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3099</rate>
+        <ammount>30,00</ammount>
+        <users>1</users>
+        <min_date>10 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3100</rate>
+        <ammount>418,66</ammount>
+        <users>3</users>
+        <min_date>10 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3190</rate>
+        <ammount>194,11</ammount>
+        <users>2</users>
+        <min_date>10 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3199</rate>
+        <ammount>1 030,00</ammount>
+        <users>2</users>
+        <min_date>11 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3200</rate>
+        <ammount>4 995,00</ammount>
+        <users>1</users>
+        <min_date>11 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3247</rate>
+        <ammount>500,00</ammount>
+        <users>1</users>
+        <min_date>11 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3297</rate>
+        <ammount>204,57</ammount>
+        <users>1</users>
+        <min_date>11 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3299</rate>
+        <ammount>3 034,94</ammount>
+        <users>1</users>
+        <min_date>11 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3300</rate>
+        <ammount>5 737,24</ammount>
+        <users>3</users>
+        <min_date>11 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3303</rate>
+        <ammount>1 450,04</ammount>
+        <users>1</users>
+        <min_date>11 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3358</rate>
+        <ammount>465,00</ammount>
+        <users>1</users>
+        <min_date>11 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3382</rate>
+        <ammount>500,00</ammount>
+        <users>1</users>
+        <min_date>11 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3397</rate>
+        <ammount>2 300,00</ammount>
+        <users>1</users>
+        <min_date>11 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3400</rate>
+        <ammount>26 734,47</ammount>
+        <users>3</users>
+        <min_date>11 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3405</rate>
+        <ammount>500,00</ammount>
+        <users>1</users>
+        <min_date>11 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3428</rate>
+        <ammount>100,00</ammount>
+        <users>1</users>
+        <min_date>11 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3489</rate>
+        <ammount>1 007,97</ammount>
+        <users>1</users>
+        <min_date>11 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3490</rate>
+        <ammount>500,00</ammount>
+        <users>1</users>
+        <min_date>11 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3491</rate>
+        <ammount>100,00</ammount>
+        <users>1</users>
+        <min_date>11 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3494</rate>
+        <ammount>116,58</ammount>
+        <users>1</users>
+        <min_date>11 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3499</rate>
+        <ammount>1 390,01</ammount>
+        <users>2</users>
+        <min_date>11 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3500</rate>
+        <ammount>28 035,92</ammount>
+        <users>14</users>
+        <min_date>15 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3515</rate>
+        <ammount>100,00</ammount>
+        <users>1</users>
+        <min_date>15 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3533</rate>
+        <ammount>363,78</ammount>
+        <users>1</users>
+        <min_date>15 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3541</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>15 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3545</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>15 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3550</rate>
+        <ammount>50,00</ammount>
+        <users>1</users>
+        <min_date>15 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3560</rate>
+        <ammount>100,00</ammount>
+        <users>1</users>
+        <min_date>15 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3568</rate>
+        <ammount>500,00</ammount>
+        <users>1</users>
+        <min_date>15 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3569</rate>
+        <ammount>50,00</ammount>
+        <users>1</users>
+        <min_date>15 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3600</rate>
+        <ammount>5 001,94</ammount>
+        <users>2</users>
+        <min_date>15 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3676</rate>
+        <ammount>534,31</ammount>
+        <users>1</users>
+        <min_date>15 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3695</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>15 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3700</rate>
+        <ammount>512,00</ammount>
+        <users>1</users>
+        <min_date>15 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3800</rate>
+        <ammount>5 047,26</ammount>
+        <users>1</users>
+        <min_date>15 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3843</rate>
+        <ammount>200,00</ammount>
+        <users>1</users>
+        <min_date>15 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3874</rate>
+        <ammount>915,00</ammount>
+        <users>1</users>
+        <min_date>15 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3900</rate>
+        <ammount>3 000,00</ammount>
+        <users>1</users>
+        <min_date>15 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3980</rate>
+        <ammount>500,00</ammount>
+        <users>1</users>
+        <min_date>24 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.3998</rate>
+        <ammount>52 236,68</ammount>
+        <users>1</users>
+        <min_date>24 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.4000</rate>
+        <ammount>9 689,67</ammount>
+        <users>12</users>
+        <min_date>24 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.4200</rate>
+        <ammount>12,13</ammount>
+        <users>1</users>
+        <min_date>24 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.4400</rate>
+        <ammount>11,28</ammount>
+        <users>1</users>
+        <min_date>24 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.4500</rate>
+        <ammount>1 002,76</ammount>
+        <users>2</users>
+        <min_date>24 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.4589</rate>
+        <ammount>1 211,00</ammount>
+        <users>1</users>
+        <min_date>24 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.4600</rate>
+        <ammount>771,51</ammount>
+        <users>1</users>
+        <min_date>24 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.4700</rate>
+        <ammount>2 000,00</ammount>
+        <users>1</users>
+        <min_date>24 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.4790</rate>
+        <ammount>300,00</ammount>
+        <users>1</users>
+        <min_date>24 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.4800</rate>
+        <ammount>225,25</ammount>
+        <users>1</users>
+        <min_date>24 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.4900</rate>
+        <ammount>2 231,34</ammount>
+        <users>1</users>
+        <min_date>24 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.4997</rate>
+        <ammount>260,38</ammount>
+        <users>1</users>
+        <min_date>28 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.5000</rate>
+        <ammount>4 155,14</ammount>
+        <users>5</users>
+        <min_date>28 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.5090</rate>
+        <ammount>5 500,00</ammount>
+        <users>2</users>
+        <min_date>28 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.5100</rate>
+        <ammount>6 998,81</ammount>
+        <users>1</users>
+        <min_date>28 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.5199</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>29 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.5489</rate>
+        <ammount>223,10</ammount>
+        <users>1</users>
+        <min_date>29 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.5491</rate>
+        <ammount>200,00</ammount>
+        <users>1</users>
+        <min_date>29 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.5500</rate>
+        <ammount>2 620,65</ammount>
+        <users>3</users>
+        <min_date>29 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.5525</rate>
+        <ammount>9,39</ammount>
+        <users>1</users>
+        <min_date>29 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.5820</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>29 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.5990</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>29 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.6000</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>32 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.6093</rate>
+        <ammount>4 058,56</ammount>
+        <users>1</users>
+        <min_date>32 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.6100</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>32 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.6930</rate>
+        <ammount>2 000,00</ammount>
+        <users>1</users>
+        <min_date>32 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.6999</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>32 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.7000</rate>
+        <ammount>166,36</ammount>
+        <users>1</users>
+        <min_date>32 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.7595</rate>
+        <ammount>1 260,00</ammount>
+        <users>1</users>
+        <min_date>32 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.8000</rate>
+        <ammount>2,00</ammount>
+        <users>1</users>
+        <min_date>32 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.8500</rate>
+        <ammount>20,00</ammount>
+        <users>1</users>
+        <min_date>32 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.8900</rate>
+        <ammount>5,00</ammount>
+        <users>1</users>
+        <min_date>32 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>4.9800</rate>
+        <ammount>50,92</ammount>
+        <users>1</users>
+        <min_date>32 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>5.0000</rate>
+        <ammount>1,00</ammount>
+        <users>1</users>
+        <min_date>39 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>6.0000</rate>
+        <ammount>2,39</ammount>
+        <users>1</users>
+        <min_date>39 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>10.0000</rate>
+        <ammount>1,00</ammount>
+        <users>1</users>
+        <min_date>39 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>20.0000</rate>
+        <ammount>400,00</ammount>
+        <users>1</users>
+        <min_date>39 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>40.2900</rate>
+        <ammount>1,00</ammount>
+        <users>1</users>
+        <min_date>39 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>40.9000</rate>
+        <ammount>1,00</ammount>
+        <users>1</users>
+        <min_date>39 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>EUR na PLN</curr>
+        <rate>41.0000</rate>
+        <ammount>300,00</ammount>
+        <users>2</users>
+        <min_date>39 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>EUR</from>
+        <to>PLN</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1600</rate>
+        <ammount>3 780,67</ammount>
+        <users>1</users>
+        <min_date>8 godzin</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1590</rate>
+        <ammount>52 169,68</ammount>
+        <users>1</users>
+        <min_date>8 godzin</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1586</rate>
+        <ammount>34 833,62</ammount>
+        <users>1</users>
+        <min_date>18 godzin</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1562</rate>
+        <ammount>737,19</ammount>
+        <users>1</users>
+        <min_date>18 godzin</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1561</rate>
+        <ammount>4 828,63</ammount>
+        <users>1</users>
+        <min_date>1 dzień</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1550</rate>
+        <ammount>56 997,20</ammount>
+        <users>2</users>
+        <min_date>1 dzień</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1542</rate>
+        <ammount>1 228,60</ammount>
+        <users>1</users>
+        <min_date>1 dzień</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1522</rate>
+        <ammount>61 200,00</ammount>
+        <users>1</users>
+        <min_date>1 dzień</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1521</rate>
+        <ammount>30 000,00</ammount>
+        <users>1</users>
+        <min_date>1 dzień</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1519</rate>
+        <ammount>30 000,00</ammount>
+        <users>1</users>
+        <min_date>1 dzień</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1518</rate>
+        <ammount>2 000,00</ammount>
+        <users>1</users>
+        <min_date>1 dzień</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1517</rate>
+        <ammount>40 407,31</ammount>
+        <users>1</users>
+        <min_date>1 dzień</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1513</rate>
+        <ammount>10 644,99</ammount>
+        <users>1</users>
+        <min_date>1 dzień</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1512</rate>
+        <ammount>12 393,71</ammount>
+        <users>1</users>
+        <min_date>1 dzień</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1511</rate>
+        <ammount>30 000,00</ammount>
+        <users>1</users>
+        <min_date>1 dzień</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1508</rate>
+        <ammount>16 000,00</ammount>
+        <users>1</users>
+        <min_date>1 dzień</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1506</rate>
+        <ammount>10 195,83</ammount>
+        <users>1</users>
+        <min_date>1 dzień</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1503</rate>
+        <ammount>1 038,00</ammount>
+        <users>1</users>
+        <min_date>1 dzień</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1501</rate>
+        <ammount>59 000,00</ammount>
+        <users>2</users>
+        <min_date>2 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1500</rate>
+        <ammount>5 100,00</ammount>
+        <users>2</users>
+        <min_date>2 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1492</rate>
+        <ammount>5 854,95</ammount>
+        <users>1</users>
+        <min_date>2 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1466</rate>
+        <ammount>2 500,00</ammount>
+        <users>1</users>
+        <min_date>2 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1450</rate>
+        <ammount>15 000,00</ammount>
+        <users>1</users>
+        <min_date>2 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1446</rate>
+        <ammount>7 884,59</ammount>
+        <users>1</users>
+        <min_date>2 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1432</rate>
+        <ammount>20 000,00</ammount>
+        <users>1</users>
+        <min_date>2 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1431</rate>
+        <ammount>80 000,00</ammount>
+        <users>1</users>
+        <min_date>2 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1430</rate>
+        <ammount>25 000,00</ammount>
+        <users>1</users>
+        <min_date>2 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1401</rate>
+        <ammount>1 800,00</ammount>
+        <users>1</users>
+        <min_date>2 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1400</rate>
+        <ammount>62 205,00</ammount>
+        <users>11</users>
+        <min_date>2 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1399</rate>
+        <ammount>40 000,00</ammount>
+        <users>1</users>
+        <min_date>2 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1352</rate>
+        <ammount>4 139,34</ammount>
+        <users>1</users>
+        <min_date>2 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1351</rate>
+        <ammount>31 486,02</ammount>
+        <users>1</users>
+        <min_date>2 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1347</rate>
+        <ammount>500,00</ammount>
+        <users>1</users>
+        <min_date>2 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1315</rate>
+        <ammount>600,00</ammount>
+        <users>1</users>
+        <min_date>2 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1301</rate>
+        <ammount>3 383,76</ammount>
+        <users>2</users>
+        <min_date>2 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1300</rate>
+        <ammount>6 646,43</ammount>
+        <users>5</users>
+        <min_date>2 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1287</rate>
+        <ammount>15 000,00</ammount>
+        <users>1</users>
+        <min_date>2 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1285</rate>
+        <ammount>15 000,00</ammount>
+        <users>1</users>
+        <min_date>2 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1280</rate>
+        <ammount>8 000,00</ammount>
+        <users>1</users>
+        <min_date>2 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1270</rate>
+        <ammount>5 000,00</ammount>
+        <users>1</users>
+        <min_date>2 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1250</rate>
+        <ammount>300,00</ammount>
+        <users>1</users>
+        <min_date>2 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1220</rate>
+        <ammount>51 239,52</ammount>
+        <users>2</users>
+        <min_date>3 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1208</rate>
+        <ammount>30 000,00</ammount>
+        <users>1</users>
+        <min_date>3 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1201</rate>
+        <ammount>1 180,00</ammount>
+        <users>1</users>
+        <min_date>3 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1200</rate>
+        <ammount>35 242,51</ammount>
+        <users>4</users>
+        <min_date>3 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1185</rate>
+        <ammount>5 000,00</ammount>
+        <users>1</users>
+        <min_date>3 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1171</rate>
+        <ammount>10,82</ammount>
+        <users>1</users>
+        <min_date>3 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1150</rate>
+        <ammount>46 500,00</ammount>
+        <users>2</users>
+        <min_date>4 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1145</rate>
+        <ammount>2 500,00</ammount>
+        <users>1</users>
+        <min_date>4 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1130</rate>
+        <ammount>2 000,00</ammount>
+        <users>1</users>
+        <min_date>4 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1122</rate>
+        <ammount>1 240,38</ammount>
+        <users>1</users>
+        <min_date>4 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1112</rate>
+        <ammount>10 000,00</ammount>
+        <users>1</users>
+        <min_date>4 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1111</rate>
+        <ammount>654,66</ammount>
+        <users>2</users>
+        <min_date>4 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1110</rate>
+        <ammount>54 500,00</ammount>
+        <users>2</users>
+        <min_date>4 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1107</rate>
+        <ammount>550,00</ammount>
+        <users>1</users>
+        <min_date>4 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1106</rate>
+        <ammount>23 100,00</ammount>
+        <users>2</users>
+        <min_date>4 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1100</rate>
+        <ammount>52 150,00</ammount>
+        <users>4</users>
+        <min_date>4 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1051</rate>
+        <ammount>3 000,00</ammount>
+        <users>1</users>
+        <min_date>4 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1050</rate>
+        <ammount>30 500,00</ammount>
+        <users>2</users>
+        <min_date>4 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1031</rate>
+        <ammount>450,00</ammount>
+        <users>1</users>
+        <min_date>4 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1021</rate>
+        <ammount>8 200,00</ammount>
+        <users>1</users>
+        <min_date>4 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1020</rate>
+        <ammount>2 645,00</ammount>
+        <users>1</users>
+        <min_date>4 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1010</rate>
+        <ammount>500,00</ammount>
+        <users>1</users>
+        <min_date>4 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1003</rate>
+        <ammount>6 293,42</ammount>
+        <users>3</users>
+        <min_date>4 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1001</rate>
+        <ammount>10 500,00</ammount>
+        <users>1</users>
+        <min_date>4 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.1000</rate>
+        <ammount>50 905,89</ammount>
+        <users>10</users>
+        <min_date>4 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0990</rate>
+        <ammount>1 500,00</ammount>
+        <users>1</users>
+        <min_date>4 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0955</rate>
+        <ammount>3 500,00</ammount>
+        <users>1</users>
+        <min_date>4 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0951</rate>
+        <ammount>26 695,03</ammount>
+        <users>1</users>
+        <min_date>9 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0950</rate>
+        <ammount>31 000,00</ammount>
+        <users>4</users>
+        <min_date>13 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0940</rate>
+        <ammount>2 870,00</ammount>
+        <users>1</users>
+        <min_date>13 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0921</rate>
+        <ammount>500,00</ammount>
+        <users>1</users>
+        <min_date>13 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0917</rate>
+        <ammount>1 200,00</ammount>
+        <users>1</users>
+        <min_date>13 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0913</rate>
+        <ammount>15 000,00</ammount>
+        <users>1</users>
+        <min_date>13 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0912</rate>
+        <ammount>2 500,00</ammount>
+        <users>1</users>
+        <min_date>13 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0910</rate>
+        <ammount>60 500,00</ammount>
+        <users>3</users>
+        <min_date>15 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0908</rate>
+        <ammount>1 500,00</ammount>
+        <users>1</users>
+        <min_date>15 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0907</rate>
+        <ammount>150,00</ammount>
+        <users>1</users>
+        <min_date>15 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0905</rate>
+        <ammount>4 198,70</ammount>
+        <users>2</users>
+        <min_date>23 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0903</rate>
+        <ammount>500,00</ammount>
+        <users>1</users>
+        <min_date>23 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0902</rate>
+        <ammount>11 700,00</ammount>
+        <users>1</users>
+        <min_date>23 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0901</rate>
+        <ammount>17 300,00</ammount>
+        <users>6</users>
+        <min_date>23 dni</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0900</rate>
+        <ammount>98 191,48</ammount>
+        <users>34</users>
+        <min_date>15 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0898</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>15 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0890</rate>
+        <ammount>750,00</ammount>
+        <users>1</users>
+        <min_date>15 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0887</rate>
+        <ammount>5 000,00</ammount>
+        <users>1</users>
+        <min_date>15 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0881</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>15 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0880</rate>
+        <ammount>4 000,00</ammount>
+        <users>1</users>
+        <min_date>15 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0864</rate>
+        <ammount>4 000,00</ammount>
+        <users>2</users>
+        <min_date>15 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0853</rate>
+        <ammount>400,00</ammount>
+        <users>1</users>
+        <min_date>15 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0852</rate>
+        <ammount>850,00</ammount>
+        <users>1</users>
+        <min_date>15 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0851</rate>
+        <ammount>4 000,00</ammount>
+        <users>1</users>
+        <min_date>15 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0850</rate>
+        <ammount>17 560,00</ammount>
+        <users>8</users>
+        <min_date>15 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0849</rate>
+        <ammount>9 999,84</ammount>
+        <users>1</users>
+        <min_date>15 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0825</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>15 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0813</rate>
+        <ammount>400,00</ammount>
+        <users>1</users>
+        <min_date>15 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0812</rate>
+        <ammount>250,00</ammount>
+        <users>1</users>
+        <min_date>15 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0810</rate>
+        <ammount>10 230,00</ammount>
+        <users>4</users>
+        <min_date>15 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0805</rate>
+        <ammount>1 500,00</ammount>
+        <users>1</users>
+        <min_date>15 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0803</rate>
+        <ammount>74,28</ammount>
+        <users>1</users>
+        <min_date>15 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0801</rate>
+        <ammount>5 116,08</ammount>
+        <users>3</users>
+        <min_date>15 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0800</rate>
+        <ammount>57 701,00</ammount>
+        <users>22</users>
+        <min_date>17 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0799</rate>
+        <ammount>200,00</ammount>
+        <users>1</users>
+        <min_date>17 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0790</rate>
+        <ammount>1 500,00</ammount>
+        <users>1</users>
+        <min_date>17 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0782</rate>
+        <ammount>1 700,00</ammount>
+        <users>1</users>
+        <min_date>17 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0760</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>17 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0753</rate>
+        <ammount>400,00</ammount>
+        <users>1</users>
+        <min_date>17 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0750</rate>
+        <ammount>13 050,00</ammount>
+        <users>4</users>
+        <min_date>17 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0725</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>17 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0710</rate>
+        <ammount>10 501,37</ammount>
+        <users>3</users>
+        <min_date>17 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0702</rate>
+        <ammount>15,00</ammount>
+        <users>1</users>
+        <min_date>17 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0700</rate>
+        <ammount>7 050,00</ammount>
+        <users>4</users>
+        <min_date>17 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0650</rate>
+        <ammount>1 050,00</ammount>
+        <users>2</users>
+        <min_date>17 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0610</rate>
+        <ammount>2 040,91</ammount>
+        <users>1</users>
+        <min_date>17 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0605</rate>
+        <ammount>100,00</ammount>
+        <users>1</users>
+        <min_date>17 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0602</rate>
+        <ammount>409,54</ammount>
+        <users>2</users>
+        <min_date>17 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0600</rate>
+        <ammount>5 900,00</ammount>
+        <users>4</users>
+        <min_date>17 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0590</rate>
+        <ammount>500,00</ammount>
+        <users>1</users>
+        <min_date>17 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0589</rate>
+        <ammount>100,00</ammount>
+        <users>1</users>
+        <min_date>17 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0585</rate>
+        <ammount>10 000,00</ammount>
+        <users>1</users>
+        <min_date>21 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0570</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>21 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0549</rate>
+        <ammount>600,00</ammount>
+        <users>1</users>
+        <min_date>21 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0520</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>21 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0510</rate>
+        <ammount>800,00</ammount>
+        <users>1</users>
+        <min_date>21 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0501</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>21 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0500</rate>
+        <ammount>22 921,00</ammount>
+        <users>12</users>
+        <min_date>21 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0410</rate>
+        <ammount>1 500,00</ammount>
+        <users>1</users>
+        <min_date>21 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0407</rate>
+        <ammount>2 500,00</ammount>
+        <users>1</users>
+        <min_date>21 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0401</rate>
+        <ammount>310,15</ammount>
+        <users>2</users>
+        <min_date>21 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0400</rate>
+        <ammount>10,00</ammount>
+        <users>1</users>
+        <min_date>21 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0384</rate>
+        <ammount>100,00</ammount>
+        <users>1</users>
+        <min_date>22 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0350</rate>
+        <ammount>1 200,00</ammount>
+        <users>1</users>
+        <min_date>22 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0300</rate>
+        <ammount>1,00</ammount>
+        <users>1</users>
+        <min_date>22 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0270</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>22 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0222</rate>
+        <ammount>200,00</ammount>
+        <users>1</users>
+        <min_date>22 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0201</rate>
+        <ammount>500,00</ammount>
+        <users>1</users>
+        <min_date>22 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0200</rate>
+        <ammount>7 430,00</ammount>
+        <users>3</users>
+        <min_date>22 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0110</rate>
+        <ammount>10 000,00</ammount>
+        <users>1</users>
+        <min_date>22 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0100</rate>
+        <ammount>47,74</ammount>
+        <users>1</users>
+        <min_date>22 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0010</rate>
+        <ammount>4 000,00</ammount>
+        <users>2</users>
+        <min_date>22 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0001</rate>
+        <ammount>1 000,00</ammount>
+        <users>1</users>
+        <min_date>22 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>4.0000</rate>
+        <ammount>85 942,67</ammount>
+        <users>22</users>
+        <min_date>28 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>3.9999</rate>
+        <ammount>1,00</ammount>
+        <users>1</users>
+        <min_date>28 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>3.9900</rate>
+        <ammount>100,00</ammount>
+        <users>1</users>
+        <min_date>28 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>3.9800</rate>
+        <ammount>3 000,00</ammount>
+        <users>1</users>
+        <min_date>28 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>3.9600</rate>
+        <ammount>5 000,00</ammount>
+        <users>1</users>
+        <min_date>28 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>3.9504</rate>
+        <ammount>2 000,00</ammount>
+        <users>1</users>
+        <min_date>28 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>3.9000</rate>
+        <ammount>1 111,84</ammount>
+        <users>4</users>
+        <min_date>33 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>3.8714</rate>
+        <ammount>1,00</ammount>
+        <users>1</users>
+        <min_date>33 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>3.8500</rate>
+        <ammount>5 000,00</ammount>
+        <users>1</users>
+        <min_date>33 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>3.8200</rate>
+        <ammount>700,00</ammount>
+        <users>1</users>
+        <min_date>33 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>3.8100</rate>
+        <ammount>20,76</ammount>
+        <users>1</users>
+        <min_date>33 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>3.8000</rate>
+        <ammount>533,00</ammount>
+        <users>3</users>
+        <min_date>37 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>3.7648</rate>
+        <ammount>330,00</ammount>
+        <users>1</users>
+        <min_date>37 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>3.5000</rate>
+        <ammount>1 080,00</ammount>
+        <users>1</users>
+        <min_date>37 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>3.3900</rate>
+        <ammount>14,00</ammount>
+        <users>1</users>
+        <min_date>37 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>3.0000</rate>
+        <ammount>106,00</ammount>
+        <users>3</users>
+        <min_date>37 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>1.9500</rate>
+        <ammount>1,00</ammount>
+        <users>1</users>
+        <min_date>37 miesięcy</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>1.0000</rate>
+        <ammount>17,00</ammount>
+        <users>3</users>
+        <min_date>43 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>0.4290</rate>
+        <ammount>10,00</ammount>
+        <users>1</users>
+        <min_date>43 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>0.1000</rate>
+        <ammount>10,00</ammount>
+        <users>1</users>
+        <min_date>43 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>0.0900</rate>
+        <ammount>10,00</ammount>
+        <users>1</users>
+        <min_date>43 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+
+    <offer>
+        <curr>PLN na EUR</curr>
+        <rate>0.0100</rate>
+        <ammount>10,00</ammount>
+        <users>1</users>
+        <min_date>43 miesiące</min_date>
+        <last_change>1403454993</last_change>
+        <is_avg>0</is_avg>
+        <main_curr>2</main_curr>
+        <from>PLN</from>
+        <to>EUR</to>
+    </offer>
+</offers>

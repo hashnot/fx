@@ -1,0 +1,212 @@
+{"market": {
+    "messages": null,
+    "marketplaceItemsWait": [
+        {
+            "type": "WAIT",
+            "rate": 4.115,
+            "rateTransport": "4.1150",
+            "amount": "115,037.01 EUR",
+            "increment": 0.0005,
+            "incrementTransport": "0.0005",
+            "currencyFrom": "EUR",
+            "currencyTo": "PLN",
+            "rateInverse": null,
+            "rateInverseTransport": null
+        },
+        {
+            "type": "WAIT",
+            "rate": 4.1175,
+            "rateTransport": "4.1175",
+            "amount": "192,000.00 EUR",
+            "increment": 0.0005,
+            "incrementTransport": "0.0005",
+            "currencyFrom": "EUR",
+            "currencyTo": "PLN",
+            "rateInverse": null,
+            "rateInverseTransport": null
+        },
+        {
+            "type": "WAIT",
+            "rate": 4.12,
+            "rateTransport": "4.1200",
+            "amount": "120,500.00 EUR",
+            "increment": 0.0005,
+            "incrementTransport": "0.0005",
+            "currencyFrom": "EUR",
+            "currencyTo": "PLN",
+            "rateInverse": null,
+            "rateInverseTransport": null
+        },
+        {
+            "type": "WAIT",
+            "rate": 4.125,
+            "rateTransport": "4.1250",
+            "amount": "172,500.00 EUR",
+            "increment": 0.0005,
+            "incrementTransport": "0.0005",
+            "currencyFrom": "EUR",
+            "currencyTo": "PLN",
+            "rateInverse": null,
+            "rateInverseTransport": null
+        },
+        {
+            "type": "WAIT",
+            "rate": 4.126,
+            "rateTransport": "4.1260",
+            "amount": "253,992.00 EUR",
+            "increment": 0.0005,
+            "incrementTransport": "0.0005",
+            "currencyFrom": "EUR",
+            "currencyTo": "PLN",
+            "rateInverse": null,
+            "rateInverseTransport": null
+        },
+        {
+            "type": "WAIT",
+            "rate": 4.17,
+            "rateTransport": "4.1700",
+            "amount": "5,000.00 EUR",
+            "increment": 0.0005,
+            "incrementTransport": "0.0005",
+            "currencyFrom": "EUR",
+            "currencyTo": "PLN",
+            "rateInverse": null,
+            "rateInverseTransport": null
+        },
+        {
+            "type": "WAIT",
+            "rate": 4.185,
+            "rateTransport": "4.1850",
+            "amount": "2,061.97 EUR",
+            "increment": 0.0005,
+            "incrementTransport": "0.0005",
+            "currencyFrom": "EUR",
+            "currencyTo": "PLN",
+            "rateInverse": null,
+            "rateInverseTransport": null
+        },
+        {
+            "type": "WAIT",
+            "rate": 4.2175,
+            "rateTransport": "4.2175",
+            "amount": "6,000.00 EUR",
+            "increment": 0.0005,
+            "incrementTransport": "0.0005",
+            "currencyFrom": "EUR",
+            "currencyTo": "PLN",
+            "rateInverse": null,
+            "rateInverseTransport": null
+        },
+        {
+            "type": "WAIT",
+            "rate": 4.25,
+            "rateTransport": "4.2500",
+            "amount": "6,800.00 EUR",
+            "increment": 0.0005,
+            "incrementTransport": "0.0005",
+            "currencyFrom": "EUR",
+            "currencyTo": "PLN",
+            "rateInverse": null,
+            "rateInverseTransport": null
+        }
+    ],
+    "marketplaceItemsAvail": [
+        {
+            "type": "AVAIL",
+            "rate": 4.1025,
+            "rateTransport": "4.1025",
+            "amount": "11,395.58 EUR",
+            "increment": 2.0e-5,
+            "incrementTransport": "0.00002",
+            "currencyFrom": "EUR",
+            "currencyTo": "PLN",
+            "rateInverse": null,
+            "rateInverseTransport": null
+        },
+        {
+            "type": "AVAIL",
+            "rate": 4.086,
+            "rateTransport": "4.0860",
+            "amount": "91,300.81 EUR",
+            "increment": 2.0e-5,
+            "incrementTransport": "0.00002",
+            "currencyFrom": "EUR",
+            "currencyTo": "PLN",
+            "rateInverse": null,
+            "rateInverseTransport": null
+        },
+        {
+            "type": "AVAIL",
+            "rate": 4.083,
+            "rateTransport": "4.0830",
+            "amount": "85,721.28 EUR",
+            "increment": 2.0e-5,
+            "incrementTransport": "0.00002",
+            "currencyFrom": "EUR",
+            "currencyTo": "PLN",
+            "rateInverse": null,
+            "rateInverseTransport": null
+        },
+        {
+            "type": "AVAIL",
+            "rate": 4.079,
+            "rateTransport": "4.0790",
+            "amount": "76,121.60 EUR",
+            "increment": 2.0e-5,
+            "incrementTransport": "0.00002",
+            "currencyFrom": "EUR",
+            "currencyTo": "PLN",
+            "rateInverse": null,
+            "rateInverseTransport": null
+        },
+        {
+            "type": "AVAIL",
+            "rate": 4.078,
+            "rateTransport": "4.0780",
+            "amount": "120,243.99 EUR",
+            "increment": 2.0e-5,
+            "incrementTransport": "0.00002",
+            "currencyFrom": "EUR",
+            "currencyTo": "PLN",
+            "rateInverse": null,
+            "rateInverseTransport": null
+        },
+        {
+            "type": "AVAIL",
+            "rate": 4.0745,
+            "rateTransport": "4.0745",
+            "amount": "420,296.72 EUR",
+            "increment": 2.0e-5,
+            "incrementTransport": "0.00002",
+            "currencyFrom": "EUR",
+            "currencyTo": "PLN",
+            "rateInverse": null,
+            "rateInverseTransport": null
+        },
+        {
+            "type": "AVAIL",
+            "rate": 4.069,
+            "rateTransport": "4.0690",
+            "amount": "12,288.03 EUR",
+            "increment": 2.0e-5,
+            "incrementTransport": "0.00002",
+            "currencyFrom": "EUR",
+            "currencyTo": "PLN",
+            "rateInverse": null,
+            "rateInverseTransport": null
+        },
+        {
+            "type": "AVAIL",
+            "rate": 4.0635,
+            "rateTransport": "4.0635",
+            "amount": "630.00 EUR",
+            "increment": 2.0e-5,
+            "incrementTransport": "0.00002",
+            "currencyFrom": "EUR",
+            "currencyTo": "PLN",
+            "rateInverse": null,
+            "rateInverseTransport": null
+        }
+    ],
+    "marketStatus": "O"
+}}
