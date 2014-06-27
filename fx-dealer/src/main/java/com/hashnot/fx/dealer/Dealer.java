@@ -1,28 +1,98 @@
 package com.hashnot.fx.dealer;
 
-import com.hashnot.fx.cf.CFMarket;
 import com.hashnot.fx.kokos.KokosMarket;
 import com.hashnot.fx.spi.*;
+import com.hashnot.fx.util.CurrencyPairUtil;
 import com.hashnot.fx.wm.WMMarket;
+import com.xeiam.xchange.Exchange;
+import com.xeiam.xchange.ExchangeFactory;
+import com.xeiam.xchange.bitcurex.BitcurexExchange;
+import com.xeiam.xchange.currency.CurrencyPair;
+import com.xeiam.xchange.dto.ExchangeInfo;
+import com.xeiam.xchange.dto.Order;
+import com.xeiam.xchange.dto.marketdata.OrderBook;
+import com.xeiam.xchange.dto.trade.LimitOrder;
+import com.xeiam.xchange.kraken.KrakenExchange;
+import com.xeiam.xchange.service.BaseExchangeService;
+import com.xeiam.xchange.service.polling.PollingMarketDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.stream.Collectors;
 
+import static com.hashnot.fx.spi.LimitOrderComparator.ORDER_COMPARATOR;
+import static com.xeiam.xchange.currency.Currencies.EUR;
+import static com.xeiam.xchange.currency.Currencies.PLN;
 import static java.lang.System.out;
 
 /**
  * @author Rafał Krupiński
  */
 public class Dealer {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
+        Collection<CurrencyPair> allowedPairs = Arrays.asList(new CurrencyPair(EUR, PLN), CurrencyPair.BTC_PLN, CurrencyPair.BTC_EUR);
+        Collection<CurrencyPair> warn = allowedPairs.stream().map(CurrencyPairUtil::reverse).collect(Collectors.toList());
+
+        //Exchange kokos = ExchangeFactory.INSTANCE.createExchange(KokosExchange.class.getName());
+        Exchange kraken = ExchangeFactory.INSTANCE.createExchange(KrakenExchange.class.getName());
+        Exchange bc = ExchangeFactory.INSTANCE.createExchange(BitcurexExchange.class.getName());
+
+        List<Exchange> exchanges = Arrays.asList(kraken, bc);
+
+        Map<CurrencyPair, Map<Exchange, OrderBook>> orders = new HashMap<>();
+        for (Exchange exchange : exchanges) {
+            if (exchange == null) continue;
+            PollingMarketDataService mds = exchange.getPollingMarketDataService();
+
+            List<CurrencyPair> pairs;
+
+            if (mds instanceof BaseExchangeService)
+                pairs = new ArrayList<>(((BaseExchangeService) mds).getExchangeSymbols());
+            else {
+                ExchangeInfo exchangeInfo = mds.getExchangeInfo();
+                pairs = exchangeInfo.getPairs();
+            }
+
+            for (CurrencyPair pair : pairs) {
+                if (warn.contains(pair)) log.warn("Reverse pair {} from {}", pair, exchange);
+                if (!allowedPairs.contains(pair)) continue;
+
+                Map<Exchange, OrderBook> exchangeOrders;
+                if (orders.containsKey(pair))
+                    exchangeOrders = orders.get(pair);
+
+                else {
+                    exchangeOrders = new HashMap<>();
+                    orders.put(pair, exchangeOrders);
+                }
+
+                OrderBook orderBook = mds.getOrderBook(pair);
+                exchangeOrders.put(exchange, orderBook);
+            }
+        }
+        for (Map.Entry<CurrencyPair, Map<Exchange, OrderBook>> e : orders.entrySet()) {
+            printReport(e.getKey(), e.getValue());
+        }
+
+
+        if (true)
+            return;
+
+
+        findDeal();
+
+    }
+
+    private static void findDeal() {
         Map<IMarket, IMarketSession> sessions = new HashMap<>();
 
-        KokosMarket kokos = new KokosMarket();
-        sessions.put(kokos, kokos.open(null));
+        KokosMarket kk = new KokosMarket();
+        sessions.put(kk, kk.open(null));
 
 /*
         CFMarket cf = new CFMarket();
@@ -94,10 +164,35 @@ public class Dealer {
         log.info("best  bid = {}", maxBid);
         log.info("worst bid = {}", minBid);
 
-        Offer newBid = new Offer(maxBid.getValue().amount, minBid.getValue().price.     add(new BigDecimal(".001")), Dir.bid, minBid.getValue().base, minBid.getValue().counter, minBid.getKey());
+        Offer newBid = new Offer(maxBid.getValue().amount, minBid.getValue().price.add(new BigDecimal(".001")), Dir.bid, minBid.getValue().base, minBid.getValue().counter, minBid.getKey());
         log.info("open {} @ {}", newBid, newBid.market);
         log.info("Clos {} @ {}", maxBid.getValue(), maxBid.getKey());
+    }
 
+    private static void printReport(CurrencyPair pair, Map<Exchange, OrderBook> books) {
+        Order.OrderType dir = Order.OrderType.ASK;
+        printReport(pair, books, dir);
+    }
+
+    private static void printReport(CurrencyPair pair, Map<Exchange, OrderBook> books, Order.OrderType dir) {
+        SortedMap<LimitOrder, Exchange> asks = getBestOffers(books, dir);
+        log.info("{} summary: best {} {}\tworst {} {}",pair, asks.firstKey(), asks.get(asks.firstKey()), asks.lastKey(), asks.get(asks.lastKey()));
+    }
+
+    private static SortedMap<LimitOrder, Exchange> getBestOffers(Map<Exchange, OrderBook> books, Order.OrderType dir) {
+        SortedMap<LimitOrder, Exchange> result = new TreeMap<>();
+        for (Map.Entry<Exchange, OrderBook> e : books.entrySet()) {
+            List<LimitOrder> limitOrders = get(e.getValue(), dir);
+            if (limitOrders.isEmpty()) continue;
+            Collections.sort(limitOrders, ORDER_COMPARATOR);
+            result.put(limitOrders.get(0), e.getKey());
+            log.debug("best {}  worst {}", limitOrders.get(0), limitOrders.get(limitOrders.size() - 1));
+        }
+        return result;
+    }
+
+    private static List<LimitOrder> get(OrderBook orderBook, Order.OrderType dir) {
+        return dir == Order.OrderType.ASK ? orderBook.getAsks() : orderBook.getBids();
     }
 
     static class EntryComparator implements Comparator<Map.Entry<IMarket, Offer>> {
