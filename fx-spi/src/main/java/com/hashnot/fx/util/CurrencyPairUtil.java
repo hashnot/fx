@@ -5,15 +5,14 @@ import com.xeiam.xchange.currency.CurrencyPair;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.xeiam.xchange.currency.Currencies.*;
+
 /**
  * @author Rafał Krupiński
  */
 public class CurrencyPairUtil {
-    public static final String GBP = "GBP";
-    public static final String EUR = "EUR";
-    public static final String USD = "USD";
-    public static final String CHF = "CHF";
-    private static List<String> baseCurrencies = Arrays.asList(EUR, GBP, "AUD", "NZD", USD, "CAD", CHF, "JPY");
+    public static final CurrencyPair EUR_PLN = new CurrencyPair(EUR, PLN);
+    private static List<String> baseCurrencies = Arrays.asList(EUR, GBP, AUD, NZD, USD, CAD, CHF, JPY);
 
     public static boolean isNonReversed(CurrencyPair cp) {
         return isNonReversed(cp.baseSymbol, cp.counterSymbol);
