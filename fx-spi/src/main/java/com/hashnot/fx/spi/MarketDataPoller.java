@@ -16,7 +16,7 @@ import java.util.*;
  * @author Rafał Krupiński
  */
 public class MarketDataPoller implements EventHandler<OrderBookUpdateEvent> {
-    final private static Logger log= LoggerFactory.getLogger(MarketDataPoller.class);
+    final private static Logger log = LoggerFactory.getLogger(MarketDataPoller.class);
     private final PollingMarketDataService service;
     private final Collection<CurrencyPair> pairs;
     private final Map<CurrencyPair, OrderBook> cache = new HashMap<>();
@@ -32,6 +32,7 @@ public class MarketDataPoller implements EventHandler<OrderBookUpdateEvent> {
         assert allowedPairs != null : "null pairs";
         assert !allowedPairs.isEmpty() : "empty pairs";
         assert exchange != null : "null exchange";
+        assert ordinal < count : "ordinal >= count";
 
         this.service = service;
         this.exchange = exchange;
