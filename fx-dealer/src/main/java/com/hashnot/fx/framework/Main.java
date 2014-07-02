@@ -1,17 +1,17 @@
 package com.hashnot.fx.framework;
 
+import com.hashnot.fx.IFeeService;
 import com.hashnot.fx.dealer.Dealer;
+import com.hashnot.fx.ext.BitcurextFeeService;
+import com.hashnot.fx.ext.KrakenFeeServiceStub;
 import com.hashnot.fx.spi.MarketDataPoller;
 import com.hashnot.fx.spi.OrderBookUpdateEvent;
-import com.hashnot.fx.util.CurrencyPairUtil;
-import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.dsl.Disruptor;
+import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.bitcurex.BitcurexExchange;
 import com.xeiam.xchange.currency.Currencies;
 import com.xeiam.xchange.currency.CurrencyPair;
-import com.xeiam.xchange.dto.marketdata.OrderBook;
-import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.kraken.KrakenExchange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author Rafał Krupiński
@@ -42,13 +41,20 @@ public class Main {
         bitcurexExchange.applySpecification(bitcurexExchange.getDefaultExchangeSpecification());
         MarketDataPoller bitcurexPoller = new MarketDataPoller(bitcurexExchange.getPollingMarketDataService(), allowedPairs, bitcurexExchange, 1, count);
 
+        Exchange[] exchanges = new Exchange[]{krakenExchange, bitcurexExchange};
 
-        Dealer dealer = new Dealer();
-        dealer.simulation.add(krakenExchange, Currencies.EUR, new BigDecimal(2000));
-        dealer.simulation.add(krakenExchange, Currencies.BTC, new BigDecimal(4));
-        dealer.simulation.add(bitcurexExchange, Currencies.EUR, new BigDecimal(2000));
-        dealer.simulation.add(bitcurexExchange, Currencies.BTC, new BigDecimal(4));
 
+        Simulation simulation = new Simulation();
+        for (Exchange exchange : exchanges) {
+            simulation.add(exchange, Currencies.EUR, new BigDecimal(2000));
+            simulation.add(exchange, Currencies.BTC, new BigDecimal(4));
+        }
+
+        Map<Exchange, IFeeService> feeServices = new HashMap<>();
+        feeServices.put(krakenExchange, new KrakenFeeServiceStub());
+        feeServices.put(bitcurexExchange, new BitcurextFeeService());
+
+        Dealer dealer = new Dealer(feeServices, simulation);
 
         updater.handleEventsWith(krakenPoller, bitcurexPoller).
                 handleEventsWith(
@@ -60,23 +66,18 @@ public class Main {
 
         updater.start();
 
-/*
         Timer t = new Timer("Market poll timer", true);
         t.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-*/
-        RingBuffer<OrderBookUpdateEvent> buf = updater.getRingBuffer();
-        for (int i = 0; i < count; i++)
-            buf.publish(buf.next());
-
-/*
+                RingBuffer<OrderBookUpdateEvent> buf = updater.getRingBuffer();
+                for (int i = 0; i < count; i++)
+                    buf.publish(buf.next());
             }
-        }, 100, 1000);
-*/
-        Thread.sleep(3000);
+        }, 0, 100);
+        Thread.sleep(60000);
         updater.halt();
-        dealer.simulation.report();
+        //dealer.simulation.report();
     }
 
 }

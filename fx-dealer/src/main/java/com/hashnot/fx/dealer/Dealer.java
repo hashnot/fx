@@ -1,8 +1,9 @@
 package com.hashnot.fx.dealer;
 
+import com.hashnot.fx.FeeHelper;
+import com.hashnot.fx.IFeeService;
 import com.hashnot.fx.framework.Simulation;
 import com.hashnot.fx.spi.OrderBookUpdateEvent;
-import com.hashnot.fx.util.CurrencyPairUtil;
 import com.lmax.disruptor.EventHandler;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
@@ -12,19 +13,25 @@ import com.xeiam.xchange.dto.trade.LimitOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
 
 import static com.hashnot.fx.util.CurrencyPairUtil.get;
-import static com.hashnot.fx.util.CurrencyPairUtil.reverse;
 
 /**
  * @author Rafał Krupiński
  */
 public class Dealer implements EventHandler<OrderBookUpdateEvent> {
     private Map<CurrencyPair, Map<Exchange, OrderBook>> currencies = new HashMap<>();
+    private Map<Exchange, IFeeService> feeServices;
 
-    public Simulation simulation = new Simulation();
+    public Simulation simulation;
+
+    public Dealer(Map<Exchange, IFeeService> feeServices, Simulation simulation) {
+        this.feeServices = feeServices;
+        this.simulation = simulation;
+    }
 
     private static SortedMap<LimitOrder, Exchange> getBestOffers(Map<Exchange, OrderBook> books, Order.OrderType dir) {
         SortedMap<LimitOrder, Exchange> result = new TreeMap<>();
@@ -55,7 +62,7 @@ public class Dealer implements EventHandler<OrderBookUpdateEvent> {
         updateLimitOrders(Arrays.asList(pair));
     }
 
-    private void updateLimitOrders(List<CurrencyPair> currencyPairs) {
+    private void updateLimitOrders(List<CurrencyPair> currencyPairs) throws IOException {
         for (CurrencyPair pair : currencyPairs) {
             Map<Exchange, OrderBook> orderBooks = this.currencies.get(pair);
             if (orderBooks.size() < 2) return;
@@ -69,7 +76,7 @@ public class Dealer implements EventHandler<OrderBookUpdateEvent> {
         log.debug("TODO clearOrders");
     }
 
-    private void updateLimitOrders(CurrencyPair pair, Map<Exchange, OrderBook> orderBooks, Order.OrderType type) {
+    private void updateLimitOrders(CurrencyPair pair, Map<Exchange, OrderBook> orderBooks, Order.OrderType type) throws IOException {
         //podsumuj wszystkie oferty do
         // - limitu stanu konta
         // - limitu różnicy ceny
@@ -92,19 +99,42 @@ public class Dealer implements EventHandler<OrderBookUpdateEvent> {
 
                 BigDecimal amount = BigDecimal.ZERO;
 
+                Exchange worseExchange = worse.getValue();
+
                 for (LimitOrder order : bestXOrders) {
-                    if (order.compareTo(worseOrder) < 0) {
+                    if (compareOrders(worseOrder, order, worseExchange, bestExchange) < 0) {
                         amount = amount.add(order.getTradableAmount());
                         if (amount.compareTo(worseOrder.getTradableAmount()) > 0) break;
                         log.info("better: {}", order, order.getLimitPrice().subtract(worseOrder.getLimitPrice()));
-                        simulation.add((order), bestExchange);
+                        simulation.open((order), bestExchange);
                     } else
                         break;
                 }
 
-                simulation.add(reverse(worseOrder), worse.getValue());
+                if(amount != BigDecimal.ZERO) {
+                    //TODO change limit price
+                    LimitOrder myOrder = new LimitOrder(worseOrder.getType(), amount, worseOrder.getCurrencyPair(), null, null, worseOrder.getLimitPrice());
+                    simulation.close(myOrder, worseExchange);
+                }
             }
         }
+    }
+
+    private int compareOrders(LimitOrder o1, LimitOrder o2, Exchange e1, Exchange e2) throws IOException {
+        BigDecimal feePercent = feeServices.get(e1).getFeePercent(o1.getCurrencyPair());
+        feePercent = feePercent.add(feeServices.get(e2).getFeePercent(o2.getCurrencyPair()));
+
+        BigDecimal p1 = o1.getLimitPrice();
+        BigDecimal p2 = o2.getLimitPrice();
+        int cmp = p1.compareTo(p2);
+
+
+        if (cmp <= 0)
+            p1 = FeeHelper.addPercent(p1, feePercent);
+        else
+            p2 = FeeHelper.addPercent(p2, feePercent);
+
+        return p1.compareTo(p2) * (o1.getType() == Order.OrderType.BID ? -1 : 1);
     }
 
     private static final Logger log = LoggerFactory.getLogger(Dealer.class);

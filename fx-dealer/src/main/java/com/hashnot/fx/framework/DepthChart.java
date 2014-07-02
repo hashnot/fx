@@ -73,10 +73,10 @@ public class DepthChart {
         BigDecimal accumulatedValue = BigDecimal.ZERO;
 
         for (LimitOrder limitOrder : CurrencyPairUtil.get(orderBook, type)) {
-            //xData.add(limitOrder.getLimitPrice());
+            //xData.open(limitOrder.getLimitPrice());
             accumulatedUnits = accumulatedUnits.add(limitOrder.getTradableAmount());
             accumulatedValue = accumulatedValue.add(limitOrder.getTradableAmount().multiply(limitOrder.getLimitPrice()));
-            //yData.add(accumulatedUnits);
+            //yData.open(accumulatedUnits);
 
             if (accumulatedValue.compareTo(valueLimit) >= 0) break;
 

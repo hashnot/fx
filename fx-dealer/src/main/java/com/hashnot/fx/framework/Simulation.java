@@ -17,6 +17,16 @@ public class Simulation {
     final private static Logger log = LoggerFactory.getLogger(Simulation.class);
     private Map<Exchange, Map<String, BigDecimal>> wallet = new HashMap<>();
 
+    public void close(LimitOrder order, Exchange x) {
+        add(CurrencyPairUtil.reverse(order), x);
+        report();
+    }
+
+    public void open(LimitOrder order, Exchange x) {
+        add(order, x);
+        report();
+    }
+
     public void add(LimitOrder order, Exchange x) {
         BigDecimal amount = order.getTradableAmount().divide(order.getLimitPrice(), CurrencyPairUtil.c);
         add(x, order.getCurrencyPair().baseSymbol, amount.negate());
