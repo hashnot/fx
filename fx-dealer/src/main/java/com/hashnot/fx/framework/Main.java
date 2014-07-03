@@ -2,14 +2,17 @@ package com.hashnot.fx.framework;
 
 import com.hashnot.fx.IFeeService;
 import com.hashnot.fx.dealer.Dealer;
+import com.hashnot.fx.ext.BTCEFeeService;
 import com.hashnot.fx.ext.BitcurextFeeService;
-import com.hashnot.fx.ext.KrakenFeeServiceStub;
+import com.hashnot.fx.ext.StaticFeeService;
 import com.hashnot.fx.spi.MarketDataPoller;
 import com.hashnot.fx.spi.OrderBookUpdateEvent;
+import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.dsl.Disruptor;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.bitcurex.BitcurexExchange;
+import com.xeiam.xchange.btce.v3.BTCEExchange;
 import com.xeiam.xchange.currency.Currencies;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.kraken.KrakenExchange;
@@ -31,32 +34,25 @@ public class Main {
     public static void main(String[] args) throws IOException, InterruptedException {
         Disruptor<OrderBookUpdateEvent> updater = new Disruptor<>(OrderBookUpdateEvent::new, 2 << 8, Executors.newCachedThreadPool());
 
-        int count = 2;
+        Map<Exchange, EventHandler<OrderBookUpdateEvent>> handlers = new HashMap<>();
+        Map<Exchange, IFeeService> feeServices = new HashMap<>();
 
-        KrakenExchange krakenExchange = new KrakenExchange();
-        krakenExchange.applySpecification(krakenExchange.getDefaultExchangeSpecification());
-        MarketDataPoller krakenPoller = new MarketDataPoller(krakenExchange.getPollingMarketDataService(), allowedPairs, krakenExchange, 0, count);
+        createExchange(feeServices, new KrakenExchange(), new StaticFeeService(new BigDecimal(".002")));
+        createExchange(feeServices, new BitcurexExchange(), new BitcurextFeeService());
+        createExchange(feeServices, new BTCEExchange(), new BTCEFeeService());
 
-        BitcurexExchange bitcurexExchange = new BitcurexExchange();
-        bitcurexExchange.applySpecification(bitcurexExchange.getDefaultExchangeSpecification());
-        MarketDataPoller bitcurexPoller = new MarketDataPoller(bitcurexExchange.getPollingMarketDataService(), allowedPairs, bitcurexExchange, 1, count);
+        createMarket(handlers, feeServices);
 
-        Exchange[] exchanges = new Exchange[]{krakenExchange, bitcurexExchange};
+        Simulation simulation = new Simulation(feeServices);
 
-
-        Simulation simulation = new Simulation();
-        for (Exchange exchange : exchanges) {
+        for (Exchange exchange : handlers.keySet()) {
             simulation.add(exchange, Currencies.EUR, new BigDecimal(2000));
             simulation.add(exchange, Currencies.BTC, new BigDecimal(4));
         }
 
-        Map<Exchange, IFeeService> feeServices = new HashMap<>();
-        feeServices.put(krakenExchange, new KrakenFeeServiceStub());
-        feeServices.put(bitcurexExchange, new BitcurextFeeService());
-
         Dealer dealer = new Dealer(feeServices, simulation);
 
-        updater.handleEventsWith(krakenPoller, bitcurexPoller).
+        updater.handleEventsWith(handlers.values().toArray(new EventHandler[handlers.size()])).
                 handleEventsWith(
                         dealer
                 /*
@@ -71,13 +67,26 @@ public class Main {
             @Override
             public void run() {
                 RingBuffer<OrderBookUpdateEvent> buf = updater.getRingBuffer();
-                for (int i = 0; i < count; i++)
-                    buf.publish(buf.next());
+                //for (int i = 0; i < handlers.size(); i++)
+                buf.publish(buf.next());
             }
         }, 0, 100);
         Thread.sleep(60000);
         updater.halt();
-        //dealer.simulation.report();
+        simulation.report();
+    }
+
+    private static void createExchange(Map<Exchange, IFeeService> feeServiceMap, Exchange exchange, IFeeService feeService) {
+        exchange.applySpecification(exchange.getDefaultExchangeSpecification());
+        feeServiceMap.put(exchange, feeService);
+    }
+
+    private static void createMarket(Map<Exchange, EventHandler<OrderBookUpdateEvent>> handlers, Map<Exchange, IFeeService> feeServiceMap) throws IOException {
+        int i = 0;
+        for (Map.Entry<Exchange, IFeeService> e : feeServiceMap.entrySet()) {
+            Exchange exchange = e.getKey();
+            handlers.put(exchange, new MarketDataPoller(exchange.getPollingMarketDataService(), allowedPairs, exchange, i++, feeServiceMap.size()));
+        }
     }
 
 }

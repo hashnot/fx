@@ -55,7 +55,7 @@ public class MarketDataPoller implements EventHandler<OrderBookUpdateEvent> {
             OrderBook cached = cache.get(pair);
             if (cached != null) {
                 if (equals(cached, orderBook)) {
-                    log.debug("Drop unchanged order book from {}", exchange);
+                    log.debug("{} Drop unchanged order book @{}", sequence, exchange.getExchangeSpecification().getExchangeName());
                     evt.setOrderBook(null);
                     return;
                 }

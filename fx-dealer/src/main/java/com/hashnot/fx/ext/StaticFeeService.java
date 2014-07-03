@@ -2,7 +2,6 @@ package com.hashnot.fx.ext;
 
 import com.hashnot.fx.IFeeService;
 import com.xeiam.xchange.currency.CurrencyPair;
-import com.xeiam.xchange.dto.Order;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -10,11 +9,15 @@ import java.math.BigDecimal;
 /**
  * @author Rafał Krupiński
  */
-public class KrakenFeeServiceStub implements IFeeService {
-    private static final BigDecimal FEE = new BigDecimal(".002");
+public class StaticFeeService implements IFeeService {
+    private BigDecimal fee;
+
+    public StaticFeeService(BigDecimal fee) {
+        this.fee = fee;
+    }
 
     @Override
     public BigDecimal getFeePercent(CurrencyPair pair) throws IOException {
-        return FEE;
+        return fee;
     }
 }

@@ -39,6 +39,12 @@
             <version>${v.xchange}</version>
         </dependency>
         <dependency>
+            <groupId>com.xeiam.xchange</groupId>
+            <artifactId>xchange-btce</artifactId>
+            <version>${v.xchange}</version>
+        </dependency>
+
+        <dependency>
             <groupId>net.sf.jchart2d</groupId>
             <artifactId>jchart2d</artifactId>
             <version>3.3.2</version>
@@ -52,6 +58,11 @@
             <groupId>com.lmax</groupId>
             <artifactId>disruptor</artifactId>
             <version>3.2.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
 </project>

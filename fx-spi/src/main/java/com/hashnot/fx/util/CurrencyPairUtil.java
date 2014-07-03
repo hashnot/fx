@@ -66,7 +66,7 @@ public class CurrencyPairUtil {
         return new LimitOrder(type, amount, reverse(order.getCurrencyPair()), null, null, price);
     }
 
-    protected static Order.OrderType revert(Order.OrderType type) {
+    public static Order.OrderType revert(Order.OrderType type) {
         return type == Order.OrderType.ASK ? Order.OrderType.BID : Order.OrderType.ASK;
     }
 

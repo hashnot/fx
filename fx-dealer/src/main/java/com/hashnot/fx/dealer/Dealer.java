@@ -95,32 +95,43 @@ public class Dealer implements EventHandler<OrderBookUpdateEvent> {
             for (int j = i + 1; j < bestOrdersList.size(); j++) {
                 Map.Entry<LimitOrder, Exchange> worse = bestOrdersList.get(j);
                 LimitOrder worseOrder = worse.getKey();
-                log.info("worse: {}", worseOrder);
+                log.info("worse: {} @{}", worseOrder, worse.getValue().getExchangeSpecification().getExchangeName());
 
                 BigDecimal amount = BigDecimal.ZERO;
+                BigDecimal dealAmount = BigDecimal.ZERO;
+                BigDecimal openPrice = null;
 
                 Exchange worseExchange = worse.getValue();
 
                 for (LimitOrder order : bestXOrders) {
-                    if (compareOrders(worseOrder, order, worseExchange, bestExchange) < 0) {
+                    log.info("best: {} @{}", order, bestExchange.getExchangeSpecification().getExchangeName());
+                    if (compareOrders(worseOrder, order, worseExchange, bestExchange) >= 0) {
                         amount = amount.add(order.getTradableAmount());
                         if (amount.compareTo(worseOrder.getTradableAmount()) > 0) break;
-                        log.info("better: {}", order, order.getLimitPrice().subtract(worseOrder.getLimitPrice()));
-                        simulation.open((order), bestExchange);
+                        dealAmount = dealAmount.add(worseOrder.getTradableAmount());
+                        openPrice = order.getLimitPrice();
+                        log.info("better: {} @{}", order, bestExchange.getExchangeSpecification().getExchangeName());
+                        break;
+/*
+                        simulation.open(order, bestExchange);
+*/
                     } else
                         break;
                 }
 
-                if(amount != BigDecimal.ZERO) {
+                if (dealAmount != BigDecimal.ZERO) {
                     //TODO change limit price
-                    LimitOrder myOrder = new LimitOrder(worseOrder.getType(), amount, worseOrder.getCurrencyPair(), null, null, worseOrder.getLimitPrice());
-                    simulation.close(myOrder, worseExchange);
+                    LimitOrder myOrder = new LimitOrder(worseOrder.getType(), dealAmount, worseOrder.getCurrencyPair(), null, null, worseOrder.getLimitPrice());
+//                    simulation.close(myOrder, worseExchange);
+                    LimitOrder open = new LimitOrder(worseOrder.getType(), dealAmount, worseOrder.getCurrencyPair(), null, null, openPrice);
+                    simulation.pair(open, bestExchange, myOrder, worseExchange);
                 }
             }
         }
     }
 
     private int compareOrders(LimitOrder o1, LimitOrder o2, Exchange e1, Exchange e2) throws IOException {
+        //if(true) return o1.compareTo(o2);
         BigDecimal feePercent = feeServices.get(e1).getFeePercent(o1.getCurrencyPair());
         feePercent = feePercent.add(feeServices.get(e2).getFeePercent(o2.getCurrencyPair()));
 
