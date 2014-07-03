@@ -15,6 +15,7 @@ import java.util.HashMap;
 
 import static com.xeiam.xchange.currency.Currencies.*;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
+import static com.xeiam.xchange.dto.Order.OrderType.BID;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static org.junit.Assert.assertEquals;
@@ -23,8 +24,7 @@ public class SimulationTest {
     private static final BigDecimal __ONE = ONE.negate();
     private static final BigDecimal TWO = new BigDecimal(2);
     private static final BigDecimal __TWO = TWO.negate();
-    private static final BigDecimal HALF = new BigDecimal(".5");
-    private static final BigDecimal __HALF = HALF.negate();
+    private static final BigDecimal PERMIL = new BigDecimal(".001");
 
     /*
     * opening a position assumes it's immediately closed by a 3rd party.
@@ -36,7 +36,7 @@ public class SimulationTest {
     @Test
     public void testOpenAsk0() throws Exception {
         Simulation s = createSimulator();
-        s.open(new LimitOrder(ASK, ONE, p1, null, null, ONE), e1);
+        s.open(order(ASK, ONE, p1, ONE), e1);
 
         //tradableAmount - base
         //price - counter currency
@@ -49,7 +49,7 @@ public class SimulationTest {
     @Test
     public void testOpenBid0() throws Exception {
         Simulation s = createSimulator();
-        s.open(new LimitOrder(Order.OrderType.BID, ONE, p1, null, null, ONE), e1);
+        s.open(order(BID, ONE, p1, ONE), e1);
 
         assertEquals(ONE, s.get(e1, p1.baseSymbol));
         assertEquals(__ONE, s.get(e1, p1.counterSymbol));
@@ -60,7 +60,7 @@ public class SimulationTest {
         Simulation s = createSimulator();
         BigDecimal baseAmount = ONE;
         BigDecimal price = TWO;
-        s.open(new LimitOrder(ASK, baseAmount, p1, null, null, price), e1);
+        s.open(order(ASK, baseAmount, p1, price), e1);
 
         // 2 counter = 1 base
         // should be
@@ -76,7 +76,7 @@ public class SimulationTest {
         Simulation s = createSimulator();
         BigDecimal baseAmount = ONE;
         BigDecimal price = TWO;
-        s.open(new LimitOrder(Order.OrderType.BID, baseAmount, p1, null, null, price), e1);
+        s.open(order(BID, baseAmount, p1, price), e1);
 
         // 2 counter = 1 base
         // should be
@@ -90,7 +90,7 @@ public class SimulationTest {
     @Test
     public void testCloseAsk0() throws Exception {
         Simulation s = createSimulator();
-        s.close(new LimitOrder(ASK, ONE, p1, null, null, ONE), e1);
+        s.close(order(ASK, ONE, p1, ONE), e1);
 
         assertEquals(ONE, s.get(e1, p1.baseSymbol));
         assertEquals(__ONE, s.get(e1, p1.counterSymbol));
@@ -99,7 +99,7 @@ public class SimulationTest {
     @Test
     public void testCloseBid0() throws Exception {
         Simulation s = createSimulator();
-        s.close(new LimitOrder(Order.OrderType.BID, ONE, p1, null, null, ONE), e1);
+        s.close(order(BID, ONE, p1, ONE), e1);
 
         assertEquals(__ONE, s.get(e1, p1.baseSymbol));
         assertEquals(ONE, s.get(e1, p1.counterSymbol));
@@ -110,7 +110,7 @@ public class SimulationTest {
         Simulation s = createSimulator();
         BigDecimal baseAmount = ONE;
         BigDecimal price = TWO;
-        s.close(new LimitOrder(ASK, baseAmount, p1, null, null, price), e1);
+        s.close(order(ASK, baseAmount, p1, price), e1);
 
         assertEquals(ONE, s.get(e1, p1.baseSymbol));
         assertEquals(__TWO, s.get(e1, p1.counterSymbol));
@@ -121,7 +121,7 @@ public class SimulationTest {
         Simulation s = createSimulator();
         BigDecimal baseAmount = ONE;
         BigDecimal price = TWO;
-        s.close(new LimitOrder(Order.OrderType.BID, baseAmount, p1, null, null, price), e1);
+        s.close(order(BID, baseAmount, p1, price), e1);
 
         assertEquals(__ONE, s.get(e1, p1.baseSymbol));
         assertEquals(TWO, s.get(e1, p1.counterSymbol));
@@ -130,22 +130,45 @@ public class SimulationTest {
     @Test
     public void testPair0() throws Exception {
         Simulation s = createSimulator();
-        s.add(e1, BTC, ONE);
-        s.add(e1, EUR, TWO);
-        s.add(e2, BTC, ONE);
-        s.add(e2, EUR, TWO);
-        s.report();
-        s.open(new LimitOrder(ASK, ONE, p1, null, null, TWO), e1);
-        s.report();
-        s.close(new LimitOrder(ASK, ONE, p1, null, null, ONE), e2);
+        s.add(e1, BTC, ZERO);
+        s.add(e1, EUR, ZERO);
+        s.add(e2, BTC, ZERO);
+        s.add(e2, EUR, ZERO);
+
+        LimitOrder close = order(ASK, ONE, p1, ONE);
+        LimitOrder open = order(ASK, ONE, p1, TWO);
+        s.pair(close, e2, open, e1);
+
+        assertEquals(__ONE, s.get(e1, BTC));
+        assertEquals(TWO, s.get(e1, EUR));
+        assertEquals(ONE, s.get(e2, BTC));
+        assertEquals(__ONE, s.get(e2, EUR));
+    }
+
+    @Test
+    public void testOpenAskFee() throws Exception {
+        Simulation s = createSimulator(PERMIL);
+
+        s.open(order(ASK, ONE, p1, ONE), e1);
         s.report();
     }
+
+    @Test
+    public void testOpenBidFee() throws Exception {
+        Simulation s = createSimulator(PERMIL);
+
+        s.open(order(BID, ONE, p1, ONE), e1);
+        s.report();
+    }
+
+
+    //--------------
 
 
     Exchange e1 = new MockExchange();
     Exchange e2 = new MockExchange();
 
-    CurrencyPair p1 = CurrencyPair.BTC_EUR;
+    static CurrencyPair p1 = CurrencyPair.BTC_EUR;
 
     protected Simulation createSimulator() {
         return createSimulator(ZERO);
@@ -174,5 +197,8 @@ public class SimulationTest {
         }
     }
 
+    protected static LimitOrder order(Order.OrderType type, BigDecimal tradableAmount, CurrencyPair pair, BigDecimal limitPrice) {
+        return new LimitOrder(type, tradableAmount, pair, null, null, limitPrice);
+    }
 
 }

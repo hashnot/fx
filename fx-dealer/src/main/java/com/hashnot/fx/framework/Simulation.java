@@ -1,5 +1,6 @@
 package com.hashnot.fx.framework;
 
+import com.hashnot.fx.FeeHelper;
 import com.hashnot.fx.IFeeService;
 import com.hashnot.fx.util.CurrencyPairUtil;
 import com.xeiam.xchange.Exchange;
@@ -9,6 +10,7 @@ import com.xeiam.xchange.dto.trade.LimitOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
@@ -29,18 +31,18 @@ public class Simulation {
         this.fees = fees;
     }
 
-    public void close(LimitOrder order, Exchange x) {
+    public void close(LimitOrder order, Exchange x) throws IOException {
         LimitOrder close = new LimitOrder(CurrencyPairUtil.revert(order.getType()), order.getTradableAmount(), order.getCurrencyPair(), null, null, order.getLimitPrice());
         log.info("close {} @{}", order, x.getExchangeSpecification().getExchangeName());
         add(close, x);
     }
 
-    public void open(LimitOrder order, Exchange x) {
+    public void open(LimitOrder order, Exchange x) throws IOException {
         log.info("open {} @{}", order, x.getExchangeSpecification().getExchangeName());
         add(order, x);
     }
 
-    public void pair(LimitOrder close, Exchange e1, LimitOrder open, Exchange e2) {
+    public void pair(LimitOrder close, Exchange e1, LimitOrder open, Exchange e2) throws IOException {
         assert !e1.equals(e2);
         CurrencyPair pair = close.getCurrencyPair();
         assert pair.equals(open.getCurrencyPair());
@@ -68,9 +70,14 @@ public class Simulation {
 
     }
 
-    public void add(LimitOrder order, Exchange x) {
+    public void add(LimitOrder order, Exchange x) throws IOException {
         BigDecimal amountBase = order.getTradableAmount().negate();
-        BigDecimal amountCounter = order.getTradableAmount().multiply(order.getLimitPrice(), CurrencyPairUtil.c);
+        BigDecimal price = order.getLimitPrice();
+
+        BigDecimal fee = FeeHelper.getFeePercent(fees.get(x), order);
+        price = FeeHelper.addPercent(price, fee);
+
+        BigDecimal amountCounter = order.getTradableAmount().multiply(price, CurrencyPairUtil.c);
 
         if (order.getType() == Order.OrderType.BID) {
             amountBase = amountBase.negate();
@@ -99,7 +106,7 @@ public class Simulation {
     public void report() {
         Map<String, BigDecimal> totals = new HashMap<>();
         for (Map.Entry<Exchange, Map<String, BigDecimal>> e : wallet.entrySet()) {
-            log.info("{}", e.getKey().getClass().getSimpleName());
+            log.info("{}", e.getKey().getExchangeSpecification().getExchangeName());
             for (Map.Entry<String, BigDecimal> f : e.getValue().entrySet()) {
                 String currency = f.getKey();
                 BigDecimal amount = f.getValue();
