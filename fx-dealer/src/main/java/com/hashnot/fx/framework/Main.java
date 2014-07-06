@@ -56,6 +56,7 @@ public class Main {
             ;
         }
 
+        //TODO integrate CacheUpdater with Dealer
         scheduler.scheduleAtFixedRate(new CacheUpdater(context, updates, cacheUpdateQueue), 150, 100, TimeUnit.MILLISECONDS);
         Simulation simulation = new Simulation(context);
         scheduler.execute(new Dealer(context, simulation, cacheUpdateQueue, orderUpdates));

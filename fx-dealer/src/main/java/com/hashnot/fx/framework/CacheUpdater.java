@@ -101,6 +101,7 @@ public class CacheUpdater implements Runnable {
         OrderBooks.removeOverLimit(orderBook, limits.get(orderBookPair.baseSymbol), limits.get(orderBookPair.counterSymbol));
         OrderBook current = x.orderBooks.get(orderBookPair);
         if (current == null || !OrderBooks.equals(current, orderBook)) {
+            OrderBooks.updateNetPrices(x, orderBookPair);
             x.orderBooks.put(orderBookPair, orderBook);
             if (!outQueue.offer(new CacheUpdateEvent(exchange, Arrays.asList(orderBookPair))))
                 log.error("Could not add event to cache update queue");
