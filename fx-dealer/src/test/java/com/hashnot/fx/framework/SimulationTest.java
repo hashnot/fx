@@ -1,6 +1,7 @@
 package com.hashnot.fx.framework;
 
-import com.hashnot.fx.IFeeService;
+import com.hashnot.fx.spi.ExchangeCache;
+import com.hashnot.fx.spi.ext.IFeeService;
 import com.hashnot.fx.ext.StaticFeeService;
 import com.xeiam.xchange.BaseExchange;
 import com.xeiam.xchange.Exchange;
@@ -175,11 +176,12 @@ public class SimulationTest {
     }
 
     protected Simulation createSimulator(BigDecimal fee) {
-        HashMap<Exchange, IFeeService> fees = new HashMap<>();
+        HashMap<Exchange, ExchangeCache> ctx = new HashMap<>();
         IFeeService fs = new StaticFeeService(fee);
-        fees.put(e1, fs);
-        fees.put(e2, fs);
-        return new Simulation(fees);
+        ExchangeCache cache = new ExchangeCache(fs);
+        ctx.put(e1, cache);
+        ctx.put(e2, cache);
+        return new Simulation(ctx);
     }
 
     // exchange objects are used just as a key

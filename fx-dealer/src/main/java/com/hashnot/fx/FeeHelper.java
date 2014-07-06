@@ -1,5 +1,6 @@
 package com.hashnot.fx;
 
+import com.hashnot.fx.spi.ext.IFeeService;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 
 import java.io.IOException;

@@ -1,19 +1,13 @@
 package com.hashnot.fx.framework;
 
-import com.hashnot.fx.IFeeService;
 import com.hashnot.fx.dealer.Dealer;
 import com.hashnot.fx.ext.BTCEFeeService;
-import com.hashnot.fx.ext.BitcurextFeeService;
 import com.hashnot.fx.ext.StaticFeeService;
-import com.hashnot.fx.spi.MarketDataPoller;
-import com.hashnot.fx.spi.OrderBookUpdateEvent;
-import com.lmax.disruptor.EventHandler;
-import com.lmax.disruptor.RingBuffer;
-import com.lmax.disruptor.dsl.Disruptor;
+import com.hashnot.fx.spi.ext.IFeeService;
+import com.hashnot.fx.spi.*;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.bitcurex.BitcurexExchange;
 import com.xeiam.xchange.btce.v3.BTCEExchange;
-import com.xeiam.xchange.currency.Currencies;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.kraken.KrakenExchange;
 import org.slf4j.Logger;
@@ -22,7 +16,10 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
+
+import static com.xeiam.xchange.currency.Currencies.BTC;
+import static com.xeiam.xchange.currency.Currencies.EUR;
 
 /**
  * @author Rafał Krupiński
@@ -32,61 +29,69 @@ public class Main {
     static Collection<CurrencyPair> allowedPairs = Arrays.asList(/*CurrencyPairUtil.EUR_PLN, CurrencyPair.BTC_PLN, */CurrencyPair.BTC_EUR);
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        Disruptor<OrderBookUpdateEvent> updater = new Disruptor<>(OrderBookUpdateEvent::new, 2 << 8, Executors.newCachedThreadPool());
+        Map<Exchange, ExchangeCache> context = new HashMap<>();
+        int capacity = 2 << 8;
+        BlockingQueue<ExchangeUpdateEvent> updates = new ArrayBlockingQueue<>(capacity);
+        BlockingQueue<CacheUpdateEvent> cacheUpdateQueue = new ArrayBlockingQueue<>(capacity);
+        ArrayBlockingQueue<OrderUpdateEvent> orderUpdates = new ArrayBlockingQueue<>(capacity);
 
-        Map<Exchange, EventHandler<OrderBookUpdateEvent>> handlers = new HashMap<>();
-        Map<Exchange, IFeeService> feeServices = new HashMap<>();
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(10, new ConfigurableThreadFactory());
 
-        createExchange(feeServices, new KrakenExchange(), new StaticFeeService(new BigDecimal(".002")));
-        createExchange(feeServices, new BitcurexExchange(), new BitcurextFeeService());
-        createExchange(feeServices, new BTCEExchange(), new BTCEFeeService());
+        Exchange kraken = defaultExchange(new KrakenExchange());
+        context.put(kraken, new ExchangeCache(new StaticFeeService(new BigDecimal(".002"))));
 
-        createMarket(handlers, feeServices);
+        Exchange btce = defaultExchange(new BTCEExchange());
+        context.put(btce, new ExchangeCache(new BTCEFeeService()));
 
-        Simulation simulation = new Simulation(feeServices);
+        Exchange bitcurex = defaultExchange(new BitcurexExchange());
+        context.put(bitcurex, new ExchangeCache(new StaticFeeService(new BigDecimal(".004"))));
 
-        for (Exchange exchange : handlers.keySet()) {
-            simulation.add(exchange, Currencies.EUR, new BigDecimal(2000));
-            simulation.add(exchange, Currencies.BTC, new BigDecimal(4));
+        setup(context);
+
+        for (Exchange exchange : context.keySet()) {
+            scheduler.scheduleAtFixedRate(
+                    new OrderBookPoller(exchange, updates, allowedPairs)
+                    , 100, 100, TimeUnit.MILLISECONDS)
+//                    .run()
+            ;
         }
 
-        Dealer dealer = new Dealer(feeServices, simulation);
+        scheduler.scheduleAtFixedRate(new CacheUpdater(context, updates, cacheUpdateQueue), 150, 100, TimeUnit.MILLISECONDS);
+        Simulation simulation = new Simulation(context);
+        scheduler.execute(new Dealer(context, simulation, cacheUpdateQueue, orderUpdates));
+        scheduler.scheduleAtFixedRate(new StatusMonitor(updates, cacheUpdateQueue, orderUpdates), 0, 200, TimeUnit.MILLISECONDS);
 
-        updater.handleEventsWith(handlers.values().toArray(new EventHandler[handlers.size()])).
-                handleEventsWith(
-                        dealer
-                /*
-                , new OrderBookPrinter()
-                */
-                );
 
-        updater.start();
-
-        Timer t = new Timer("Market poll timer", true);
-        t.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                RingBuffer<OrderBookUpdateEvent> buf = updater.getRingBuffer();
-                //for (int i = 0; i < handlers.size(); i++)
-                buf.publish(buf.next());
-            }
-        }, 0, 100);
         Thread.sleep(60000);
-        updater.halt();
+        scheduler.shutdown();
+        scheduler.awaitTermination(2, TimeUnit.SECONDS);
+        scheduler.shutdownNow();
         simulation.report();
     }
 
-    private static void createExchange(Map<Exchange, IFeeService> feeServiceMap, Exchange exchange, IFeeService feeService) {
-        exchange.applySpecification(exchange.getDefaultExchangeSpecification());
-        feeServiceMap.put(exchange, feeService);
-    }
-
-    private static void createMarket(Map<Exchange, EventHandler<OrderBookUpdateEvent>> handlers, Map<Exchange, IFeeService> feeServiceMap) throws IOException {
-        int i = 0;
-        for (Map.Entry<Exchange, IFeeService> e : feeServiceMap.entrySet()) {
-            Exchange exchange = e.getKey();
-            handlers.put(exchange, new MarketDataPoller(exchange.getPollingMarketDataService(), allowedPairs, exchange, i++, feeServiceMap.size()));
+    private static void setup(Map<Exchange, ExchangeCache> context) {
+        for (Map.Entry<Exchange, ExchangeCache> e : context.entrySet()) {
+            setupWallet(e.getValue());
         }
     }
 
+    private static void setupWallet(ExchangeCache exchange) {
+        BigDecimal eur = new BigDecimal(2000);
+        exchange.wallet.put(EUR, eur);
+        BigDecimal multi = new BigDecimal(2);
+        exchange.orderBookLimits.put(EUR, eur.multiply(multi));
+        BigDecimal btc = new BigDecimal(4);
+        exchange.wallet.put(BTC, btc);
+        exchange.orderBookLimits.put(BTC, btc.multiply(multi));
+    }
+
+    protected static Exchange defaultExchange(Exchange exchange) {
+        exchange.applySpecification(exchange.getDefaultExchangeSpecification());
+        return exchange;
+    }
+
+    private static void createExchange(Map<Exchange, IFeeService> feeServiceMap, Exchange exchange, IFeeService feeService) {
+        defaultExchange(exchange);
+        feeServiceMap.put(exchange, feeService);
+    }
 }

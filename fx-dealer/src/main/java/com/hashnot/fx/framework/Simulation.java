@@ -1,7 +1,7 @@
 package com.hashnot.fx.framework;
 
 import com.hashnot.fx.FeeHelper;
-import com.hashnot.fx.IFeeService;
+import com.hashnot.fx.spi.ExchangeCache;
 import com.hashnot.fx.util.CurrencyPairUtil;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
@@ -10,7 +10,6 @@ import com.xeiam.xchange.dto.trade.LimitOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
@@ -22,40 +21,42 @@ import java.util.Map;
  */
 public class Simulation {
     final private static Logger log = LoggerFactory.getLogger(Simulation.class);
-    private Map<Exchange, Map<String, BigDecimal>> wallet = new HashMap<>();
-    private Map<Exchange, IFeeService> fees;
 
     MathContext c = new MathContext(8, RoundingMode.HALF_UP);
+    final private Map<Exchange, ExchangeCache> context;
 
-    public Simulation(Map<Exchange, IFeeService> fees) {
-        this.fees = fees;
+    public Simulation(Map<Exchange, ExchangeCache> context) {
+        this.context = context;
     }
 
-    public void close(LimitOrder order, Exchange x) throws IOException {
+    public void close(LimitOrder order, Exchange x) {
         LimitOrder close = new LimitOrder(CurrencyPairUtil.revert(order.getType()), order.getTradableAmount(), order.getCurrencyPair(), null, null, order.getLimitPrice());
         log.info("close {} @{}", order, x.getExchangeSpecification().getExchangeName());
         add(close, x);
     }
 
-    public void open(LimitOrder order, Exchange x) throws IOException {
+    public void open(LimitOrder order, Exchange x) {
         log.info("open {} @{}", order, x.getExchangeSpecification().getExchangeName());
         add(order, x);
     }
 
-    public void pair(LimitOrder close, Exchange e1, LimitOrder open, Exchange e2) throws IOException {
+    public void pair(LimitOrder close, Exchange e1, LimitOrder open, Exchange e2) {
         assert !e1.equals(e2);
         CurrencyPair pair = close.getCurrencyPair();
         assert pair.equals(open.getCurrencyPair());
 
-        BigDecimal baseAmount = wallet.get(e1).get(pair.baseSymbol).add(wallet.get(e2).get(pair.baseSymbol));
-        BigDecimal cntrAmount = wallet.get(e1).get(pair.counterSymbol).add(wallet.get(e2).get(pair.counterSymbol));
+        Map<String, BigDecimal> w1 = context.get(e1).wallet;
+        Map<String, BigDecimal> w2 = context.get(e2).wallet;
+
+        BigDecimal baseAmount = w1.get(pair.baseSymbol).add(w2.get(pair.baseSymbol));
+        BigDecimal cntrAmount = w1.get(pair.counterSymbol).add(w2.get(pair.counterSymbol));
 
         open(open, e2);
         close(close, e1);
 
         BigDecimal price = close.getLimitPrice();
-        BigDecimal baseAmount2 = wallet.get(e1).get(pair.baseSymbol).add(wallet.get(e2).get(pair.baseSymbol));
-        BigDecimal cntrAmount2 = wallet.get(e1).get(pair.counterSymbol).add(wallet.get(e2).get(pair.counterSymbol));
+        BigDecimal baseAmount2 = w1.get(pair.baseSymbol).add(w2.get(pair.baseSymbol));
+        BigDecimal cntrAmount2 = w1.get(pair.counterSymbol).add(w2.get(pair.counterSymbol));
 
         log.info("before {} {}", baseAmount, pair.baseSymbol);
         log.info("before {} {}", cntrAmount, pair.counterSymbol);
@@ -70,11 +71,11 @@ public class Simulation {
 
     }
 
-    public void add(LimitOrder order, Exchange x) throws IOException {
+    public void add(LimitOrder order, Exchange x) {
         BigDecimal amountBase = order.getTradableAmount().negate();
         BigDecimal price = order.getLimitPrice();
 
-        BigDecimal fee = FeeHelper.getFeePercent(fees.get(x), order);
+        BigDecimal fee = context.get(x).feeService.getFeePercent(order.getCurrencyPair());
         price = FeeHelper.addPercent(price, fee);
 
         BigDecimal amountCounter = order.getTradableAmount().multiply(price, CurrencyPairUtil.c);
@@ -89,25 +90,20 @@ public class Simulation {
     }
 
     public void add(Exchange x, String currency, BigDecimal amount) {
-        Map<String, BigDecimal> account = wallet.get(x);
-        if (account == null) {
-            account = new HashMap<>();
-            wallet.put(x, account);
-        }
-
-        BigDecimal currentAmount = account.getOrDefault(currency, BigDecimal.ZERO);
-        account.put(currency, currentAmount.add(amount));
+        Map<String, BigDecimal> wallet = context.get(x).wallet;
+        BigDecimal currentAmount = wallet.getOrDefault(currency, BigDecimal.ZERO);
+        wallet.put(currency, currentAmount.add(amount));
     }
 
     public BigDecimal get(Exchange x, String currency) {
-        return wallet.get(x).get(currency);
+        return context.get(x).wallet.get(currency);
     }
 
     public void report() {
         Map<String, BigDecimal> totals = new HashMap<>();
-        for (Map.Entry<Exchange, Map<String, BigDecimal>> e : wallet.entrySet()) {
+        for (Map.Entry<Exchange, ExchangeCache> e : context.entrySet()) {
             log.info("{}", e.getKey().getExchangeSpecification().getExchangeName());
-            for (Map.Entry<String, BigDecimal> f : e.getValue().entrySet()) {
+            for (Map.Entry<String, BigDecimal> f : e.getValue().wallet.entrySet()) {
                 String currency = f.getKey();
                 BigDecimal amount = f.getValue();
                 log.info("{} = {}", currency, amount);

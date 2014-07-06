@@ -1,6 +1,7 @@
 package com.hashnot.fx.ext;
 
-import com.hashnot.fx.IFeeService;
+import com.hashnot.fx.spi.ConnectionException;
+import com.hashnot.fx.spi.ext.IFeeService;
 import com.xeiam.xchange.ExchangeSpecification;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.kraken.Kraken;
@@ -23,8 +24,12 @@ public class KrakenFeeService<T extends Kraken> extends KrakenBasePollingService
     }
 
     @Override
-    public BigDecimal getFeePercent(CurrencyPair pair) throws IOException {
+    public BigDecimal getFeePercent(CurrencyPair pair) {
+        try {
         KrakenTradeVolume tradeVolume = accountService.getTradeVolume(pair);
         return tradeVolume.getFees().get(createKrakenCurrencyPair(pair)).getFee();
+        } catch (IOException e) {
+            throw new ConnectionException(e);
+        }
     }
 }

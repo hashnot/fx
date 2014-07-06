@@ -10,7 +10,6 @@ import com.xeiam.xchange.ExchangeException;
 import com.xeiam.xchange.NotAvailableFromExchangeException;
 import com.xeiam.xchange.NotYetImplementedForExchangeException;
 import com.xeiam.xchange.currency.CurrencyPair;
-import com.xeiam.xchange.dto.ExchangeInfo;
 import com.xeiam.xchange.dto.marketdata.OrderBook;
 import com.xeiam.xchange.dto.marketdata.Ticker;
 import com.xeiam.xchange.dto.marketdata.Trades;
@@ -21,6 +20,7 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedList;
 
 import static com.xeiam.xchange.currency.Currencies.*;
@@ -67,17 +67,13 @@ public class KokosMarketDataService implements PollingMarketDataService {
         throw new NotYetImplementedForExchangeException();
     }
 
-    private static ExchangeInfo exchangeInfo = new ExchangeInfo(Arrays.asList(
+    private static Collection currencyPairs = Arrays.asList(
             new CurrencyPair(EUR, PLN),
             new CurrencyPair(USD, PLN),
             new CurrencyPair(GBP, PLN),
             new CurrencyPair(CHF, PLN)
-    ));
+    );
 
-    @Override
-    public ExchangeInfo getExchangeInfo() throws ExchangeException, IOException, NotAvailableFromExchangeException, NotYetImplementedForExchangeException {
-        return exchangeInfo;
-    }
 
     private static URL create(String spec) {
         try {
@@ -91,4 +87,8 @@ public class KokosMarketDataService implements PollingMarketDataService {
         return new CurrencyPair(cp.counterSymbol, cp.baseSymbol);
     }
 
+    @Override
+    public Collection<CurrencyPair> getExchangeSymbols() throws IOException {
+        return currencyPairs;
+    }
 }

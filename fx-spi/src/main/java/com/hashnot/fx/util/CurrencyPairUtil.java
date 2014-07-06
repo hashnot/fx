@@ -44,10 +44,6 @@ public class CurrencyPairUtil {
         return new CurrencyPair(cp.counterSymbol, cp.baseSymbol);
     }
 
-    public static List<LimitOrder> get(OrderBook orderBook, Order.OrderType dir) {
-        return dir == Order.OrderType.ASK ? orderBook.getAsks() : orderBook.getBids();
-    }
-
     public static int factor(Order.OrderType type) {
         return type == Order.OrderType.ASK ? 1 : -1;
     }

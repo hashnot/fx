@@ -1,6 +1,6 @@
 package com.hashnot.fx.ext;
 
-import com.hashnot.fx.IFeeService;
+import com.hashnot.fx.spi.ext.IFeeService;
 import com.xeiam.xchange.currency.CurrencyPair;
 
 import java.io.IOException;
@@ -20,7 +20,7 @@ public class BTCEFeeService implements IFeeService {
     }
 
     @Override
-    public BigDecimal getFeePercent(CurrencyPair pair) throws IOException {
+    public BigDecimal getFeePercent(CurrencyPair pair) {
         BigDecimal result = fees.get(pair);
         return result != null ? result : defaultFee;
     }
