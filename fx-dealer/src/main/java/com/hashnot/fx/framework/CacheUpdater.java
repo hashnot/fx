@@ -56,9 +56,7 @@ public class CacheUpdater implements Runnable {
                         update(evt.exchange, evt.orderBook, evt.orderBookPair);
             } catch (Throwable x) {
                 log.warn("Error", x);
-
             }
-
         }
 
         clear();
@@ -98,20 +96,15 @@ public class CacheUpdater implements Runnable {
     }
 
     private void update(Exchange exchange, OrderBook orderBook, CurrencyPair orderBookPair) {
-        if (!limitedEquals(exchange, orderBook, orderBookPair)) {
-            context.get(exchange).orderBooks.put(orderBookPair, orderBook);
+        ExchangeCache x = context.get(exchange);
+        Map<String, BigDecimal> limits = x.orderBookLimits;
+        OrderBooks.removeOverLimit(orderBook, limits.get(orderBookPair.baseSymbol), limits.get(orderBookPair.counterSymbol));
+        OrderBook current = x.orderBooks.get(orderBookPair);
+        if (current == null || !OrderBooks.equals(current, orderBook)) {
+            x.orderBooks.put(orderBookPair, orderBook);
             if (!outQueue.offer(new CacheUpdateEvent(exchange, Arrays.asList(orderBookPair))))
                 log.error("Could not add event to cache update queue");
         }
     }
-
-    private boolean limitedEquals(Exchange exchange, OrderBook orderBook, CurrencyPair orderBookPair) {
-        ExchangeCache x = context.get(exchange);
-        OrderBook current = x.orderBooks.get(orderBookPair);
-        BigDecimal counterLimit = x.orderBookLimits.get(orderBookPair.counterSymbol);
-        BigDecimal baseLimit = x.orderBookLimits.get(orderBookPair.baseSymbol);
-        return current != null && OrderBooks.limitedEquals(current, orderBook, baseLimit, counterLimit);
-    }
-
 
 }

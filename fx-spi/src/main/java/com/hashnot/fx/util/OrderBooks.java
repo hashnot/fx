@@ -12,29 +12,47 @@ import java.util.List;
  * @author Rafał Krupiński
  */
 public class OrderBooks {
-    public static boolean limitedEquals(OrderBook o1, OrderBook o2, BigDecimal baseLimit, BigDecimal counterLimit) {
-        return limitedEquals(o1.getAsks(), o2.getAsks(), counterLimit, Order.OrderType.ASK)
-                && limitedEquals(o1.getBids(), o2.getBids(), baseLimit, Order.OrderType.BID);
+
+    public static void removeOverLimit(OrderBook orderBook, BigDecimal baseLimit, BigDecimal counterLimit) {
+        int limit = amountIndex(orderBook, baseLimit, counterLimit);
+        removeOverIndex(orderBook.getAsks(), limit);
+        removeOverIndex(orderBook.getBids(), limit);
     }
 
-    private static boolean limitedEquals(List<LimitOrder> l1, List<LimitOrder> l2, BigDecimal limit, Order.OrderType type) {
-        BigDecimal total = BigDecimal.ZERO;
-        Iterator<LimitOrder> i1 = l1.iterator();
-        Iterator<LimitOrder> i2 = l2.iterator();
-        while (i1.hasNext() && i2.hasNext() && total.compareTo(limit) <= 0) {
-            LimitOrder o1 = i1.next();
-            LimitOrder o2 = i2.next();
-            if (!Orders.equals(o1, o2))
-                return false;
-            BigDecimal amount = o1.getTradableAmount();
-            if (type == Order.OrderType.BID)
-                amount = amount.multiply(o1.getLimitPrice());
-            total = total.add(amount);
-        }
-        return true;
+    private static void removeOverIndex(List<LimitOrder> orders, int limitIndex) {
+        for (int i = orders.size() - 1; i > limitIndex; i--)
+            orders.remove(i);
+    }
+
+    public static boolean equals(OrderBook o1, OrderBook o2) {
+        return o1.getAsks().equals(o2.getAsks()) && o1.getBids().equals(o2.getBids());
     }
 
     public static List<LimitOrder> get(OrderBook orderBook, Order.OrderType dir) {
         return dir == Order.OrderType.ASK ? orderBook.getAsks() : orderBook.getBids();
     }
+
+    private static int amountIndex(OrderBook orderBook, BigDecimal baseLimit, BigDecimal counterLimit) {
+        BigDecimal totalAsk = BigDecimal.ZERO;
+        BigDecimal totalBid = BigDecimal.ZERO;
+
+        Iterator<LimitOrder> ai = orderBook.getAsks().iterator();
+        Iterator<LimitOrder> bi = orderBook.getBids().iterator();
+        int i = -1;
+        while ((ai.hasNext() || bi.hasNext()) && (totalAsk.compareTo(counterLimit) <= 0 || totalBid.compareTo(baseLimit) <= 0)) {
+            ++i;
+
+            if (ai.hasNext()) {
+                LimitOrder order = ai.next();
+                totalAsk = totalAsk.add(order.getTradableAmount().multiply(order.getLimitPrice()));
+            }
+
+            if (bi.hasNext()) {
+                LimitOrder order = bi.next();
+                totalBid = totalBid.add(order.getTradableAmount());
+            }
+        }
+        return i;
+    }
+
 }
