@@ -20,4 +20,10 @@ public class ExchangeCache {
     public ExchangeCache(IFeeService feeService) {
         this.feeService = feeService;
     }
+
+    public void updateWallet(String currency, BigDecimal amount) {
+        BigDecimal currentAmount = wallet.getOrDefault(currency, BigDecimal.ZERO);
+        wallet.put(currency, currentAmount.add(amount));
+    }
+
 }

@@ -1,11 +1,9 @@
 package com.hashnot.fx.framework;
 
-import com.hashnot.fx.FeeHelper;
 import com.hashnot.fx.spi.ExchangeCache;
-import com.hashnot.fx.util.CurrencyPairUtil;
+import com.hashnot.fx.util.Orders;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
-import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,8 +11,9 @@ import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+
+import static java.math.BigDecimal.ZERO;
 
 /**
  * @author Rafał Krupiński
@@ -25,89 +24,95 @@ public class Simulation {
     MathContext c = new MathContext(8, RoundingMode.HALF_UP);
     final private Map<Exchange, ExchangeCache> context;
 
+    final private Map<Exchange, List<LimitOrder>> batch = new HashMap<>();
+
     public Simulation(Map<Exchange, ExchangeCache> context) {
         this.context = context;
     }
 
-    public void close(LimitOrder order, Exchange x) {
-        LimitOrder close = new LimitOrder(CurrencyPairUtil.revert(order.getType()), order.getTradableAmount(), order.getCurrencyPair(), null, null, order.getLimitPrice());
-        log.info("close {} @{}", order, x.getExchangeSpecification().getExchangeName());
-        add(close, x);
+    public boolean add(LimitOrder order, Exchange x) {
+        if (batch.isEmpty())
+            throw new IllegalStateException("First call on the Simulation must be add(LimitOrder, Exchange, LimitOrder, Exchange)");
+        if (!checkFunds(order, x))
+            return false;
+
+        _add(order, x);
+        return true;
     }
 
-    public void open(LimitOrder order, Exchange x) {
-        log.info("open {} @{}", order, x.getExchangeSpecification().getExchangeName());
-        add(order, x);
-    }
+    public boolean add(LimitOrder o1, Exchange e1, LimitOrder o2, Exchange e2) {
+        if (!batch.isEmpty())
+            log.warn("Unexpected add on non-empty batch");
 
-    public void pair(LimitOrder close, Exchange e1, LimitOrder open, Exchange e2) {
-        assert !e1.equals(e2);
-        CurrencyPair pair = close.getCurrencyPair();
-        assert pair.equals(open.getCurrencyPair());
+        CurrencyPair pair = o1.getCurrencyPair();
+        assert pair.equals(o2.getCurrencyPair()) : "transactions must involve single currency pair";
 
-        Map<String, BigDecimal> w1 = context.get(e1).wallet;
-        Map<String, BigDecimal> w2 = context.get(e2).wallet;
+        //ensure different exchanges
+        if (e1.equals(e2))
+            throw new IllegalArgumentException("Orders must be executed on different exchanges");
 
-        BigDecimal baseAmount = w1.get(pair.baseSymbol).add(w2.get(pair.baseSymbol));
-        BigDecimal cntrAmount = w1.get(pair.counterSymbol).add(w2.get(pair.counterSymbol));
+        //ensure opposite OrderType
+        if (o1.getType() == o2.getType())
+            throw new IllegalArgumentException("Orders must have opposite OrderType");
 
-        open(open, e2);
-        close(close, e1);
+        if (ZERO.equals(o1.getLimitPrice()) || ZERO.equals(o1.getTradableAmount()) || ZERO.equals(o2.getLimitPrice()) || ZERO.equals(o2.getTradableAmount()))
+            throw new IllegalArgumentException("No ZERO allowed");
 
-        BigDecimal price = close.getLimitPrice();
-        BigDecimal baseAmount2 = w1.get(pair.baseSymbol).add(w2.get(pair.baseSymbol));
-        BigDecimal cntrAmount2 = w1.get(pair.counterSymbol).add(w2.get(pair.counterSymbol));
-
-        log.info("before {} {}", baseAmount, pair.baseSymbol);
-        log.info("before {} {}", cntrAmount, pair.counterSymbol);
-        BigDecimal valueBefore = cntrAmount.add(baseAmount.multiply(price, c));
-        log.info("estimt {} {}", valueBefore, pair.counterSymbol);
-
-        log.info("after {} {}", baseAmount2, pair.baseSymbol);
-        log.info("after {} {}", cntrAmount2, pair.counterSymbol);
-        BigDecimal valueAfter = cntrAmount2.add(baseAmount2.multiply(price, c));
-        log.info("estimt {} {}", valueAfter, pair.counterSymbol);
-        log.info("diffEst {}", valueAfter.subtract(valueBefore).toPlainString());
-
-    }
-
-    public void add(LimitOrder order, Exchange x) {
-        BigDecimal amountBase = order.getTradableAmount().negate();
-        BigDecimal price = order.getLimitPrice();
-
-        BigDecimal fee = context.get(x).feeService.getFeePercent(order.getCurrencyPair());
-        price = FeeHelper.addPercent(price, fee);
-
-        BigDecimal amountCounter = order.getTradableAmount().multiply(price, CurrencyPairUtil.c);
-
-        if (order.getType() == Order.OrderType.BID) {
-            amountBase = amountBase.negate();
-            amountCounter = amountCounter.negate();
+        //ensure profitable
+        if (o1.getNetPrice().compareTo(o2.getNetPrice()) * Orders.factor(o1.getType()) < 0) {
+            log.debug("Transactions not profitable");
+            return false;
         }
 
-        add(x, order.getCurrencyPair().baseSymbol, amountBase);
-        add(x, order.getCurrencyPair().counterSymbol, amountCounter);
+        //ensure funds
+        if (!checkFunds(o1, e1)) {
+            return false;
+        } else if (!checkFunds(o2, e2)) {
+            return false;
+        }
+
+        //execute
+        _add(o1, e1);
+        _add(o2, e2);
+
+        return true;
     }
 
-    public void add(Exchange x, String currency, BigDecimal amount) {
-        Map<String, BigDecimal> wallet = context.get(x).wallet;
-        BigDecimal currentAmount = wallet.getOrDefault(currency, BigDecimal.ZERO);
-        wallet.put(currency, currentAmount.add(amount));
+    private boolean checkFunds(LimitOrder order, Exchange exchange) {
+        Map<String, BigDecimal> wallet = context.get(exchange).wallet;
+        String currency = Orders.outgoingCurrency(order);
+        BigDecimal current = wallet.get(currency);
+        if (current == null || current.equals(ZERO)) {
+            log.debug("No funds @{}", exchange);
+            return false;
+        }
+
+        BigDecimal total = ZERO;
+        for (LimitOrder o2 : batch.getOrDefault(exchange, Collections.emptyList())) {
+            if (order.getType() != o2.getType())
+                throw new IllegalArgumentException("Non-matching OrderType");
+            total = total.add(Orders.outgoingAmount(o2));
+        }
+        boolean result = total.compareTo(current) <= 0;
+        if (!result)
+            log.debug("Insufficient funds @{}", exchange);
+        return result;
     }
 
-    public BigDecimal get(Exchange x, String currency) {
-        return context.get(x).wallet.get(currency);
+    protected void _add(LimitOrder order, Exchange exchange) {
+        log.info("open {} @{}", order, exchange);
+        batch.computeIfAbsent(exchange, y -> new LinkedList<>()).add(order);
     }
 
     public void report() {
         Map<String, BigDecimal> totals = new HashMap<>();
         for (Map.Entry<Exchange, ExchangeCache> e : context.entrySet()) {
-            log.info("{}", e.getKey().getExchangeSpecification().getExchangeName());
+            log.info("{}", e.getKey());
             for (Map.Entry<String, BigDecimal> f : e.getValue().wallet.entrySet()) {
                 String currency = f.getKey();
                 BigDecimal amount = f.getValue();
                 log.info("{} = {}", currency, amount);
-                BigDecimal current = totals.getOrDefault(currency, BigDecimal.ZERO);
+                BigDecimal current = totals.getOrDefault(currency, ZERO);
                 totals.put(currency, current.add(amount));
             }
         }
@@ -115,5 +120,18 @@ public class Simulation {
         for (Map.Entry<String, BigDecimal> e : totals.entrySet())
             log.info("{} = {}", e.getKey(), e.getValue());
         log.info("=== End ===");
+    }
+
+    public Map<Exchange, ExchangeCache> getContext() {
+        return context;
+    }
+
+    public void apply(Queue<OrderUpdateEvent> outQueue) {
+        for (Map.Entry<Exchange, List<LimitOrder>> e : batch.entrySet()) {
+            for (LimitOrder order : e.getValue()) {
+                outQueue.add(new OrderUpdateEvent(e.getKey(), order));
+            }
+        }
+        batch.clear();
     }
 }

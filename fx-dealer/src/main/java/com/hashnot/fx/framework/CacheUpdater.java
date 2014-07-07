@@ -43,20 +43,20 @@ public class CacheUpdater implements Runnable {
         inQueue.drainTo(localQueue);
         log.debug("Got {} events", localQueue.size());
 
-        for (int i = localQueue.size() - 1; i >= 0; i--) {
-            ExchangeUpdateEvent evt = localQueue.get(i);
+        try {
+            for (int i = localQueue.size() - 1; i >= 0; i--) {
+                ExchangeUpdateEvent evt = localQueue.get(i);
 
-            if (evt.accountInfo != null) {
-                if (processedAccounts.add(evt.exchange))
-                    update(evt.exchange, evt.accountInfo);
-            }
-            try {
+                if (evt.accountInfo != null) {
+                    if (processedAccounts.add(evt.exchange))
+                        update(evt.exchange, evt.accountInfo);
+                }
                 if (evt.orderBook != null)
                     if (processedOrderBooks.add(evt.exchange))
                         update(evt.exchange, evt.orderBook, evt.orderBookPair);
-            } catch (Throwable x) {
-                log.warn("Error", x);
             }
+        } catch (Throwable x) {
+            log.warn("Error", x);
         }
 
         clear();
@@ -92,7 +92,7 @@ public class CacheUpdater implements Runnable {
         log.debug("Changed pairs @{}: {}", exchange, affectedPairs);
 
         if (!outQueue.offer(new CacheUpdateEvent(exchange, affectedPairs)))
-            log.error("Could not add event to cache update queue");
+            log.error("Could not updateWallet event to cache update queue");
     }
 
     private void update(Exchange exchange, OrderBook orderBook, CurrencyPair orderBookPair) {
@@ -101,10 +101,10 @@ public class CacheUpdater implements Runnable {
         OrderBooks.removeOverLimit(orderBook, limits.get(orderBookPair.baseSymbol), limits.get(orderBookPair.counterSymbol));
         OrderBook current = x.orderBooks.get(orderBookPair);
         if (current == null || !OrderBooks.equals(current, orderBook)) {
-            OrderBooks.updateNetPrices(x, orderBookPair);
             x.orderBooks.put(orderBookPair, orderBook);
+            OrderBooks.updateNetPrices(x, orderBookPair);
             if (!outQueue.offer(new CacheUpdateEvent(exchange, Arrays.asList(orderBookPair))))
-                log.error("Could not add event to cache update queue");
+                log.error("Could not updateWallet event to cache update queue");
         }
     }
 

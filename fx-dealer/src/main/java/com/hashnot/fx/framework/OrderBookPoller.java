@@ -36,7 +36,7 @@ public class OrderBookPoller implements Runnable {
                 log.debug("Got {} asks and {} bids from {}", result.getAsks().size(), result.getBids().size(), exchange);
                 outQueue.add(new ExchangeUpdateEvent(exchange, pair, result));
             } catch (IOException e) {
-                log.error("could not poll for order book from {}", exchange.getExchangeSpecification().getExchangeName(), e);
+                log.error("could not poll for order book from {}", exchange, e);
             }
         }
     }

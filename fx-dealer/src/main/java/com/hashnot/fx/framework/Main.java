@@ -62,8 +62,19 @@ public class Main {
         scheduler.execute(new Dealer(context, simulation, cacheUpdateQueue, orderUpdates));
         scheduler.scheduleAtFixedRate(new StatusMonitor(updates, cacheUpdateQueue, orderUpdates), 0, 200, TimeUnit.MILLISECONDS);
 
+        scheduler.execute(() -> {
+            try {
+                while (true) {
+                    OrderUpdateEvent e = orderUpdates.take();
+                    log.info("{}", e);
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
 
-        Thread.sleep(60000);
+
+        Thread.sleep(10000);
         scheduler.shutdown();
         scheduler.awaitTermination(2, TimeUnit.SECONDS);
         scheduler.shutdownNow();

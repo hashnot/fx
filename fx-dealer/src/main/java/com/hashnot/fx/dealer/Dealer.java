@@ -1,10 +1,10 @@
 package com.hashnot.fx.dealer;
 
-import com.hashnot.fx.FeeHelper;
 import com.hashnot.fx.framework.CacheUpdateEvent;
 import com.hashnot.fx.framework.OrderUpdateEvent;
 import com.hashnot.fx.framework.Simulation;
 import com.hashnot.fx.spi.ExchangeCache;
+import com.hashnot.fx.util.Orders;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
@@ -45,16 +45,20 @@ public class Dealer implements Runnable {
 
     @Override
     public void run() {
+        Thread.currentThread().setName("Dealer");
         try {
             while (cont) {
                 CacheUpdateEvent evt = inQueue.poll(100, TimeUnit.MILLISECONDS);
                 if (evt == null) continue;
 
-                inQueue.add(evt);
+                localQueue.add(evt);
                 inQueue.drainTo(localQueue);
                 process();
                 clear();
             }
+        } catch (RuntimeException | Error e) {
+            log.error("Error", e);
+            throw e;
         } catch (InterruptedException e) {
             log.error("Interrupted", e);
         }
@@ -83,10 +87,11 @@ public class Dealer implements Runnable {
             updateLimitOrders(pair, dirtyExchanges, Order.OrderType.ASK);
             updateLimitOrders(pair, dirtyExchanges, Order.OrderType.BID);
         }
+        simulation.apply(outQueue);
     }
 
     private SortedMap<LimitOrder, Exchange> getBestOffers(CurrencyPair pair, Collection<Exchange> exchanges, Order.OrderType dir) {
-        SortedMap<LimitOrder, Exchange> result = new TreeMap<>();
+        SortedMap<LimitOrder, Exchange> result = new TreeMap<>((o1, o2) -> o1.getNetPrice().compareTo(o2.getNetPrice()) * Orders.factor(o1.getType()));
         for (Exchange x : exchanges) {
             List<LimitOrder> orders = get(context.get(x).orderBooks.get(pair), dir);
             if (!orders.isEmpty())
@@ -104,7 +109,7 @@ public class Dealer implements Runnable {
         // - limitu stanu konta
         // - limitu różnicy ceny
 
-        SortedMap<LimitOrder, Exchange> bestOrders = getBestOffers(pair, exchanges, type);
+        Map<LimitOrder, Exchange> bestOrders = getBestOffers(pair, exchanges, type);
         if (bestOrders.size() < 2) {
             clearOrders(pair);
             return;
@@ -114,7 +119,8 @@ public class Dealer implements Runnable {
         for (int i = 0; i < bestOrdersList.size(); i++) {
             Map.Entry<LimitOrder, Exchange> best = bestOrdersList.get(i);
             Exchange bestExchange = best.getValue();
-            List<LimitOrder> bestXOrders = get(context.get(bestExchange).orderBooks.get(pair), type);
+            ExchangeCache bestX = context.get(bestExchange);
+            List<LimitOrder> bestXOrders = get(bestX.orderBooks.get(pair), type);
             for (int j = i + 1; j < bestOrdersList.size(); j++) {
                 Map.Entry<LimitOrder, Exchange> worse = bestOrdersList.get(j);
                 LimitOrder worseOrder = worse.getKey();
@@ -127,8 +133,12 @@ public class Dealer implements Runnable {
                 Exchange worseExchange = worse.getValue();
 
                 for (LimitOrder order : bestXOrders) {
-                    log.info("best: {} @{}", order, bestExchange);
-                    if (compareOrders(worseOrder, order, worseExchange, bestExchange) >= 0) {
+                    //log.info("best: {} @{}", order, bestExchange);
+
+                    BigDecimal openNetPrice = getNetPrice(order, bestX);
+                    int cmp = worseOrder.getNetPrice().compareTo(openNetPrice) * Orders.factor(worseOrder.getType());
+                    log.debug("{} <=> {} --> {} <=> {} = {}", worseOrder.getLimitPrice(), order.getLimitPrice(), worseOrder.getNetPrice(), openNetPrice, cmp);
+                    if (cmp >= 0) {
                         amount = amount.add(order.getTradableAmount());
                         if (amount.compareTo(worseOrder.getTradableAmount()) > 0) break;
                         dealAmount = dealAmount.add(worseOrder.getTradableAmount());
@@ -142,31 +152,17 @@ public class Dealer implements Runnable {
                 if (dealAmount != BigDecimal.ZERO) {
                     //TODO change limit price
                     LimitOrder myOrder = new LimitOrder(worseOrder.getType(), dealAmount, worseOrder.getCurrencyPair(), null, null, worseOrder.getLimitPrice());
-                    LimitOrder open = new LimitOrder(worseOrder.getType(), dealAmount, worseOrder.getCurrencyPair(), null, null, openPrice);
-                    simulation.pair(open, bestExchange, myOrder, worseExchange);
+                    myOrder.setNetPrice(getNetPrice(myOrder, context.get(worseExchange)));
+                    LimitOrder close = new LimitOrder(Orders.revert(worseOrder.getType()), dealAmount, worseOrder.getCurrencyPair(), null, null, openPrice);
+                    close.setNetPrice(getNetPrice(close, bestX));
+                    simulation.add(close, bestExchange, myOrder, worseExchange);
                 }
             }
         }
     }
 
-    private int compareOrders(LimitOrder o1, LimitOrder o2, Exchange e1, Exchange e2) {
-        //if(true) return o1.compareTo(o2);
-        BigDecimal feePercent = context.get(e1).feeService.getFeePercent(o1.getCurrencyPair());
-        feePercent = feePercent.add(context.get(e2).feeService.getFeePercent(o2.getCurrencyPair()));
-
-        BigDecimal p1 = o1.getLimitPrice();
-        BigDecimal p2 = o2.getLimitPrice();
-        int cmp = p1.compareTo(p2);
-
-
-        if (cmp <= 0)
-            p1 = FeeHelper.addPercent(p1, feePercent);
-        else
-            p2 = FeeHelper.addPercent(p2, feePercent);
-
-        int result = p1.compareTo(p2) * (o1.getType() == Order.OrderType.BID ? -1 : 1);
-        log.debug("{} <=> {} --> {} <=> {} = {}", o1.getLimitPrice(), o2.getLimitPrice(), p1, p2, result);
-        return result;
+    private static BigDecimal getNetPrice(LimitOrder order, ExchangeCache bestX) {
+        return Orders.getNetPrice(order.getLimitPrice(), Orders.revert(order.getType()), bestX.feeService.getFeePercent(order.getCurrencyPair()));
     }
 
     private static final Logger log = LoggerFactory.getLogger(Dealer.class);
