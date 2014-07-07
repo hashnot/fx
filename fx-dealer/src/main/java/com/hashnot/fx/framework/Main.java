@@ -3,8 +3,8 @@ package com.hashnot.fx.framework;
 import com.hashnot.fx.dealer.Dealer;
 import com.hashnot.fx.ext.BTCEFeeService;
 import com.hashnot.fx.ext.StaticFeeService;
-import com.hashnot.fx.spi.ext.IFeeService;
-import com.hashnot.fx.spi.*;
+import com.hashnot.fx.spi.ExchangeCache;
+import com.hashnot.fx.spi.ExchangeUpdateEvent;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.bitcurex.BitcurexExchange;
 import com.xeiam.xchange.btce.v3.BTCEExchange;
@@ -15,7 +15,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.*;
 
 import static com.xeiam.xchange.currency.Currencies.BTC;
@@ -56,20 +59,19 @@ public class Main {
             ;
         }
 
-        //TODO integrate CacheUpdater with Dealer
-        scheduler.scheduleAtFixedRate(new CacheUpdater(context, updates, cacheUpdateQueue), 150, 100, TimeUnit.MILLISECONDS);
         Simulation simulation = new Simulation(context);
-        scheduler.execute(new Dealer(context, simulation, cacheUpdateQueue, orderUpdates));
+        Dealer dealer = new Dealer(context, simulation, orderUpdates);
+        scheduler.execute(new CacheUpdater(context, updates, dealer));
         scheduler.scheduleAtFixedRate(new StatusMonitor(updates, cacheUpdateQueue, orderUpdates), 0, 200, TimeUnit.MILLISECONDS);
 
         scheduler.execute(() -> {
             try {
                 while (true) {
                     OrderUpdateEvent e = orderUpdates.take();
-                    log.info("{}", e);
+                    log.info("(Not) sending {}", e);
                 }
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                log.error("Interrupted", e);
             }
         });
 
@@ -102,8 +104,4 @@ public class Main {
         return exchange;
     }
 
-    private static void createExchange(Map<Exchange, IFeeService> feeServiceMap, Exchange exchange, IFeeService feeService) {
-        defaultExchange(exchange);
-        feeServiceMap.put(exchange, feeService);
-    }
 }

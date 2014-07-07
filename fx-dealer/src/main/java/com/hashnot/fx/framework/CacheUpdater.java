@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Rafał Krupiński
@@ -24,29 +25,42 @@ public class CacheUpdater implements Runnable {
     private static final BigDecimal LIMIT_MULTIPLIER = new BigDecimal(2);
     private final Map<Exchange, ExchangeCache> context;
     private final BlockingQueue<ExchangeUpdateEvent> inQueue;
-    private final BlockingQueue<CacheUpdateEvent> outQueue;
+    private final ICacheUpdateListener listener;
 
-    public CacheUpdater(Map<Exchange, ExchangeCache> context, BlockingQueue<ExchangeUpdateEvent> inQueue, BlockingQueue<CacheUpdateEvent> outQueue) {
+    public CacheUpdater(Map<Exchange, ExchangeCache> context, BlockingQueue<ExchangeUpdateEvent> inQueue, ICacheUpdateListener listener) {
         this.context = context;
         this.inQueue = inQueue;
-        this.outQueue = outQueue;
+        this.listener = listener;
     }
 
     private final ArrayList<ExchangeUpdateEvent> localQueue = new ArrayList<>(2 << 8);
     private final Set<Exchange> processedAccounts = new HashSet<>();
     private final Set<Exchange> processedOrderBooks = new HashSet<>();
     private final Set<String> affectedCurrencies = new HashSet<>();
-    private final Set<CurrencyPair> affectedPairs = new HashSet<>();
+    private final Collection<CurrencyPair> affectedPairs = new ArrayList<>(2 << 4);
 
     @Override
     public void run() {
-        inQueue.drainTo(localQueue);
-        log.debug("Got {} events", localQueue.size());
-
         try {
-            for (int i = localQueue.size() - 1; i >= 0; i--) {
-                ExchangeUpdateEvent evt = localQueue.get(i);
+            while (true) {
+                ExchangeUpdateEvent evt = inQueue.poll(100, TimeUnit.MILLISECONDS);
+                if (evt == null) continue;
+                localQueue.add(evt);
+                inQueue.drainTo(localQueue);
+                log.debug("Got {} events", localQueue.size());
 
+                process();
+
+                clear();
+            }
+        } catch (InterruptedException e) {
+            log.error("Interrupted", e);
+        }
+    }
+
+    protected void process() {
+        try {
+            for (ExchangeUpdateEvent evt : localQueue) {
                 if (evt.accountInfo != null) {
                     if (processedAccounts.add(evt.exchange))
                         update(evt.exchange, evt.accountInfo);
@@ -59,7 +73,10 @@ public class CacheUpdater implements Runnable {
             log.warn("Error", x);
         }
 
-        clear();
+        if (!affectedPairs.isEmpty()) {
+            log.debug("Changed pairs {}", affectedPairs);
+            listener.cacheUpdated(affectedPairs);
+        }
     }
 
     protected void clear() {
@@ -88,11 +105,6 @@ public class CacheUpdater implements Runnable {
                     affectedPairs.add(pair);
             }
         }
-
-        log.debug("Changed pairs @{}: {}", exchange, affectedPairs);
-
-        if (!outQueue.offer(new CacheUpdateEvent(exchange, affectedPairs)))
-            log.error("Could not updateWallet event to cache update queue");
     }
 
     private void update(Exchange exchange, OrderBook orderBook, CurrencyPair orderBookPair) {
@@ -103,8 +115,7 @@ public class CacheUpdater implements Runnable {
         if (current == null || !OrderBooks.equals(current, orderBook)) {
             x.orderBooks.put(orderBookPair, orderBook);
             OrderBooks.updateNetPrices(x, orderBookPair);
-            if (!outQueue.offer(new CacheUpdateEvent(exchange, Arrays.asList(orderBookPair))))
-                log.error("Could not updateWallet event to cache update queue");
+            affectedPairs.add(orderBookPair);
         }
     }
 

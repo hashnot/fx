@@ -1,6 +1,6 @@
 package com.hashnot.fx.dealer;
 
-import com.hashnot.fx.framework.CacheUpdateEvent;
+import com.hashnot.fx.framework.ICacheUpdateListener;
 import com.hashnot.fx.framework.OrderUpdateEvent;
 import com.hashnot.fx.framework.Simulation;
 import com.hashnot.fx.spi.ExchangeCache;
@@ -15,65 +15,44 @@ import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 import static com.hashnot.fx.util.OrderBooks.get;
 
 /**
  * @author Rafał Krupiński
  */
-public class Dealer implements Runnable {
+public class Dealer implements ICacheUpdateListener {
 
     private final Map<Exchange, ExchangeCache> context;
-    private volatile boolean cont = true;
 
     public Simulation simulation;
 
-    public Dealer(Map<Exchange, ExchangeCache> context, Simulation simulation, BlockingQueue<CacheUpdateEvent> inQueue, BlockingQueue<OrderUpdateEvent> outQueue) {
+    public Dealer(Map<Exchange, ExchangeCache> context, Simulation simulation, BlockingQueue<OrderUpdateEvent> outQueue) {
         this.context = context;
         this.simulation = simulation;
-        this.inQueue = inQueue;
         this.outQueue = outQueue;
     }
 
-    final private BlockingQueue<CacheUpdateEvent> inQueue;
     final private BlockingQueue<OrderUpdateEvent> outQueue;
 
-    final private ArrayList<CacheUpdateEvent> localQueue = new ArrayList<>(2 << 8);
-    final private Collection<CurrencyPair> dirtyPairs = new HashSet<>();
     final private Collection<Exchange> dirtyExchanges = new HashSet<>();
 
     @Override
-    public void run() {
-        Thread.currentThread().setName("Dealer");
+    public void cacheUpdated(Collection<CurrencyPair> pairs) {
         try {
-            while (cont) {
-                CacheUpdateEvent evt = inQueue.poll(100, TimeUnit.MILLISECONDS);
-                if (evt == null) continue;
-
-                localQueue.add(evt);
-                inQueue.drainTo(localQueue);
-                process();
-                clear();
-            }
+            process(pairs);
+            clear();
         } catch (RuntimeException | Error e) {
             log.error("Error", e);
             throw e;
-        } catch (InterruptedException e) {
-            log.error("Interrupted", e);
         }
     }
 
     protected void clear() {
-        localQueue.clear();
-        dirtyPairs.clear();
         dirtyExchanges.clear();
     }
 
-    protected void process() {
-        for (CacheUpdateEvent evt : localQueue)
-            dirtyPairs.addAll(evt.pairs);
-
+    protected void process(Collection<CurrencyPair> dirtyPairs) {
         for (CurrencyPair pair : dirtyPairs) {
             for (Map.Entry<Exchange, ExchangeCache> e : context.entrySet()) {
                 if (e.getValue().orderBooks.containsKey(pair))
