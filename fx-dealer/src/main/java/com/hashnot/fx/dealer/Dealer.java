@@ -4,6 +4,7 @@ import com.hashnot.fx.framework.ICacheUpdateListener;
 import com.hashnot.fx.framework.OrderUpdateEvent;
 import com.hashnot.fx.framework.Simulation;
 import com.hashnot.fx.spi.ExchangeCache;
+import com.hashnot.fx.spi.ext.IFeeService;
 import com.hashnot.fx.util.Orders;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
@@ -17,6 +18,7 @@ import java.util.*;
 import java.util.concurrent.BlockingQueue;
 
 import static com.hashnot.fx.util.OrderBooks.get;
+import static com.hashnot.fx.util.Orders.closing;
 
 /**
  * @author Rafał Krupiński
@@ -66,7 +68,6 @@ public class Dealer implements ICacheUpdateListener {
             updateLimitOrders(pair, dirtyExchanges, Order.OrderType.ASK);
             updateLimitOrders(pair, dirtyExchanges, Order.OrderType.BID);
         }
-        simulation.apply(outQueue);
     }
 
     private SortedMap<LimitOrder, Exchange> getBestOffers(CurrencyPair pair, Collection<Exchange> exchanges, Order.OrderType dir) {
@@ -88,56 +89,35 @@ public class Dealer implements ICacheUpdateListener {
         // - limitu stanu konta
         // - limitu różnicy ceny
 
-        Map<LimitOrder, Exchange> bestOrders = getBestOffers(pair, exchanges, type);
+        SortedMap<LimitOrder, Exchange> bestOrders = getBestOffers(pair, exchanges, type);
         if (bestOrders.size() < 2) {
             clearOrders(pair);
             return;
         }
 
         List<Map.Entry<LimitOrder, Exchange>> bestOrdersList = new ArrayList<>(bestOrders.entrySet());
-        for (int i = 0; i < bestOrdersList.size(); i++) {
-            Map.Entry<LimitOrder, Exchange> best = bestOrdersList.get(i);
-            Exchange bestExchange = best.getValue();
-            ExchangeCache bestX = context.get(bestExchange);
-            List<LimitOrder> bestXOrders = get(bestX.orderBooks.get(pair), type);
-            for (int j = i + 1; j < bestOrdersList.size(); j++) {
-                Map.Entry<LimitOrder, Exchange> worse = bestOrdersList.get(j);
-                LimitOrder worseOrder = worse.getKey();
-                log.info("worse: {} @{}", worseOrder, worse.getValue());
 
-                BigDecimal amount = BigDecimal.ZERO;
-                BigDecimal dealAmount = BigDecimal.ZERO;
-                BigDecimal openPrice = null;
+        Map.Entry<LimitOrder, Exchange> best = bestOrdersList.get(0);
+        LimitOrder worstOrder = bestOrders.lastKey();
+        Exchange worstExchange = bestOrders.get(worstOrder);
+        IFeeService bestXFeeService = context.get(best.getValue()).feeService;
+        if (!simulation.add(closing(best.getKey(), bestXFeeService), best.getValue(), worstOrder, worstExchange))
+            return;
 
-                Exchange worseExchange = worse.getValue();
-
-                for (LimitOrder order : bestXOrders) {
-                    //log.info("best: {} @{}", order, bestExchange);
-
-                    BigDecimal openNetPrice = getNetPrice(order, bestX);
-                    int cmp = worseOrder.getNetPrice().compareTo(openNetPrice) * Orders.factor(worseOrder.getType());
-                    log.debug("{} <=> {} --> {} <=> {} = {}", worseOrder.getLimitPrice(), order.getLimitPrice(), worseOrder.getNetPrice(), openNetPrice, cmp);
-                    if (cmp >= 0) {
-                        amount = amount.add(order.getTradableAmount());
-                        if (amount.compareTo(worseOrder.getTradableAmount()) > 0) break;
-                        dealAmount = dealAmount.add(worseOrder.getTradableAmount());
-                        openPrice = order.getLimitPrice();
-                        log.info("better: {} @{}", order, bestExchange);
-                        break;
-                    } else
-                        break;
-                }
-
-                if (dealAmount != BigDecimal.ZERO) {
-                    //TODO change limit price
-                    LimitOrder myOrder = new LimitOrder(worseOrder.getType(), dealAmount, worseOrder.getCurrencyPair(), null, null, worseOrder.getLimitPrice());
-                    myOrder.setNetPrice(getNetPrice(myOrder, context.get(worseExchange)));
-                    LimitOrder close = new LimitOrder(Orders.revert(worseOrder.getType()), dealAmount, worseOrder.getCurrencyPair(), null, null, openPrice);
-                    close.setNetPrice(getNetPrice(close, bestX));
-                    simulation.add(close, bestExchange, myOrder, worseExchange);
-                }
-            }
+        for (LimitOrder order : get(context.get(best.getValue()).orderBooks.get(pair), type)) {
+            if (order == best.getKey())
+                continue;
+            if (!simulation.add(closing(order, bestXFeeService), best.getValue()))
+                break;
         }
+
+        for (LimitOrder order : get(context.get(worstExchange).orderBooks.get(pair), type)) {
+            if (order == worstOrder)
+                continue;
+            if (!simulation.add(order, worstExchange))
+                break;
+        }
+        simulation.apply(outQueue);
     }
 
     private static BigDecimal getNetPrice(LimitOrder order, ExchangeCache bestX) {

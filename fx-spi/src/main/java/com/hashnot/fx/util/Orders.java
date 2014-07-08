@@ -1,8 +1,11 @@
 package com.hashnot.fx.util;
 
+import com.hashnot.fx.spi.ext.IFeeService;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.trade.LimitOrder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -12,6 +15,7 @@ import java.math.RoundingMode;
  * @author Rafał Krupiński
  */
 public class Orders {
+    final private static Logger log = LoggerFactory.getLogger(Orders.class);
     public static final BigDecimal _ONE = BigDecimal.ONE.negate();
     public static MathContext c = new MathContext(8, RoundingMode.HALF_UP);
 
@@ -45,6 +49,13 @@ public class Orders {
 
     public static LimitOrder closing(LimitOrder order) {
         return new LimitOrder(revert(order.getType()), order.getTradableAmount(), order.getCurrencyPair(), null, null, order.getLimitPrice());
+    }
+
+    public static LimitOrder closing(LimitOrder order, IFeeService feeService) {
+        LimitOrder result = closing(order);
+        if (order.getNetPrice() != null)
+            result.setNetPrice(getNetPrice(result, FeeHelper.getFeePercent(feeService, result)));
+        return result;
     }
 
     public static BigDecimal getNetPrice(LimitOrder order, BigDecimal feePercent) {
@@ -81,5 +92,14 @@ public class Orders {
         } else {
             return order.getTradableAmount().multiply(order.getLimitPrice());
         }
+    }
+
+    public static boolean isProfitable(LimitOrder o1, LimitOrder o2) {
+        if (o1.getType() == o2.getType())
+            throw new IllegalArgumentException("Orders in the same direction");
+        boolean result = o1.getNetPrice().compareTo(o2.getNetPrice()) * factor(o1.getType()) >= 0;
+        if (!result)
+            log.debug("Transactions not profitable");
+        return result;
     }
 }

@@ -13,6 +13,7 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.*;
 
+import static com.hashnot.fx.util.Orders.isProfitable;
 import static java.math.BigDecimal.ZERO;
 
 /**
@@ -36,6 +37,15 @@ public class Simulation {
         if (!checkFunds(order, x))
             return false;
 
+        //check profitable
+        for (Map.Entry<Exchange, List<LimitOrder>> e : batch.entrySet()) {
+            if (e.getKey() == x) continue;
+            LimitOrder o2 = e.getValue().get(0);
+            if (!isProfitable(order, o2)) {
+                return false;
+            }
+        }
+
         _add(order, x);
         return true;
     }
@@ -56,20 +66,16 @@ public class Simulation {
             throw new IllegalArgumentException("Orders must have opposite OrderType");
 
         if (ZERO.equals(o1.getLimitPrice()) || ZERO.equals(o1.getTradableAmount()) || ZERO.equals(o2.getLimitPrice()) || ZERO.equals(o2.getTradableAmount()))
-            throw new IllegalArgumentException("No ZERO allowed");
+            throw new IllegalArgumentException("No zero allowed");
 
         //ensure profitable
-        if (o1.getNetPrice().compareTo(o2.getNetPrice()) * Orders.factor(o1.getType()) < 0) {
-            log.debug("Transactions not profitable");
+        if (!isProfitable(o1, o2)) {
             return false;
         }
 
         //ensure funds
-        if (!checkFunds(o1, e1)) {
+        if (!checkFunds(o1, e1) || !checkFunds(o2, e2))
             return false;
-        } else if (!checkFunds(o2, e2)) {
-            return false;
-        }
 
         //execute
         _add(o1, e1);
