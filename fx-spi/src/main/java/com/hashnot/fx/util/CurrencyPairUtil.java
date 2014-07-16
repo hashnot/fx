@@ -30,7 +30,11 @@ public class CurrencyPairUtil {
             throw new IllegalArgumentException("Neither is a base currency");
 
         return baseIdx < quotIDx;
+    }
 
+    public static String other(CurrencyPair pair, String currency) {
+        assert pair.baseSymbol.equals(currency) || pair.counterSymbol.equals(currency);
+        return currency.equals(pair.baseSymbol) ? pair.counterSymbol : pair.baseSymbol;
     }
 
 }

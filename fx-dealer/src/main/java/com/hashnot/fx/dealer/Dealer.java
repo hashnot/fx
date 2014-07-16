@@ -4,7 +4,6 @@ import com.hashnot.fx.framework.ICacheUpdateListener;
 import com.hashnot.fx.framework.OrderUpdateEvent;
 import com.hashnot.fx.framework.Simulation;
 import com.hashnot.fx.spi.ExchangeCache;
-import com.hashnot.fx.spi.ext.IFeeService;
 import com.hashnot.fx.util.Orders;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
@@ -19,6 +18,7 @@ import java.util.concurrent.BlockingQueue;
 
 import static com.hashnot.fx.util.OrderBooks.get;
 import static com.hashnot.fx.util.Orders.closing;
+import static com.hashnot.fx.util.Orders.isProfitable;
 
 /**
  * @author Rafał Krupiński
@@ -100,24 +100,15 @@ public class Dealer implements ICacheUpdateListener {
         Map.Entry<LimitOrder, Exchange> best = bestOrdersList.get(0);
         LimitOrder worstOrder = bestOrders.lastKey();
         Exchange worstExchange = bestOrders.get(worstOrder);
-        IFeeService bestXFeeService = context.get(best.getValue()).feeService;
-        if (!simulation.add(closing(best.getKey(), bestXFeeService), best.getValue(), worstOrder, worstExchange))
+        Exchange bestExchange = best.getValue();
+        LimitOrder closingBest = closing(best.getKey(), context.get(bestExchange).feeService);
+        if (!isProfitable(closingBest, worstOrder))
             return;
 
-        for (LimitOrder order : get(context.get(best.getValue()).orderBooks.get(pair), type)) {
-            if (order == best.getKey())
-                continue;
-            if (!simulation.add(closing(order, bestXFeeService), best.getValue()))
-                break;
-        }
+        List<LimitOrder> closeOrders = get(context.get(bestExchange).orderBooks.get(pair), type);
+        simulation.deal(worstOrder, worstExchange, closeOrders, bestExchange);
 
-        for (LimitOrder order : get(context.get(worstExchange).orderBooks.get(pair), type)) {
-            if (order == worstOrder)
-                continue;
-            if (!simulation.add(order, worstExchange))
-                break;
-        }
-        simulation.apply(outQueue);
+        simulation.clear();
     }
 
     private static BigDecimal getNetPrice(LimitOrder order, ExchangeCache bestX) {

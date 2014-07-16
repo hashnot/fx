@@ -39,7 +39,7 @@ public class Orders {
         Order.OrderType type = revert(order.getType());
         BigDecimal orderPrice = order.getLimitPrice();
         BigDecimal price = BigDecimal.ONE.divide(orderPrice, c);
-        BigDecimal amount = order.getTradableAmount().divide(orderPrice, c);
+        BigDecimal amount = order.getTradableAmount().divide(orderPrice, c).stripTrailingZeros();
         return new LimitOrder(type, amount, revert(order.getCurrencyPair()), null, null, price);
     }
 
@@ -65,7 +65,7 @@ public class Orders {
     public static BigDecimal getNetPrice(BigDecimal limitPrice, Order.OrderType type, BigDecimal feePercent) {
         if (type == Order.OrderType.ASK)
             feePercent = feePercent.negate();
-        return limitPrice.multiply(BigDecimal.ONE.add(feePercent));
+        return limitPrice.multiply(BigDecimal.ONE.add(feePercent)).stripTrailingZeros();
     }
 
     public static String incomingCurrency(Order order) {
@@ -80,7 +80,7 @@ public class Orders {
 
     public static BigDecimal incomingAmount(LimitOrder order) {
         if (order.getType() == Order.OrderType.ASK) {
-            return order.getTradableAmount().multiply(order.getNetPrice());
+            return order.getTradableAmount().multiply(order.getNetPrice()).stripTrailingZeros();
         } else {
             return order.getTradableAmount();
         }
@@ -90,16 +90,24 @@ public class Orders {
         if (order.getType() == Order.OrderType.ASK) {
             return order.getTradableAmount();
         } else {
-            return order.getTradableAmount().multiply(order.getLimitPrice());
+            return order.getTradableAmount().multiply(order.getLimitPrice()).stripTrailingZeros();
         }
     }
 
     public static boolean isProfitable(LimitOrder o1, LimitOrder o2) {
-        if (o1.getType() == o2.getType())
-            throw new IllegalArgumentException("Orders in the same direction");
         boolean result = o1.getNetPrice().compareTo(o2.getNetPrice()) * factor(o1.getType()) >= 0;
-        if (!result)
-            log.debug("Transactions not profitable");
+        log.debug("{} {} {} <=> {} {} {} {}profitable", o1.getType(), o1.getLimitPrice(), o1.getNetPrice(), o2.getNetPrice(), o2.getLimitPrice(), o2.getType(), result ? "" : "not ");
         return result;
+    }
+
+    public static BigDecimal value(LimitOrder order) {
+        return order.getTradableAmount().multiply(order.getLimitPrice(), c);
+    }
+
+    public static BigDecimal netValue(LimitOrder order) {
+        BigDecimal netPrice = order.getNetPrice();
+        if (netPrice == null)
+            throw new IllegalArgumentException("Null net price");
+        return order.getTradableAmount().multiply(netPrice, c).stripTrailingZeros();
     }
 }

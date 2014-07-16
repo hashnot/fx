@@ -12,6 +12,7 @@ import java.util.Map;
  * @author Rafał Krupiński
  */
 public class ExchangeCache {
+    // TODO add enum FEE_PRICE FEE_AMOUNT
     final public Map<CurrencyPair, OrderBook> orderBooks = new HashMap<>();
     final public Map<String, BigDecimal> wallet = new HashMap<>();
     final public Map<String, BigDecimal> orderBookLimits = new HashMap<>();

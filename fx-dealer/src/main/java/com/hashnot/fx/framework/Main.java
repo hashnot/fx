@@ -6,6 +6,7 @@ import com.hashnot.fx.ext.StaticFeeService;
 import com.hashnot.fx.spi.ExchangeCache;
 import com.hashnot.fx.spi.ExchangeUpdateEvent;
 import com.xeiam.xchange.Exchange;
+import com.xeiam.xchange.anx.v2.ANXExchange;
 import com.xeiam.xchange.bitcurex.BitcurexExchange;
 import com.xeiam.xchange.btce.v3.BTCEExchange;
 import com.xeiam.xchange.currency.CurrencyPair;
@@ -49,6 +50,9 @@ public class Main {
         Exchange bitcurex = defaultExchange(new BitcurexExchange());
         context.put(bitcurex, new ExchangeCache(new StaticFeeService(new BigDecimal(".004"))));
 
+        Exchange anx = defaultExchange(new ANXExchange());
+        context.put(anx, new ExchangeCache(new StaticFeeService(new BigDecimal(".002"))));
+
         setup(context);
 
         for (Exchange exchange : context.keySet()) {
@@ -89,13 +93,19 @@ public class Main {
         }
     }
 
+
+    private static int base;
+
     private static void setupWallet(ExchangeCache exchange) {
-        BigDecimal eur = new BigDecimal(2000);
-        exchange.wallet.put(EUR, eur);
         BigDecimal multi = new BigDecimal(2);
-        exchange.orderBookLimits.put(EUR, eur.multiply(multi));
-        BigDecimal btc = new BigDecimal(4);
+
+        BigDecimal eur = new BigDecimal(++base * 1000);
+        BigDecimal btc = new BigDecimal(base * 2);
+
+        exchange.wallet.put(EUR, eur);
         exchange.wallet.put(BTC, btc);
+
+        exchange.orderBookLimits.put(EUR, eur.multiply(multi));
         exchange.orderBookLimits.put(BTC, btc.multiply(multi));
     }
 
