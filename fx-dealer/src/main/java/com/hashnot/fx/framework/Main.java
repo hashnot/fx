@@ -42,16 +42,16 @@ public class Main {
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(10, new ConfigurableThreadFactory());
 
         Exchange kraken = defaultExchange(new KrakenExchange());
-        context.put(kraken, new ExchangeCache(new StaticFeeService(new BigDecimal(".002"))));
+        context.put(kraken, new ExchangeCache(kraken.toString(), new StaticFeeService(new BigDecimal(".002"))));
 
         Exchange btce = defaultExchange(new BTCEExchange());
-        context.put(btce, new ExchangeCache(new BTCEFeeService()));
+        context.put(btce, new ExchangeCache(btce.toString(), new BTCEFeeService()));
 
         Exchange bitcurex = defaultExchange(new BitcurexExchange());
-        context.put(bitcurex, new ExchangeCache(new StaticFeeService(new BigDecimal(".004"))));
+        context.put(bitcurex, new ExchangeCache(bitcurex.toString(), new StaticFeeService(new BigDecimal(".004"))));
 
         Exchange anx = defaultExchange(new ANXExchange());
-        context.put(anx, new ExchangeCache(new StaticFeeService(new BigDecimal(".002"))));
+        context.put(anx, new ExchangeCache(anx.toString(), new StaticFeeService(new BigDecimal(".002"))));
 
         setup(context);
 

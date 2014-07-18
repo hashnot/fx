@@ -107,8 +107,6 @@ public class Dealer implements ICacheUpdateListener {
 
         List<LimitOrder> closeOrders = get(context.get(bestExchange).orderBooks.get(pair), type);
         simulation.deal(worstOrder, worstExchange, closeOrders, bestExchange);
-
-        simulation.clear();
     }
 
     private static BigDecimal getNetPrice(LimitOrder order, ExchangeCache bestX) {

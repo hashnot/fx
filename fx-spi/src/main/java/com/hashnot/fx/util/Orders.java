@@ -118,4 +118,14 @@ public class Orders {
     public static int compareToNetPrice(LimitOrder order, BigDecimal limitPrice) {
         return order.getNetPrice().compareTo(limitPrice) * factor(order.getType());
     }
+
+    public static void validatePair(LimitOrder o1, LimitOrder o2) {
+        if (!o1.getCurrencyPair().equals(o2.getCurrencyPair()))
+            throw new IllegalArgumentException("Invalid CurrencyPair");
+    }
+
+    public static void validateSameDirection(LimitOrder o1, LimitOrder o2) {
+        if (o1.getType() != o2.getType())
+            throw new IllegalArgumentException("Orders in different direction");
+    }
 }
