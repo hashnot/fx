@@ -110,4 +110,12 @@ public class Orders {
             throw new IllegalArgumentException("Null net price");
         return order.getTradableAmount().multiply(netPrice, c).stripTrailingZeros();
     }
+
+    public static int compareToLimitPrice(LimitOrder order, BigDecimal limitPrice) {
+        return order.getLimitPrice().compareTo(limitPrice) * factor(order.getType());
+    }
+
+    public static int compareToNetPrice(LimitOrder order, BigDecimal limitPrice) {
+        return order.getNetPrice().compareTo(limitPrice) * factor(order.getType());
+    }
 }

@@ -2,7 +2,7 @@ package com.hashnot.fx.framework;
 
 import com.hashnot.fx.spi.ExchangeCache;
 import com.hashnot.fx.util.FeeHelper;
-import com.hashnot.fx.util.Orders;
+import com.hashnot.fx.util.Numbers;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.trade.LimitOrder;
@@ -13,8 +13,7 @@ import java.math.BigDecimal;
 import java.util.*;
 
 import static com.hashnot.fx.util.FeeHelper.getFeePercent;
-import static com.hashnot.fx.util.Orders.c;
-import static com.hashnot.fx.util.Orders.revert;
+import static com.hashnot.fx.util.Orders.*;
 import static java.math.BigDecimal.ZERO;
 
 /**
@@ -25,34 +24,20 @@ public class Simulation {
 
     final private Map<Exchange, ExchangeCache> context;
 
-    private Exchange openExchange;
-    private Exchange closeExchange;
-
     final private List<LimitOrder> openOrders = new ArrayList<>(2 << 4);
-    //final private List<LimitOrder> closeOrders = new ArrayList<>(2 << 4);
-    private BigDecimal closePrice;
 
     public Simulation(Map<Exchange, ExchangeCache> context) {
         this.context = context;
     }
 
     public void deal(LimitOrder worst, Exchange worstExchange, List<LimitOrder> closeOrders, Exchange bestExchange) {
-        /*
-        best exchange - close orders
-        worst exchange - open order
-
-        if opening ASK{
-
-        }
-         */
-
         ExchangeCache openExchange = context.get(worstExchange);
         ExchangeCache closeExchange = context.get(bestExchange);
 
         //after my open order os closed on the worst exchange, this money should disappear
-        String openOutgoingCur = Orders.outgoingCurrency(worst);
+        String openOutgoingCur = outgoingCurrency(worst);
 
-        String closeOutCur = Orders.incomingCurrency(worst);
+        String closeOutCur = incomingCurrency(worst);
 
         BigDecimal openOutGross = openExchange.wallet.get(openOutgoingCur);
         BigDecimal openOutNet = FeeHelper.addPercent(openOutGross, getFeePercent(worst.getCurrencyPair(), Order.OrderType.ASK, openExchange.feeService));
@@ -60,48 +45,45 @@ public class Simulation {
         BigDecimal closeOutGross = closeExchange.wallet.get(closeOutCur);
         BigDecimal closeOutNet = FeeHelper.addPercent(closeOutGross, getFeePercent(worst.getCurrencyPair(), Order.OrderType.ASK, closeExchange.feeService));
 
-        log.debug("{} {} {} -> {}", openOutgoingCur, worst.getType(), openOutGross, openOutNet);
-        log.debug("{} {} {} -> {}", closeOutCur, worst.getType(), closeOutGross, closeOutNet);
+        log.debug("type: {}", worst.getType());
+        log.debug("open  {} {} -> {}", openOutgoingCur, openOutGross, openOutNet);
+        log.debug("close {} {} -> {}", closeOutCur, closeOutGross, closeOutNet);
 
 
-        BigDecimal availBase;
-        BigDecimal availCounter;
-        if (worst.getType() == Order.OrderType.ASK) {
-            availBase = openOutNet;
-            availCounter = closeOutNet;
-        } else {
-            availBase = closeOutNet;
-            availCounter = openOutNet;
-        }
+        // limit po stronie open ASK = base wallet
+        //                  close/ BID = suma( otwarte ASK-> cena*liczba) < base wallet
+        //                  openOut = base
+        //                  closeOut = counter
+        //                  -- OR --
+        //                  open BID = counter wallet/cena
+        //                  close/ ASK = suma (otwarte BID -> liczba) < base wallet
+        //                  openOut = counter
+        //                  closeOut = base
 
-
-        //
-
-
-        BigDecimal totalBase = ZERO;
-        BigDecimal totalCounter = ZERO;
 
         BigDecimal closeAmount;
         BigDecimal openAmount;
-        if(worst.getType() == Order.OrderType.ASK)
-        closeAmount = totalAmount(closeOrders, closeOutGross);
-        else
-        openAmount = totalAmount(closeOrders, openOutGross);
+        if (worst.getType() == Order.OrderType.ASK) {
+            openAmount = openOutNet;
+            closeAmount = totalValue(closeOrders, openOutNet, worst.getNetPrice()).divide(worst.getLimitPrice(),c);
+        } else {
+            openAmount = openOutNet.divide(worst.getLimitPrice(), c);
+            closeAmount = totalAmount(closeOrders, closeOutNet, worst.getNetPrice());
+        }
 
-        //BigDecimal counterAmount=totalBase.divide(worst.getLimitPrice(), c);
-        if (worst.getType() == Order.OrderType.ASK)
-            totalCounter = totalBase.m
+        BigDecimal openAmountActual = Numbers.min(openAmount, closeAmount);
 
-        log.info("base   : {} {}", totalBase, availBase);
-        log.info("counter: {} {}", totalCounter.stripTrailingZeros(), availCounter);
-
+        log.info("open for {}", openAmountActual);
 
     }
 
-    static BigDecimal totalValue(List<LimitOrder> orders, BigDecimal amountLimit) {
+    static BigDecimal totalValue(List<LimitOrder> orders, BigDecimal amountLimit, BigDecimal netPriceLimit) {
         BigDecimal totalValue = ZERO;
         BigDecimal totalAmount = ZERO;
         for (LimitOrder order : orders) {
+            if (compareToNetPrice(order, netPriceLimit) > 0)
+                break;
+            log.debug("order {}", order);
             totalAmount = totalAmount.add(order.getTradableAmount());
             totalValue = totalValue.add(order.getTradableAmount().multiply(order.getLimitPrice()));
             if (totalAmount.compareTo(amountLimit) >= 0)
@@ -110,52 +92,19 @@ public class Simulation {
         return totalValue;
     }
 
-    static BigDecimal totalAmount(List<LimitOrder> orders, BigDecimal valueLimit) {
+    static BigDecimal totalAmount(List<LimitOrder> orders, BigDecimal valueLimit, BigDecimal netPriceLimit) {
         BigDecimal totalValue = ZERO;
         BigDecimal totalAmount = ZERO;
         for (LimitOrder order : orders) {
+            if (compareToNetPrice(order, netPriceLimit) > 0)
+                break;
+            log.debug("order {}", order);
             totalAmount = totalAmount.add(order.getTradableAmount());
             totalValue = totalValue.add(order.getTradableAmount().multiply(order.getLimitPrice()));
             if (totalValue.compareTo(valueLimit) >= 0)
                 break;
         }
         return totalAmount;
-    }
-
-    public boolean open(LimitOrder order, Exchange x) {
-        assert !ZERO.equals(order.getLimitPrice());
-        assert order.getNetPrice() != null && !ZERO.equals(order.getNetPrice());
-        assert !ZERO.equals(order.getTradableAmount());
-
-        if (!validateOpen(order, x))
-            return false;
-
-        openExchange = x;
-        return openOrders.add(order);
-    }
-
-    protected boolean validateOpen(LimitOrder open, Exchange openExchange) {
-        if (closePrice == null)
-            log.warn("No closing price");
-        else {
-            if (closeExchange.equals(openExchange))
-                throw new IllegalArgumentException("trying to open and close orders on a single exchange");
-        }
-
-        return checkFunds(open, openExchange);
-    }
-
-    /**
-     * compute the price of our order to open
-     */
-    public void close(LimitOrder order, Exchange x) {
-        assert !ZERO.equals(order.getLimitPrice());
-        assert order.getNetPrice() != null && !ZERO.equals(order.getNetPrice());
-        assert !ZERO.equals(order.getTradableAmount());
-
-        closeExchange = x;
-        // TODO better compute price
-        closePrice = order.getLimitPrice();
     }
 
     private void validatePair(LimitOrder order, LimitOrder close) {
@@ -166,44 +115,6 @@ public class Simulation {
     private static void validateSameDirection(LimitOrder o1, LimitOrder o2) {
         if (o1.getType() != o2.getType())
             throw new IllegalArgumentException("Orders in different direction");
-    }
-
-    private boolean checkFunds(LimitOrder order, Exchange exchange) {
-        Map<String, BigDecimal> wallet = context.get(exchange).wallet;
-        String currency = Orders.outgoingCurrency(order);
-        BigDecimal current = wallet.get(currency);
-        if (current == null || current.equals(ZERO)) {
-            log.debug("No funds @{}", exchange);
-            return false;
-        }
-
-        ExchangeCache openExchange = context.get(exchange);
-        String incomingCur = Orders.incomingCurrency(order);
-        BigDecimal openAmountGross = openExchange.wallet.get(incomingCur);
-        BigDecimal openAmountNet = FeeHelper.addPercent(openAmountGross, getFeePercent(order.getCurrencyPair(), Order.OrderType.ASK, openExchange.feeService));
-
-        ExchangeCache closeExchange = context.get(this.closeExchange);
-        BigDecimal currentNet = FeeHelper.addPercent(current, getFeePercent(order.getCurrencyPair(), Order.OrderType.ASK, closeExchange.feeService));
-
-        log.debug("{} {} {} -> {}", incomingCur, order.getType(), openAmountGross, openAmountNet);
-        log.debug("{} {} {} -> {}", currency, order.getType(), current, currentNet);
-
-
-        BigDecimal totalOut = ZERO;
-        BigDecimal totalIn = ZERO;
-
-        for (LimitOrder o2 : this.openOrders) {
-            if (order.getType() != o2.getType())
-                throw new IllegalArgumentException("Non-matching OrderType");
-            totalOut = totalOut.add(Orders.outgoingAmount(o2));
-            totalIn = totalIn.add(Orders.incomingAmount(o2));
-        }
-        log.info("total in  {} <=> {}", totalIn, openAmountNet);
-        log.info("total out {} <=> {}", totalOut, currentNet);
-        boolean result = totalOut.compareTo(currentNet) <= 0 && totalIn.compareTo(openAmountNet) <= 0;
-        if (!result)
-            log.debug("Insufficient funds @{}", exchange);
-        return result;
     }
 
     public void report() {
@@ -230,7 +141,6 @@ public class Simulation {
 
     public void clear() {
         openOrders.clear();
-        closePrice = null;
     }
 
 /*
