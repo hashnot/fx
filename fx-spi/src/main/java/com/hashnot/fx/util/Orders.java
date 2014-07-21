@@ -65,7 +65,7 @@ public class Orders {
     public static BigDecimal getNetPrice(BigDecimal limitPrice, Order.OrderType type, BigDecimal feePercent) {
         if (type == Order.OrderType.ASK)
             feePercent = feePercent.negate();
-        return limitPrice.multiply(BigDecimal.ONE.add(feePercent)).stripTrailingZeros();
+        return limitPrice.multiply(BigDecimal.ONE.add(feePercent), c).stripTrailingZeros();
     }
 
     public static String incomingCurrency(Order order) {
@@ -78,9 +78,13 @@ public class Orders {
         return order.getType() == Order.OrderType.ASK ? pair.baseSymbol : pair.counterSymbol;
     }
 
+    // TODO take fee policy into account
     public static BigDecimal incomingAmount(LimitOrder order) {
         if (order.getType() == Order.OrderType.ASK) {
-            return order.getTradableAmount().multiply(order.getNetPrice()).stripTrailingZeros();
+            BigDecimal result = order.getTradableAmount().multiply(order.getNetPrice(), c).stripTrailingZeros();
+            if (result.scale() > c.getPrecision())
+                return result.setScale(c.getPrecision(), c.getRoundingMode());
+            return result;
         } else {
             return order.getTradableAmount();
         }
@@ -90,7 +94,10 @@ public class Orders {
         if (order.getType() == Order.OrderType.ASK) {
             return order.getTradableAmount();
         } else {
-            return order.getTradableAmount().multiply(order.getLimitPrice()).stripTrailingZeros();
+            BigDecimal result = order.getTradableAmount().multiply(order.getLimitPrice(), c).stripTrailingZeros();
+            if (result.scale() > c.getPrecision())
+                return result.setScale(c.getPrecision(), c.getRoundingMode());
+            return result;
         }
     }
 

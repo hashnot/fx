@@ -27,6 +27,6 @@ public class FeeHelper {
     }
 
     public static BigDecimal addPercent(BigDecimal inValue, BigDecimal percent) {
-        return inValue.multiply(BigDecimal.ONE.add(percent));
+        return inValue.multiply(BigDecimal.ONE.add(percent), Orders.c);
     }
 }

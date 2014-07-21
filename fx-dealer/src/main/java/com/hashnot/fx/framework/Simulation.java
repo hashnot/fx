@@ -25,6 +25,7 @@ import static java.math.BigDecimal.ZERO;
  */
 public class Simulation {
     final private static Logger log = LoggerFactory.getLogger(Simulation.class);
+    private static final BigDecimal LOW_LIMIT = new BigDecimal(".001");
 
     final private Map<Exchange, ExchangeCache> context;
 
@@ -70,7 +71,7 @@ public class Simulation {
             closeAmount = totalAmountByValue(closeOrders, closeOutNet, worst.getNetPrice(), closeExchange.feeService);
         } else {
             openAmount = openOutNet.divide(worst.getLimitPrice(), c);
-            closeAmount = totalAmountByValue(closeOrders, closeOutNet, worst.getNetPrice(), closeExchange.feeService);
+            closeAmount = totalAmountByAmount(closeOrders, closeOutNet, worst.getNetPrice(), closeExchange.feeService);
         }
 
         log.debug("open: {}", openAmount);
@@ -78,6 +79,7 @@ public class Simulation {
 
         BigDecimal openAmountActual = Numbers.min(openAmount, closeAmount);
 
+        if (openAmountActual.compareTo(LOW_LIMIT) < 0) return;
         log.info("open for {}", openAmountActual);
 
         verify(worst, openExchange, closeOrders, closeExchange, openAmountActual);
@@ -113,10 +115,13 @@ public class Simulation {
     static void apply(Map<String, BigDecimal> wallet, LimitOrder order, IFeeService feeService) {
         order.setNetPrice(getNetPrice(order, feeService.getFeePercent(order.getCurrencyPair())));
         String outCurrency = outgoingCurrency(order);
-        wallet.put(outCurrency, wallet.get(outCurrency).subtract(outgoingAmount(order)));
+        BigDecimal outBalance = wallet.get(outCurrency).subtract(outgoingAmount(order));
+        wallet.put(outCurrency, outBalance);
 
         String inCurrency = incomingCurrency(order);
-        wallet.put(inCurrency, wallet.get(inCurrency).add(incomingAmount(order)));
+        BigDecimal inBalance = wallet.get(inCurrency).add(incomingAmount(order));
+        wallet.put(inCurrency, inBalance);
+        log.debug("in {} {} out {} {} --- {}",inCurrency, inBalance, outCurrency, outBalance, order);
     }
 
     static BigDecimal totalAmountByAmount(List<LimitOrder> orders, BigDecimal amountLimit, BigDecimal netPriceLimit, IFeeService feeService) {
@@ -125,7 +130,7 @@ public class Simulation {
         for (LimitOrder order : orders) {
             BigDecimal netPrice = Orders.getNetPrice(order.getLimitPrice(), revert(order.getType()), feeService.getFeePercent(order.getCurrencyPair()));
 
-            if (netPrice.compareTo(netPriceLimit) > 0)
+            if (netPrice.compareTo(netPriceLimit) * factor(order.getType()) > 0)
                 break;
             log.debug("order {}", order);
             BigDecimal newAmount = totalAmount.add(order.getTradableAmount());
@@ -142,7 +147,7 @@ public class Simulation {
                 totalAmount = newAmount;
             }
 
-            totalValue = totalValue.add(actualAmount.multiply(order.getLimitPrice()));
+            totalValue = totalValue.add(actualAmount.multiply(order.getLimitPrice(), c));
             if (last)
                 break;
         }
@@ -154,7 +159,7 @@ public class Simulation {
         BigDecimal totalAmount = ZERO;
         for (LimitOrder order : orders) {
             BigDecimal netPrice = Orders.getNetPrice(order.getLimitPrice(), revert(order.getType()), feeService.getFeePercent(order.getCurrencyPair()));
-            if (netPrice.compareTo(netPriceLimit) > 0)
+            if (netPrice.compareTo(netPriceLimit)*factor(order.getType()) > 0)
                 break;
             log.debug("order {}", order);
             BigDecimal curAmount = order.getTradableAmount();
@@ -164,8 +169,10 @@ public class Simulation {
             BigDecimal newValue = totalValue.add(curValue);
 
             boolean last;
+            // if >0 then cut amount
+            // TODO if =0 then break
             if (newValue.compareTo(valueLimit) >= 0) {
-                curValue = newValue.subtract(valueLimit);
+                curValue = valueLimit.subtract(totalValue);
                 curAmount = curValue.divide(order.getLimitPrice(), c);
                 totalAmount = totalAmount.add(curAmount);
                 totalValue = totalValue.add(curValue);

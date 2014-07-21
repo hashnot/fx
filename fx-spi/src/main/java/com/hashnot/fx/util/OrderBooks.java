@@ -48,7 +48,7 @@ public class OrderBooks {
 
             if (ai.hasNext()) {
                 LimitOrder order = ai.next();
-                totalAsk = totalAsk.add(order.getTradableAmount().multiply(order.getLimitPrice()));
+                totalAsk = totalAsk.add(order.getTradableAmount().multiply(order.getLimitPrice(), Orders.c));
             }
 
             if (bi.hasNext()) {
