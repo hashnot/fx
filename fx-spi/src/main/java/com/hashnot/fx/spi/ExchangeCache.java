@@ -45,4 +45,8 @@ public class ExchangeCache {
             throw new IllegalStateException("Negative amount in wallet");
     }
 
+    @Override
+    public String toString() {
+        return name;
+    }
 }

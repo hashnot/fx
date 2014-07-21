@@ -87,7 +87,7 @@ public class Simulation {
 
     private void verify(LimitOrder worst, ExchangeCache worstExchange, List<LimitOrder> closeOrders, ExchangeCache bestExchange, BigDecimal openAmount) {
         LimitOrder openOrder = new LimitOrder(worst.getType(), openAmount, worst.getCurrencyPair(), null, null, worst.getLimitPrice());
-        apply(worstExchange.wallet, openOrder, worstExchange.feeService);
+        apply(worstExchange, openOrder);
 
         BigDecimal total = ZERO;
         for (LimitOrder closeOrder : closeOrders) {
@@ -104,7 +104,7 @@ public class Simulation {
             }
 
             LimitOrder close = new LimitOrder(revert(worst.getType()), amount, worst.getCurrencyPair(), null, null, closeOrder.getLimitPrice());
-            apply(bestExchange.wallet, close, bestExchange.feeService);
+            apply(bestExchange, close);
             if (last) break;
         }
 
@@ -112,25 +112,26 @@ public class Simulation {
         bestExchange.verifyWallet();
     }
 
-    static void apply(Map<String, BigDecimal> wallet, LimitOrder order, IFeeService feeService) {
-        order.setNetPrice(getNetPrice(order, feeService.getFeePercent(order.getCurrencyPair())));
+    static void apply(ExchangeCache x, LimitOrder order) {
+        order.setNetPrice(getNetPrice(order, x.feeService.getFeePercent(order.getCurrencyPair())));
         String outCurrency = outgoingCurrency(order);
-        BigDecimal outBalance = wallet.get(outCurrency).subtract(outgoingAmount(order));
-        wallet.put(outCurrency, outBalance);
+        BigDecimal outBalance = x.wallet.get(outCurrency).subtract(outgoingAmount(order));
+        x.wallet.put(outCurrency, outBalance);
 
         String inCurrency = incomingCurrency(order);
-        BigDecimal inBalance = wallet.get(inCurrency).add(incomingAmount(order));
-        wallet.put(inCurrency, inBalance);
-        log.debug("in {} {} out {} {} --- {}",inCurrency, inBalance, outCurrency, outBalance, order);
+        BigDecimal inBalance = x.wallet.get(inCurrency).add(incomingAmount(order));
+        x.wallet.put(inCurrency, inBalance);
+        log.debug("{} in {} {} out {} {} --- {}", x, inCurrency, inBalance, outCurrency, outBalance, order);
     }
 
     static BigDecimal totalAmountByAmount(List<LimitOrder> orders, BigDecimal amountLimit, BigDecimal netPriceLimit, IFeeService feeService) {
         BigDecimal totalValue = ZERO;
         BigDecimal totalAmount = ZERO;
+        Order.OrderType type = revert(orders.get(0).getType());
         for (LimitOrder order : orders) {
-            BigDecimal netPrice = Orders.getNetPrice(order.getLimitPrice(), revert(order.getType()), feeService.getFeePercent(order.getCurrencyPair()));
+            BigDecimal netPrice = Orders.getNetPrice(order.getLimitPrice(), type, feeService.getFeePercent(order.getCurrencyPair()));
 
-            if (netPrice.compareTo(netPriceLimit) * factor(order.getType()) > 0)
+            if (netPrice.compareTo(netPriceLimit) * factor(type) > 0)
                 break;
             log.debug("order {}", order);
             BigDecimal newAmount = totalAmount.add(order.getTradableAmount());
@@ -157,9 +158,10 @@ public class Simulation {
     static BigDecimal totalAmountByValue(List<LimitOrder> orders, BigDecimal valueLimit, BigDecimal netPriceLimit, IFeeService feeService) {
         BigDecimal totalValue = ZERO;
         BigDecimal totalAmount = ZERO;
+        Order.OrderType type = revert(orders.get(0).getType());
         for (LimitOrder order : orders) {
-            BigDecimal netPrice = Orders.getNetPrice(order.getLimitPrice(), revert(order.getType()), feeService.getFeePercent(order.getCurrencyPair()));
-            if (netPrice.compareTo(netPriceLimit)*factor(order.getType()) > 0)
+            BigDecimal netPrice = Orders.getNetPrice(order.getLimitPrice(), type, feeService.getFeePercent(order.getCurrencyPair()));
+            if (netPrice.compareTo(netPriceLimit) * factor(type) > 0)
                 break;
             log.debug("order {}", order);
             BigDecimal curAmount = order.getTradableAmount();

@@ -65,6 +65,9 @@ public class Main {
 
         Simulation simulation = new Simulation(context);
         Dealer dealer = new Dealer(context, simulation, orderUpdates);
+
+        simulation.report();
+
         scheduler.execute(new CacheUpdater(context, updates, dealer));
         scheduler.scheduleAtFixedRate(new StatusMonitor(updates, cacheUpdateQueue, orderUpdates), 0, 200, TimeUnit.MILLISECONDS);
 
