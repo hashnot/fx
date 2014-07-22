@@ -20,7 +20,12 @@ public class Orders {
     public static MathContext c = new MathContext(8, RoundingMode.HALF_UP);
 
     public static boolean equals(LimitOrder o1, LimitOrder o2) {
-        return o1.getLimitPrice().equals(o2.getLimitPrice()) && o1.getTradableAmount().equals(o2.getTradableAmount());
+        return o1.getCurrencyPair().equals(o2.getCurrencyPair()) && o1.getType() == o2.getType()
+                && equals(o1.getLimitPrice(), o2.getLimitPrice()) && equals(o1.getTradableAmount(), o2.getTradableAmount());
+    }
+
+    private static boolean equals(BigDecimal o1, BigDecimal o2) {
+        return Numbers.equals(o1, o2);
     }
 
     public static CurrencyPair revert(CurrencyPair cp) {

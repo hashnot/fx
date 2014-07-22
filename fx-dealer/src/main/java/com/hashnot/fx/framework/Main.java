@@ -10,6 +10,7 @@ import com.xeiam.xchange.anx.v2.ANXExchange;
 import com.xeiam.xchange.bitcurex.BitcurexExchange;
 import com.xeiam.xchange.btce.v3.BTCEExchange;
 import com.xeiam.xchange.currency.CurrencyPair;
+import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.kraken.KrakenExchange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +56,8 @@ public class Main {
 
         setup(context);
 
+        HashMap<Order.OrderType, OrderUpdateEvent> myOpenOrders = new HashMap<>();
+
         for (Exchange exchange : context.keySet()) {
             scheduler.scheduleAtFixedRate(
                     new OrderBookPoller(exchange, updates, allowedPairs)
@@ -64,24 +67,13 @@ public class Main {
         }
 
         Simulation simulation = new Simulation(context);
-        Dealer dealer = new Dealer(context, simulation, orderUpdates);
+        //OrderUpdater orderUpdater = new OrderUpdater(context, myOpenOrders);
+        Dealer dealer = new Dealer(context, simulation, new NoopOrderUpdater(myOpenOrders));
 
         simulation.report();
 
         scheduler.execute(new CacheUpdater(context, updates, dealer));
         scheduler.scheduleAtFixedRate(new StatusMonitor(updates, cacheUpdateQueue, orderUpdates), 0, 200, TimeUnit.MILLISECONDS);
-
-        scheduler.execute(() -> {
-            try {
-                while (true) {
-                    OrderUpdateEvent e = orderUpdates.take();
-                    log.info("(Not) sending {}", e);
-                }
-            } catch (InterruptedException e) {
-                log.error("Interrupted", e);
-            }
-        });
-
 
         Thread.sleep(10000);
         scheduler.shutdown();

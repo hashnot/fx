@@ -1,6 +1,7 @@
 package com.hashnot.fx.dealer;
 
 import com.hashnot.fx.framework.ICacheUpdateListener;
+import com.hashnot.fx.framework.IOrderUpdater;
 import com.hashnot.fx.framework.OrderUpdateEvent;
 import com.hashnot.fx.framework.Simulation;
 import com.hashnot.fx.spi.ExchangeCache;
@@ -12,9 +13,7 @@ import com.xeiam.xchange.dto.trade.LimitOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.math.BigDecimal;
 import java.util.*;
-import java.util.concurrent.BlockingQueue;
 
 import static com.hashnot.fx.util.OrderBooks.get;
 import static com.hashnot.fx.util.Orders.closing;
@@ -27,15 +26,15 @@ public class Dealer implements ICacheUpdateListener {
 
     private final Map<Exchange, ExchangeCache> context;
 
+    private final IOrderUpdater orderUpdater;
+
     public Simulation simulation;
 
-    public Dealer(Map<Exchange, ExchangeCache> context, Simulation simulation, BlockingQueue<OrderUpdateEvent> outQueue) {
+    public Dealer(Map<Exchange, ExchangeCache> context, Simulation simulation, IOrderUpdater orderUpdater) {
         this.context = context;
         this.simulation = simulation;
-        this.outQueue = outQueue;
+        this.orderUpdater = orderUpdater;
     }
-
-    final private BlockingQueue<OrderUpdateEvent> outQueue;
 
     final private Collection<Exchange> dirtyExchanges = new HashSet<>();
 
@@ -106,7 +105,9 @@ public class Dealer implements ICacheUpdateListener {
             return;
 
         List<LimitOrder> closeOrders = get(context.get(bestExchange).orderBooks.get(pair), type);
-        simulation.deal(worstOrder, worstExchange, closeOrders, bestExchange);
+        OrderUpdateEvent event = simulation.deal(worstOrder, worstExchange, closeOrders, bestExchange);
+        if (event != null)
+            orderUpdater.update(event);
     }
 
     private static final Logger log = LoggerFactory.getLogger(Dealer.class);

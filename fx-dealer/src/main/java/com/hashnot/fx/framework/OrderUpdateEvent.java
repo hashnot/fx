@@ -11,13 +11,13 @@ import java.util.List;
 public class OrderUpdateEvent {
     public final Exchange openExchange;
     public final Exchange closeExchange;
-    public final List<LimitOrder>openedOrders;
-    public final List<LimitOrder>closingOrders;
+    public final LimitOrder openedOrder;
+    public final List<LimitOrder> closingOrders;
 
-    public OrderUpdateEvent(Exchange openExchange, Exchange closeExchange, List<LimitOrder> openedOrders, List<LimitOrder> closingOrders) {
+    public OrderUpdateEvent(Exchange openExchange, Exchange closeExchange, LimitOrder openedOrder, List<LimitOrder> closingOrders) {
         this.openExchange = openExchange;
         this.closeExchange = closeExchange;
-        this.openedOrders = openedOrders;
+        this.openedOrder = openedOrder;
         this.closingOrders = closingOrders;
     }
 }

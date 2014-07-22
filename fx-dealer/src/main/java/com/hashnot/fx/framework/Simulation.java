@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -33,7 +34,7 @@ public class Simulation {
         this.context = context;
     }
 
-    public void deal(LimitOrder worst, Exchange worstExchange, List<LimitOrder> closeOrders, Exchange bestExchange) {
+    public OrderUpdateEvent deal(LimitOrder worst, Exchange worstExchange, List<LimitOrder> closeOrders, Exchange bestExchange) {
         ExchangeCache openExchange = context.get(worstExchange);
         ExchangeCache closeExchange = context.get(bestExchange);
 
@@ -79,15 +80,15 @@ public class Simulation {
 
         BigDecimal openAmountActual = Numbers.min(openAmount, closeAmount);
 
-        if (openAmountActual.compareTo(LOW_LIMIT) < 0) return;
+        if (openAmountActual.compareTo(LOW_LIMIT) < 0) return null;
         log.info("open for {}", openAmountActual);
 
-        verify(worst, openExchange, closeOrders, closeExchange, openAmountActual);
+        return apply(worst, worstExchange, closeOrders, bestExchange, openAmountActual);
     }
 
-    private void verify(LimitOrder worst, ExchangeCache worstExchange, List<LimitOrder> closeOrders, ExchangeCache bestExchange, BigDecimal openAmount) {
+    private OrderUpdateEvent apply(LimitOrder worst, Exchange worstExchange, List<LimitOrder> closeOrders, Exchange bestExchange, BigDecimal openAmount) {
         LimitOrder openOrder = new LimitOrder(worst.getType(), openAmount, worst.getCurrencyPair(), null, null, worst.getLimitPrice());
-        apply(worstExchange, openOrder);
+        List<LimitOrder> myCloseOrders = new LinkedList<>();
 
         BigDecimal total = ZERO;
         for (LimitOrder closeOrder : closeOrders) {
@@ -104,12 +105,11 @@ public class Simulation {
             }
 
             LimitOrder close = new LimitOrder(revert(worst.getType()), amount, worst.getCurrencyPair(), null, null, closeOrder.getLimitPrice());
-            apply(bestExchange, close);
+            myCloseOrders.add(close);
             if (last) break;
         }
 
-        worstExchange.verifyWallet();
-        bestExchange.verifyWallet();
+        return new OrderUpdateEvent(worstExchange, bestExchange, openOrder, myCloseOrders);
     }
 
     static void apply(ExchangeCache x, LimitOrder order) {
