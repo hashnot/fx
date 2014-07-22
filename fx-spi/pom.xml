@@ -27,5 +27,9 @@
             <artifactId>xchange-core</artifactId>
             <version>${v.xchange}</version>
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
     </dependencies>
 </project>

@@ -48,7 +48,7 @@ public class Simulation {
         BigDecimal closeOutGross = closeExchange.wallet.get(closeOutCur);
         BigDecimal closeOutNet = FeeHelper.addPercent(closeOutGross, getFeePercent(worst.getCurrencyPair(), Order.OrderType.ASK, closeExchange.feeService));
 
-        log.debug("type: {}", worst.getType());
+        log.debug("type: {}, best {}, worst {}", worst.getType(), bestExchange, worstExchange);
         log.debug("open  {} {} -> {}", openOutgoingCur, openOutGross, openOutNet);
         log.debug("close {} {} -> {}", closeOutCur, closeOutGross, closeOutNet);
 
@@ -115,13 +115,17 @@ public class Simulation {
     static void apply(ExchangeCache x, LimitOrder order) {
         order.setNetPrice(getNetPrice(order, x.feeService.getFeePercent(order.getCurrencyPair())));
         String outCurrency = outgoingCurrency(order);
-        BigDecimal outBalance = x.wallet.get(outCurrency).subtract(outgoingAmount(order));
+        BigDecimal outAmount = outgoingAmount(order);
+        BigDecimal outBefore = x.wallet.get(outCurrency);
+        BigDecimal outBalance = outBefore.subtract(outAmount);
         x.wallet.put(outCurrency, outBalance);
 
         String inCurrency = incomingCurrency(order);
-        BigDecimal inBalance = x.wallet.get(inCurrency).add(incomingAmount(order));
+        BigDecimal inAmount = incomingAmount(order);
+        BigDecimal inBefore = x.wallet.get(inCurrency);
+        BigDecimal inBalance = inBefore.add(inAmount);
         x.wallet.put(inCurrency, inBalance);
-        log.debug("{} in {} {} out {} {} --- {}", x, inCurrency, inBalance, outCurrency, outBalance, order);
+        log.debug("{} {} {} + {} = {} | {} {} - {} = {} --- {}", x, inCurrency, inBefore, inAmount, inBalance, outCurrency, outBefore, outAmount, outBalance, order);
     }
 
     static BigDecimal totalAmountByAmount(List<LimitOrder> orders, BigDecimal amountLimit, BigDecimal netPriceLimit, IFeeService feeService) {
@@ -131,7 +135,7 @@ public class Simulation {
         for (LimitOrder order : orders) {
             BigDecimal netPrice = Orders.getNetPrice(order.getLimitPrice(), type, feeService.getFeePercent(order.getCurrencyPair()));
 
-            if (netPrice.compareTo(netPriceLimit) * factor(type) > 0)
+            if (netPrice.compareTo(netPriceLimit) * factor(order.getType()) > 0)
                 break;
             log.debug("order {}", order);
             BigDecimal newAmount = totalAmount.add(order.getTradableAmount());
@@ -161,7 +165,7 @@ public class Simulation {
         Order.OrderType type = revert(orders.get(0).getType());
         for (LimitOrder order : orders) {
             BigDecimal netPrice = Orders.getNetPrice(order.getLimitPrice(), type, feeService.getFeePercent(order.getCurrencyPair()));
-            if (netPrice.compareTo(netPriceLimit) * factor(type) > 0)
+            if (netPrice.compareTo(netPriceLimit) * factor(order.getType()) > 0)
                 break;
             log.debug("order {}", order);
             BigDecimal curAmount = order.getTradableAmount();

@@ -109,9 +109,5 @@ public class Dealer implements ICacheUpdateListener {
         simulation.deal(worstOrder, worstExchange, closeOrders, bestExchange);
     }
 
-    private static BigDecimal getNetPrice(LimitOrder order, ExchangeCache bestX) {
-        return Orders.getNetPrice(order.getLimitPrice(), Orders.revert(order.getType()), bestX.feeService.getFeePercent(order.getCurrencyPair()));
-    }
-
     private static final Logger log = LoggerFactory.getLogger(Dealer.class);
 }
