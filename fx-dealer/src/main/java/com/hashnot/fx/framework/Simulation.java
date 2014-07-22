@@ -139,7 +139,6 @@ public class Simulation {
                 break;
             log.debug("order {}", order);
             BigDecimal newAmount = totalAmount.add(order.getTradableAmount());
-            //totalAmount = ;
 
             BigDecimal actualAmount;
             boolean last = false;
