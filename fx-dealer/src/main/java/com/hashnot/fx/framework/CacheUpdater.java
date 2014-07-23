@@ -3,10 +3,13 @@ package com.hashnot.fx.framework;
 import com.hashnot.fx.spi.ExchangeCache;
 import com.hashnot.fx.spi.ExchangeUpdateEvent;
 import com.hashnot.fx.util.OrderBooks;
+import com.hashnot.fx.util.Orders;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
+import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.account.AccountInfo;
 import com.xeiam.xchange.dto.marketdata.OrderBook;
+import com.xeiam.xchange.dto.trade.LimitOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,11 +29,13 @@ public class CacheUpdater implements Runnable {
     private final Map<Exchange, ExchangeCache> context;
     private final BlockingQueue<ExchangeUpdateEvent> inQueue;
     private final ICacheUpdateListener listener;
+    private final Map<Order.OrderType, OrderUpdateEvent> openOrders;
 
-    public CacheUpdater(Map<Exchange, ExchangeCache> context, BlockingQueue<ExchangeUpdateEvent> inQueue, ICacheUpdateListener listener) {
+    public CacheUpdater(Map<Exchange, ExchangeCache> context, BlockingQueue<ExchangeUpdateEvent> inQueue, ICacheUpdateListener listener, Map<Order.OrderType, OrderUpdateEvent> openOrders) {
         this.context = context;
         this.inQueue = inQueue;
         this.listener = listener;
+        this.openOrders = openOrders;
     }
 
     private final ArrayList<ExchangeUpdateEvent> localQueue = new ArrayList<>(2 << 8);
@@ -79,14 +84,6 @@ public class CacheUpdater implements Runnable {
         }
     }
 
-    protected void clear() {
-        localQueue.clear();
-        processedAccounts.clear();
-        processedOrderBooks.clear();
-        affectedCurrencies.clear();
-        affectedPairs.clear();
-    }
-
     private void update(Exchange exchange, AccountInfo accountInfo) {
         ExchangeCache x = context.get(exchange);
 
@@ -110,6 +107,7 @@ public class CacheUpdater implements Runnable {
     private void update(Exchange exchange, OrderBook orderBook, CurrencyPair orderBookPair) {
         ExchangeCache x = context.get(exchange);
         Map<String, BigDecimal> limits = x.orderBookLimits;
+        injectOpenOrders(exchange, orderBook);
         OrderBooks.removeOverLimit(orderBook, limits.get(orderBookPair.baseSymbol), limits.get(orderBookPair.counterSymbol));
         OrderBook current = x.orderBooks.get(orderBookPair);
         if (current == null || !OrderBooks.equals(current, orderBook)) {
@@ -117,6 +115,31 @@ public class CacheUpdater implements Runnable {
             OrderBooks.updateNetPrices(x, orderBookPair);
             affectedPairs.add(orderBookPair);
         }
+    }
+
+    private void injectOpenOrders(Exchange exchange, OrderBook orderBook) {
+        injectOpenOrders(exchange, orderBook, Order.OrderType.ASK);
+        injectOpenOrders(exchange, orderBook, Order.OrderType.BID);
+    }
+
+    private void injectOpenOrders(Exchange exchange, OrderBook orderBook, Order.OrderType type) {
+        OrderUpdateEvent orderUpdate = openOrders.get(type);
+        if (orderUpdate!=null && orderUpdate.openExchange.equals(exchange)) {
+            List<LimitOrder> limitOrders = OrderBooks.get(orderBook, type);
+            int i = Collections.binarySearch(limitOrders, orderUpdate.openedOrder);
+            if (i < 0)
+                limitOrders.add(-i - 1, orderUpdate.openedOrder);
+            else
+                limitOrders.set(i, Orders.add(limitOrders.get(i), orderUpdate.openedOrder));
+        }
+    }
+
+    protected void clear() {
+        localQueue.clear();
+        processedAccounts.clear();
+        processedOrderBooks.clear();
+        affectedCurrencies.clear();
+        affectedPairs.clear();
     }
 
 }

@@ -58,7 +58,7 @@ public class Orders {
 
     public static LimitOrder closing(LimitOrder order, IFeeService feeService) {
         LimitOrder result = closing(order);
-            result.setNetPrice(getNetPrice(result, FeeHelper.getFeePercent(feeService, result)));
+        result.setNetPrice(getNetPrice(result, FeeHelper.getFeePercent(feeService, result)));
         return result;
     }
 
@@ -136,5 +136,11 @@ public class Orders {
     public static void validateSameDirection(LimitOrder o1, LimitOrder o2) {
         if (o1.getType() != o2.getType())
             throw new IllegalArgumentException("Orders in different direction");
+    }
+
+    public static LimitOrder add(LimitOrder o1, LimitOrder o2) {
+        if (o1.getType() != o2.getType() || o1.getLimitPrice().compareTo(o2.getLimitPrice()) != 0)
+            throw new IllegalArgumentException("Incompatible LimitOrders");
+        return new LimitOrder(o1.getType(), o1.getTradableAmount().add(o2.getTradableAmount()), o1.getCurrencyPair(), null, null, o1.getLimitPrice());
     }
 }

@@ -72,7 +72,7 @@ public class Main {
 
         simulation.report();
 
-        scheduler.execute(new CacheUpdater(context, updates, dealer));
+        scheduler.execute(new CacheUpdater(context, updates, dealer, myOpenOrders));
         scheduler.scheduleAtFixedRate(new StatusMonitor(updates, cacheUpdateQueue, orderUpdates), 0, 200, TimeUnit.MILLISECONDS);
 
         Thread.sleep(10000);
