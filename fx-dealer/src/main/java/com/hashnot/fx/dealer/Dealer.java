@@ -101,8 +101,10 @@ public class Dealer implements ICacheUpdateListener {
         Exchange worstExchange = bestOrders.get(worstOrder);
         Exchange bestExchange = best.getValue();
         LimitOrder closingBest = closing(best.getKey(), context.get(bestExchange).feeService);
-        if (!isProfitable(worstOrder, closingBest))
+        if (!isProfitable(worstOrder, closingBest)) {
+            orderUpdater.update(new OrderUpdateEvent(type));
             return;
+        }
 
         List<LimitOrder> closeOrders = get(context.get(bestExchange).orderBooks.get(pair), type);
         OrderUpdateEvent event = simulation.deal(worstOrder, worstExchange, closeOrders, bestExchange);

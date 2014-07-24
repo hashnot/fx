@@ -31,6 +31,14 @@ public class OrderUpdater implements IOrderUpdater {
     @Override
     public void update(OrderUpdateEvent evt) {
         try {
+            if (evt.clear != null) {
+                OrderUpdateEvent self = openOrders.get(evt.clear);
+                if (self != null) {
+                    cancel(self);
+                    openOrders.remove(evt.clear);
+                }
+                return;
+            }
             OrderType key = evt.openedOrder.getType();
             OrderUpdateEvent self = openOrders.get(key);
 
@@ -38,7 +46,7 @@ public class OrderUpdater implements IOrderUpdater {
                 open(evt);
             } else if (evt.openExchange.equals(self.openExchange)) {
                 if (!Orders.equals(evt.openedOrder, self.openedOrder))
-                     updateOrder(evt, self);
+                    updateOrder(self, evt);
             } else {
                 cancel(self);
                 open(evt);
@@ -49,19 +57,18 @@ public class OrderUpdater implements IOrderUpdater {
         }
     }
 
-    private void open(OrderUpdateEvent update) throws IOException {
+    protected void open(OrderUpdateEvent update) throws IOException {
         update.openExchange.getPollingTradeService().placeLimitOrder(update.openedOrder);
     }
 
-    private void cancel(OrderUpdateEvent self) throws IOException {
+    protected void cancel(OrderUpdateEvent self) throws IOException {
         self.openExchange.getPollingTradeService().cancelOrder(self.openedOrder.getId());
     }
 
-    private void updateOrder(OrderUpdateEvent self, OrderUpdateEvent event) throws ConnectionException, IOException {
+    protected void updateOrder(OrderUpdateEvent self, OrderUpdateEvent event) throws ConnectionException, IOException {
         PollingTradeService svc = self.openExchange.getPollingTradeService();
         svc.cancelOrder(self.openedOrder.getId());
         svc.placeLimitOrder(event.openedOrder);
     }
 
 }
-

@@ -68,7 +68,7 @@ public class Main {
 
         Simulation simulation = new Simulation(context);
         //OrderUpdater orderUpdater = new OrderUpdater(context, myOpenOrders);
-        Dealer dealer = new Dealer(context, simulation, new NoopOrderUpdater(myOpenOrders));
+        Dealer dealer = new Dealer(context, simulation, new NoopOrderUpdater(myOpenOrders, context));
 
         simulation.report();
 
