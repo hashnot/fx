@@ -25,6 +25,7 @@ import java.util.concurrent.*;
 
 import static com.xeiam.xchange.currency.Currencies.BTC;
 import static com.xeiam.xchange.currency.Currencies.EUR;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
  * @author Rafał Krupiński
@@ -56,14 +57,15 @@ public class Main {
 
         setup(context);
 
-        HashMap<Order.OrderType, OrderUpdateEvent> myOpenOrders = new HashMap<>();
+        Map<Order.OrderType, OrderUpdateEvent> myOpenOrders = new HashMap<>();
+
+        IOrderClosedListener orderClosedListener = new OrderClosedListener(myOpenOrders);
 
         for (Exchange exchange : context.keySet()) {
             scheduler.scheduleAtFixedRate(
                     new OrderBookPoller(exchange, updates, allowedPairs)
-                    , 100, 100, TimeUnit.MILLISECONDS)
-//                    .run()
-            ;
+                    , 100, 100, MILLISECONDS);
+            scheduler.scheduleAtFixedRate(new TradeMonitor(exchange, orderClosedListener, myOpenOrders), 0, 200, MILLISECONDS);
         }
 
         Simulation simulation = new Simulation(context);
@@ -73,7 +75,7 @@ public class Main {
         simulation.report();
 
         scheduler.execute(new CacheUpdater(context, updates, dealer, myOpenOrders));
-        scheduler.scheduleAtFixedRate(new StatusMonitor(updates, cacheUpdateQueue, orderUpdates), 0, 200, TimeUnit.MILLISECONDS);
+        scheduler.scheduleAtFixedRate(new StatusMonitor(updates, cacheUpdateQueue, orderUpdates), 0, 200, MILLISECONDS);
 
         Thread.sleep(10000);
         scheduler.shutdown();

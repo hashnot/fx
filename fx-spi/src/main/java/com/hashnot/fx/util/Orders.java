@@ -143,4 +143,8 @@ public class Orders {
             throw new IllegalArgumentException("Incompatible LimitOrders");
         return new LimitOrder(o1.getType(), o1.getTradableAmount().add(o2.getTradableAmount()), o1.getCurrencyPair(), null, null, o1.getLimitPrice());
     }
+
+    public static LimitOrder withAmount(LimitOrder order, BigDecimal tradableAmount) {
+        return new LimitOrder(order.getType(), tradableAmount, order.getCurrencyPair(), null, null, order.getLimitPrice());
+    }
 }

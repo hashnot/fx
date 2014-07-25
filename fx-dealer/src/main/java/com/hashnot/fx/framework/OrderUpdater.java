@@ -23,7 +23,7 @@ public class OrderUpdater implements IOrderUpdater {
     private final Map<Exchange, ExchangeCache> ctx;
     private final Map<OrderType, OrderUpdateEvent> openOrders;
 
-    public OrderUpdater(Map<Exchange, ExchangeCache> ctx, HashMap<OrderType, OrderUpdateEvent> openOrders) {
+    public OrderUpdater(Map<Exchange, ExchangeCache> ctx, Map<OrderType, OrderUpdateEvent> openOrders) {
         this.ctx = ctx;
         this.openOrders = openOrders;
     }
