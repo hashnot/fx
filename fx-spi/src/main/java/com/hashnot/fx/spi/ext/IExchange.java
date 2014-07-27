@@ -24,6 +24,8 @@ public interface IExchange extends Exchange, IFeeService {
 
     BigDecimal getWalletUnit(String currency);
 
+    BigDecimal getMinimumTrade(String currency);
+
     BigDecimal getTradeAmountUnit(CurrencyPair pair);
 
     BigDecimal getFeePercent(CurrencyPair pair);

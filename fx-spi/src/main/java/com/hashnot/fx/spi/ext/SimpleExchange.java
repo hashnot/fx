@@ -6,6 +6,8 @@ import com.xeiam.xchange.ExchangeSpecification;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.account.AccountInfo;
 import com.xeiam.xchange.dto.marketdata.OrderBook;
+import com.xeiam.xchange.dto.trade.LimitOrder;
+import com.xeiam.xchange.dto.trade.OpenOrders;
 import com.xeiam.xchange.service.polling.PollingAccountService;
 import com.xeiam.xchange.service.polling.PollingMarketDataService;
 import com.xeiam.xchange.service.polling.PollingTradeService;
@@ -14,6 +16,7 @@ import com.xeiam.xchange.service.streaming.StreamingExchangeService;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
@@ -35,9 +38,11 @@ public class SimpleExchange implements IExchange {
     static private final BigDecimal TWO = new BigDecimal(2);
 
     final private Map<String, BigDecimal> walletUnit;
+    final private Map<String, BigDecimal> minimumOrder;
     final private BigDecimal tradeAmountUnit;
 
-    public SimpleExchange(Exchange exchange, IFeeService feeService, Map<String, BigDecimal> walletUnit, int limitPriceScale, int tradeAmountScale) {
+    public SimpleExchange(Exchange exchange, IFeeService feeService, Map<String, BigDecimal> walletUnit, Map<String, BigDecimal> minimumOrder, int limitPriceScale, int tradeAmountScale) {
+        this.minimumOrder = minimumOrder != null ? minimumOrder : Collections.emptyMap();
         this.scale = limitPriceScale;
         this.exchange = exchange;
         this.feeService = feeService;
@@ -66,6 +71,11 @@ public class SimpleExchange implements IExchange {
         BigDecimal result = walletUnit.get(currency);
         if (result == null) throw new IllegalArgumentException("No wallet unit for " + currency + " @" + toString());
         return result;
+    }
+
+    @Override
+    public BigDecimal getMinimumTrade(String currency) {
+        return minimumOrder.getOrDefault(currency, ZERO);
     }
 
     @Override
@@ -140,11 +150,25 @@ public class SimpleExchange implements IExchange {
 
     @Override
     public void stop() {
+    }
 
+    protected void cancelAll() {
+        PollingTradeService tradeService = getPollingTradeService();
+        OpenOrders openOrders = null;
+        try {
+            openOrders = tradeService.getOpenOrders();
+            for (LimitOrder order : openOrders.getOpenOrders()) {
+                tradeService.cancelOrder(order.getId());
+            }
+        } catch (IOException e) {
+            throw new ConnectionException(e);
+        }
     }
 
     @Override
     public void start(ScheduledExecutorService scheduler) {
+        Runtime.getRuntime().addShutdownHook(new Thread(this::cancelAll));
+        this.executor = scheduler;
         try {
             updateWallet();
         } catch (IOException e) {

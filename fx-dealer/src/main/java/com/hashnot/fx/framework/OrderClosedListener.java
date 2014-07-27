@@ -42,14 +42,14 @@ public class OrderClosedListener implements IOrderClosedListener {
                 BigDecimal newAmount = totalAmount.add(order.getTradableAmount());
                 int cmp = newAmount.compareTo(amountLimit);
                 if (cmp == 0) {
-                    tradeService.placeLimitOrder(order);
+                    placeLimitOrder(order, tradeService);
                     break;
                 } else if (cmp <= 0) {
-                    tradeService.placeLimitOrder(order);
+                    placeLimitOrder(order, tradeService);
                     totalAmount = newAmount;
                 } else {
                     BigDecimal amount = amountLimit.subtract(totalAmount);
-                    tradeService.placeLimitOrder(Orders.withAmount(order, amount));
+                    placeLimitOrder(Orders.withAmount(order, amount), tradeService);
                     break;
                 }
             }
@@ -61,10 +61,14 @@ public class OrderClosedListener implements IOrderClosedListener {
     private void close(List<LimitOrder> orders, PollingTradeService pollingTradeService) {
         try {
             for (LimitOrder order : orders) {
-                pollingTradeService.placeLimitOrder(order);
+                placeLimitOrder(order, pollingTradeService);
             }
         } catch (IOException e) {
             throw new ConnectionException(e);
         }
+    }
+
+    protected void placeLimitOrder(LimitOrder order, PollingTradeService tradeService) throws IOException {
+        tradeService.placeLimitOrder(order);
     }
 }

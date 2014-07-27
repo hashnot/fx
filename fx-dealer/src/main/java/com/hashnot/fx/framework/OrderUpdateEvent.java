@@ -13,6 +13,7 @@ public class OrderUpdateEvent {
     public final IExchange openExchange;
     public final IExchange closeExchange;
     public final LimitOrder openedOrder;
+    public String openOrderId;
     public final List<LimitOrder> closingOrders;
 
     public final Order.OrderType clear;

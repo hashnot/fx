@@ -16,6 +16,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static com.hashnot.fx.util.Orders.*;
+import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.ZERO;
 
 /**
@@ -67,13 +68,20 @@ public class Simulation {
         log.debug("open: {}", openAmount);
         log.debug("close: {}", closeAmount);
 
-        BigDecimal openAmountActual = Numbers.min(openAmount, closeAmount).setScale(getScale(worstExchange, bestExchange, worst.getCurrencyPair()),RoundingMode.FLOOR);
+        BigDecimal openAmountActual = Numbers.min(openAmount, closeAmount).setScale(getScale(worstExchange, bestExchange, worst.getCurrencyPair()), RoundingMode.FLOOR);
 
-        if (openAmountActual.compareTo(LOW_LIMIT) < 0 || openAmountActual.compareTo(worstExchange.getTradeAmountUnit(worst.getCurrencyPair())) < 0)
+        if (!checkMinima(worst, openAmountActual, worstExchange))
             return null;
         log.info("open for {}", openAmountActual);
 
         return apply(worst, worstExchange, closeOrders, bestExchange, openAmountActual);
+    }
+
+    protected boolean checkMinima(LimitOrder worst, BigDecimal openAmountActual, IExchange worstExchange) {
+        return !(openAmountActual.compareTo(LOW_LIMIT) < 0
+                || openAmountActual.compareTo(worstExchange.getTradeAmountUnit(worst.getCurrencyPair())) < 0
+                || openAmountActual.compareTo(worstExchange.getMinimumTrade(worst.getCurrencyPair().baseSymbol)) < 0
+        );
     }
 
     private static int getScale(IExchange e1, IExchange e2, CurrencyPair pair) {

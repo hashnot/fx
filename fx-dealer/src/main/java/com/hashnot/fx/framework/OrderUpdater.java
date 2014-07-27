@@ -2,7 +2,8 @@ package com.hashnot.fx.framework;
 
 import com.hashnot.fx.spi.ConnectionException;
 import com.hashnot.fx.util.Orders;
-import com.xeiam.xchange.service.polling.PollingTradeService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Map;
@@ -13,7 +14,8 @@ import static com.xeiam.xchange.dto.Order.OrderType;
  * @author Rafał Krupiński
  */
 public class OrderUpdater implements IOrderUpdater {
-    private final Map<OrderType, OrderUpdateEvent> openOrders;
+    final private static Logger log = LoggerFactory.getLogger(OrderUpdater.class);
+    final private Map<OrderType, OrderUpdateEvent> openOrders;
 
     public OrderUpdater(Map<OrderType, OrderUpdateEvent> openOrders) {
         this.openOrders = openOrders;
@@ -49,17 +51,18 @@ public class OrderUpdater implements IOrderUpdater {
     }
 
     protected void open(OrderUpdateEvent update) throws IOException {
-        update.openExchange.getPollingTradeService().placeLimitOrder(update.openedOrder);
+        log.info("Open @{} {} ", update.openExchange, update.openedOrder);
+        update.openOrderId = update.openExchange.getPollingTradeService().placeLimitOrder(update.openedOrder);
     }
 
     protected void cancel(OrderUpdateEvent self) throws IOException {
-        self.openExchange.getPollingTradeService().cancelOrder(self.openedOrder.getId());
+        log.info("Cancel @{} {} ", self.openExchange, self.openedOrder);
+        self.openExchange.getPollingTradeService().cancelOrder(self.openOrderId);
     }
 
     protected void updateOrder(OrderUpdateEvent self, OrderUpdateEvent event) throws ConnectionException, IOException {
-        PollingTradeService svc = self.openExchange.getPollingTradeService();
-        svc.cancelOrder(self.openedOrder.getId());
-        svc.placeLimitOrder(event.openedOrder);
+        cancel(self);
+        open(event);
     }
 
 }
