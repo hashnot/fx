@@ -1,7 +1,7 @@
 package com.hashnot.fx.framework;
 
 import com.hashnot.fx.spi.ExchangeUpdateEvent;
-import com.xeiam.xchange.Exchange;
+import com.hashnot.fx.spi.ext.IExchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.marketdata.OrderBook;
 import com.xeiam.xchange.service.polling.PollingMarketDataService;
@@ -17,11 +17,11 @@ import java.util.concurrent.BlockingQueue;
  */
 public class OrderBookPoller implements Runnable {
     final private static Logger log = LoggerFactory.getLogger(OrderBookPoller.class);
-    final private Exchange exchange;
+    final private IExchange exchange;
     final private BlockingQueue<ExchangeUpdateEvent> outQueue;
     final private Collection<CurrencyPair> pairs;
 
-    public OrderBookPoller(Exchange exchange, BlockingQueue<ExchangeUpdateEvent> outQueue, Collection<CurrencyPair> pairs) {
+    public OrderBookPoller(IExchange exchange, BlockingQueue<ExchangeUpdateEvent> outQueue, Collection<CurrencyPair> pairs) {
         this.exchange = exchange;
         this.outQueue = outQueue;
         this.pairs = pairs;

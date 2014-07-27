@@ -2,9 +2,10 @@ package com.hashnot.fx.dealer;
 
 import com.hashnot.fx.ext.StaticFeeService;
 import com.hashnot.fx.framework.Simulation;
-import com.hashnot.fx.spi.ExchangeCache;
+import com.hashnot.fx.spi.ext.IExchange;
+import com.hashnot.fx.spi.ext.SimpleExchange;
+import com.hashnot.fx.util.Exchanges;
 import com.xeiam.xchange.BaseExchange;
-import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.ExchangeSpecification;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
@@ -13,7 +14,6 @@ import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 import static com.xeiam.xchange.currency.Currencies.BTC;
@@ -34,7 +34,7 @@ public class SimulationTest {
                 order(ASK, ONE, P, v(".9"))
         );
         s.deal(worst, e1, bestOrders, e2);
-        s.report();
+        report();
     }
 
     @Test
@@ -47,7 +47,7 @@ public class SimulationTest {
                 order(BID, ONE, P, v("1.2"))
         );
         s.deal(worst, e1, bestOrders, e2);
-        s.report();
+        report();
     }
 
     @Test
@@ -60,7 +60,7 @@ public class SimulationTest {
                 order(ASK, ONE, P, v(".9"))
         );
         s.deal(worst, e1, bestOrders, e2);
-        s.report();
+        report();
     }
 
     @Test
@@ -73,38 +73,35 @@ public class SimulationTest {
                 order(BID, ONE, P, v("1.1"))
         );
         s.deal(worst, e1, bestOrders, e2);
-        s.report();
+        report();
+    }
+
+    protected void report() {
+        Exchanges.report(Arrays.asList(e1, e2));
     }
 
     protected static BigDecimal v(final String s) {
         return new BigDecimal(s);
     }
 
-    protected static BigDecimal v(long s) {
-        return new BigDecimal(s);
-    }
 
-
-    Exchange e1 = new MockExchange();
-    Exchange e2 = new MockExchange();
+    IExchange e1;
+    IExchange e2;
 
     static CurrencyPair P = CurrencyPair.BTC_EUR;
 
     protected Simulation createSimulator(BigDecimal... fee) {
         if (fee.length == 0) fee = new BigDecimal[]{ZERO};
-        HashMap<Exchange, ExchangeCache> ctx = new HashMap<>();
 
-        ExchangeCache x1 = new ExchangeCache(e1.toString(), new StaticFeeService(fee[0]));
-        x1.updateWallet(EUR, TEN);
-        x1.updateWallet(BTC, TEN);
+        e1 = new SimpleExchange(new MockExchange(), new StaticFeeService(fee[0]), 8);
+        e1.getWallet().put(EUR, TEN);
+        e1.getWallet().put(BTC, TEN);
 
-        ExchangeCache x2 = new ExchangeCache(e2.toString(), new StaticFeeService(fee[Math.min(1, fee.length - 1)]));
-        x2.updateWallet(BTC, TEN);
-        x2.updateWallet(EUR, TEN);
+        e2 = new SimpleExchange(new MockExchange(), new StaticFeeService(fee[Math.min(1, fee.length - 1)]), 8);
+        e2.getWallet().put(EUR, TEN);
+        e2.getWallet().put(BTC, TEN);
 
-        ctx.put(e1, x1);
-        ctx.put(e2, x2);
-        return new Simulation(ctx);
+        return new Simulation();
     }
 
     // exchange objects are used just as a key

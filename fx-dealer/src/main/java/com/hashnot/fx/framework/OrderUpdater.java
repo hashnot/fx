@@ -1,15 +1,10 @@
 package com.hashnot.fx.framework;
 
 import com.hashnot.fx.spi.ConnectionException;
-import com.hashnot.fx.spi.ExchangeCache;
 import com.hashnot.fx.util.Orders;
-import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.service.polling.PollingTradeService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
 import static com.xeiam.xchange.dto.Order.OrderType;
@@ -18,13 +13,9 @@ import static com.xeiam.xchange.dto.Order.OrderType;
  * @author Rafał Krupiński
  */
 public class OrderUpdater implements IOrderUpdater {
-    final private static Logger log = LoggerFactory.getLogger(OrderUpdater.class);
-
-    private final Map<Exchange, ExchangeCache> ctx;
     private final Map<OrderType, OrderUpdateEvent> openOrders;
 
-    public OrderUpdater(Map<Exchange, ExchangeCache> ctx, Map<OrderType, OrderUpdateEvent> openOrders) {
-        this.ctx = ctx;
+    public OrderUpdater(Map<OrderType, OrderUpdateEvent> openOrders) {
         this.openOrders = openOrders;
     }
 

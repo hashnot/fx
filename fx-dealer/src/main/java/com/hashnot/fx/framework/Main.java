@@ -1,41 +1,36 @@
 package com.hashnot.fx.framework;
 
 import com.hashnot.fx.dealer.Dealer;
-import com.hashnot.fx.ext.BTCEFeeService;
 import com.hashnot.fx.ext.StaticFeeService;
-import com.hashnot.fx.spi.ExchangeCache;
 import com.hashnot.fx.spi.ExchangeUpdateEvent;
+import com.hashnot.fx.spi.ext.IExchange;
+import com.hashnot.fx.spi.ext.SimpleExchange;
 import com.xeiam.xchange.Exchange;
-import com.xeiam.xchange.anx.v2.ANXExchange;
-import com.xeiam.xchange.bitcurex.BitcurexExchange;
-import com.xeiam.xchange.btce.v3.BTCEExchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
-import com.xeiam.xchange.kraken.KrakenExchange;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import groovy.lang.GroovyShell;
 
+import java.io.File;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
 
-import static com.xeiam.xchange.currency.Currencies.BTC;
-import static com.xeiam.xchange.currency.Currencies.EUR;
+import static com.hashnot.fx.util.Exchanges.report;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
  * @author Rafał Krupiński
  */
 public class Main {
-    final private static Logger log = LoggerFactory.getLogger(Main.class);
     static Collection<CurrencyPair> allowedPairs = Arrays.asList(/*CurrencyPairUtil.EUR_PLN, CurrencyPair.BTC_PLN, */CurrencyPair.BTC_EUR);
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        Map<Exchange, ExchangeCache> context = new HashMap<>();
+        Collection<IExchange> exchanges = load(args[0]);
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> exchanges.forEach(IExchange::stop)));
+
         int capacity = 2 << 8;
         BlockingQueue<ExchangeUpdateEvent> updates = new ArrayBlockingQueue<>(capacity);
         BlockingQueue<CacheUpdateEvent> cacheUpdateQueue = new ArrayBlockingQueue<>(capacity);
@@ -43,72 +38,43 @@ public class Main {
 
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(10, new ConfigurableThreadFactory());
 
-        Exchange kraken = defaultExchange(new KrakenExchange());
-        context.put(kraken, new ExchangeCache(kraken.toString(), new StaticFeeService(new BigDecimal(".002"))));
-
-        Exchange btce = defaultExchange(new BTCEExchange());
-        context.put(btce, new ExchangeCache(btce.toString(), new BTCEFeeService()));
-
-        Exchange bitcurex = defaultExchange(new BitcurexExchange());
-        context.put(bitcurex, new ExchangeCache(bitcurex.toString(), new StaticFeeService(new BigDecimal(".004"))));
-
-        Exchange anx = defaultExchange(new ANXExchange());
-        context.put(anx, new ExchangeCache(anx.toString(), new StaticFeeService(new BigDecimal(".002"))));
-
-        setup(context);
+        exchanges.forEach(x -> x.start(scheduler));
 
         Map<Order.OrderType, OrderUpdateEvent> myOpenOrders = new HashMap<>();
 
         IOrderClosedListener orderClosedListener = new OrderClosedListener(myOpenOrders);
 
-        for (Exchange exchange : context.keySet()) {
+        for (IExchange exchange : exchanges) {
             scheduler.scheduleAtFixedRate(
                     new OrderBookPoller(exchange, updates, allowedPairs)
                     , 100, 100, MILLISECONDS);
-            scheduler.scheduleAtFixedRate(new TradeMonitor(exchange, orderClosedListener, myOpenOrders), 0, 200, MILLISECONDS);
+//            scheduler.scheduleAtFixedRate(new TradeMonitor(exchange, orderClosedListener, myOpenOrders), 0, 200, MILLISECONDS);
         }
 
-        Simulation simulation = new Simulation(context);
+        Simulation simulation = new Simulation();
         //OrderUpdater orderUpdater = new OrderUpdater(context, myOpenOrders);
-        Dealer dealer = new Dealer(context, simulation, new NoopOrderUpdater(myOpenOrders, context));
+        Dealer dealer = new Dealer(exchanges, simulation, new NoopOrderUpdater(myOpenOrders));
 
-        simulation.report();
+        report(exchanges);
 
-        scheduler.execute(new CacheUpdater(context, updates, dealer, myOpenOrders));
+        scheduler.execute(new CacheUpdater(updates, dealer, myOpenOrders));
         scheduler.scheduleAtFixedRate(new StatusMonitor(updates, cacheUpdateQueue, orderUpdates), 0, 200, MILLISECONDS);
 
         Thread.sleep(10000);
         scheduler.shutdown();
         scheduler.awaitTermination(2, TimeUnit.SECONDS);
         scheduler.shutdownNow();
-        simulation.report();
+        report(exchanges);
     }
 
-    private static void setup(Map<Exchange, ExchangeCache> context) {
-        for (Map.Entry<Exchange, ExchangeCache> e : context.entrySet()) {
-            setupWallet(e.getValue());
+    private static Collection<IExchange> load(String path) {
+        GroovyShell sh = new GroovyShell();
+        try {
+            return (Collection<IExchange>) sh.evaluate(new File(path));
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Could not load setup script", e);
         }
-    }
 
-
-    private static int base;
-
-    private static void setupWallet(ExchangeCache exchange) {
-        BigDecimal multi = new BigDecimal(2);
-
-        BigDecimal eur = new BigDecimal(++base * 1000);
-        BigDecimal btc = new BigDecimal(base * 2);
-
-        exchange.wallet.put(EUR, eur);
-        exchange.wallet.put(BTC, btc);
-
-        exchange.orderBookLimits.put(EUR, eur.multiply(multi));
-        exchange.orderBookLimits.put(BTC, btc.multiply(multi));
-    }
-
-    protected static Exchange defaultExchange(Exchange exchange) {
-        exchange.applySpecification(exchange.getDefaultExchangeSpecification());
-        return exchange;
     }
 
 }

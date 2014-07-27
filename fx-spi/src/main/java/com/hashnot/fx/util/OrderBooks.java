@@ -1,6 +1,6 @@
 package com.hashnot.fx.util;
 
-import com.hashnot.fx.spi.ExchangeCache;
+import com.hashnot.fx.spi.ext.IExchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.marketdata.OrderBook;
@@ -59,9 +59,9 @@ public class OrderBooks {
         return i;
     }
 
-    public static void updateNetPrices(ExchangeCache exchange, CurrencyPair pair) {
-        BigDecimal fee = exchange.feeService.getFeePercent(pair);
-        OrderBook orderBook = exchange.orderBooks.get(pair);
+    public static void updateNetPrices(IExchange exchange, CurrencyPair pair) {
+        BigDecimal fee = exchange.getFeePercent(pair);
+        OrderBook orderBook = exchange.getOrderBook(pair);
         updateNetPrices(orderBook, fee, Order.OrderType.ASK);
         updateNetPrices(orderBook, fee, Order.OrderType.BID);
     }

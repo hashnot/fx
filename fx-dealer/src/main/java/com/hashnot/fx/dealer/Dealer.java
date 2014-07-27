@@ -4,9 +4,8 @@ import com.hashnot.fx.framework.ICacheUpdateListener;
 import com.hashnot.fx.framework.IOrderUpdater;
 import com.hashnot.fx.framework.OrderUpdateEvent;
 import com.hashnot.fx.framework.Simulation;
-import com.hashnot.fx.spi.ExchangeCache;
+import com.hashnot.fx.spi.ext.IExchange;
 import com.hashnot.fx.util.Orders;
-import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.trade.LimitOrder;
@@ -24,19 +23,19 @@ import static com.hashnot.fx.util.Orders.isProfitable;
  */
 public class Dealer implements ICacheUpdateListener {
 
-    private final Map<Exchange, ExchangeCache> context;
+    private final Collection<IExchange> context;
 
     private final IOrderUpdater orderUpdater;
 
     public Simulation simulation;
 
-    public Dealer(Map<Exchange, ExchangeCache> context, Simulation simulation, IOrderUpdater orderUpdater) {
+    public Dealer(Collection<IExchange> context, Simulation simulation, IOrderUpdater orderUpdater) {
         this.context = context;
         this.simulation = simulation;
         this.orderUpdater = orderUpdater;
     }
 
-    final private Collection<Exchange> dirtyExchanges = new HashSet<>();
+    final private Collection<IExchange> dirtyExchanges = new HashSet<>();
 
     @Override
     public void cacheUpdated(Collection<CurrencyPair> pairs) {
@@ -54,10 +53,12 @@ public class Dealer implements ICacheUpdateListener {
     }
 
     protected void process(Collection<CurrencyPair> dirtyPairs) {
-        for (CurrencyPair pair : dirtyPairs) {
-            for (Map.Entry<Exchange, ExchangeCache> e : context.entrySet()) {
-                if (e.getValue().orderBooks.containsKey(pair))
-                    dirtyExchanges.add(e.getKey());
+        for (IExchange e : context) {
+            for (CurrencyPair pair : dirtyPairs) {
+                if (e.getOrderBooks().containsKey(pair)) {
+                    dirtyExchanges.add(e);
+                    break;
+                }
             }
         }
         if (dirtyExchanges.size() < 2)
@@ -69,10 +70,10 @@ public class Dealer implements ICacheUpdateListener {
         }
     }
 
-    private SortedMap<LimitOrder, Exchange> getBestOffers(CurrencyPair pair, Collection<Exchange> exchanges, Order.OrderType dir) {
-        SortedMap<LimitOrder, Exchange> result = new TreeMap<>((o1, o2) -> o1.getNetPrice().compareTo(o2.getNetPrice()) * Orders.factor(o1.getType()));
-        for (Exchange x : exchanges) {
-            List<LimitOrder> orders = get(context.get(x).orderBooks.get(pair), dir);
+    private SortedMap<LimitOrder, IExchange> getBestOffers(CurrencyPair pair, Collection<IExchange> exchanges, Order.OrderType dir) {
+        SortedMap<LimitOrder, IExchange> result = new TreeMap<>((o1, o2) -> o1.getNetPrice().compareTo(o2.getNetPrice()) * Orders.factor(o1.getType()));
+        for (IExchange x : exchanges) {
+            List<LimitOrder> orders = get(x.getOrderBook(pair), dir);
             if (!orders.isEmpty())
                 result.put(orders.get(0), x);
         }
@@ -83,30 +84,30 @@ public class Dealer implements ICacheUpdateListener {
         log.debug("TODO clearOrders");
     }
 
-    private void updateLimitOrders(CurrencyPair pair, Collection<Exchange> exchanges, Order.OrderType type) {
+    private void updateLimitOrders(CurrencyPair pair, Collection<IExchange> exchanges, Order.OrderType type) {
         //podsumuj wszystkie oferty do
         // - limitu stanu konta
         // - limitu różnicy ceny
 
-        SortedMap<LimitOrder, Exchange> bestOrders = getBestOffers(pair, exchanges, type);
+        SortedMap<LimitOrder, IExchange> bestOrders = getBestOffers(pair, exchanges, type);
         if (bestOrders.size() < 2) {
             clearOrders(pair);
             return;
         }
 
-        List<Map.Entry<LimitOrder, Exchange>> bestOrdersList = new ArrayList<>(bestOrders.entrySet());
+        List<Map.Entry<LimitOrder, IExchange>> bestOrdersList = new ArrayList<>(bestOrders.entrySet());
 
-        Map.Entry<LimitOrder, Exchange> best = bestOrdersList.get(0);
+        Map.Entry<LimitOrder, IExchange> best = bestOrdersList.get(0);
         LimitOrder worstOrder = bestOrders.lastKey();
-        Exchange worstExchange = bestOrders.get(worstOrder);
-        Exchange bestExchange = best.getValue();
-        LimitOrder closingBest = closing(best.getKey(), context.get(bestExchange).feeService);
+        IExchange worstExchange = bestOrders.get(worstOrder);
+        IExchange bestExchange = best.getValue();
+        LimitOrder closingBest = closing(best.getKey(), bestExchange);
         if (!isProfitable(worstOrder, closingBest)) {
             orderUpdater.update(new OrderUpdateEvent(type));
             return;
         }
 
-        List<LimitOrder> closeOrders = get(context.get(bestExchange).orderBooks.get(pair), type);
+        List<LimitOrder> closeOrders = get(bestExchange.getOrderBook(pair), type);
         OrderUpdateEvent event = simulation.deal(worstOrder, worstExchange, closeOrders, bestExchange);
         if (event != null)
             orderUpdater.update(event);

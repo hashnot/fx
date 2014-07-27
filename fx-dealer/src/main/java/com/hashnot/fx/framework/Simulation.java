@@ -1,21 +1,17 @@
 package com.hashnot.fx.framework;
 
-import com.hashnot.fx.spi.ExchangeCache;
+import com.hashnot.fx.spi.ext.IExchange;
 import com.hashnot.fx.spi.ext.IFeeService;
 import com.hashnot.fx.util.FeeHelper;
 import com.hashnot.fx.util.Numbers;
 import com.hashnot.fx.util.Orders;
-import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.hashnot.fx.util.FeeHelper.getFeePercent;
 import static com.hashnot.fx.util.Orders.*;
@@ -28,26 +24,18 @@ public class Simulation {
     final private static Logger log = LoggerFactory.getLogger(Simulation.class);
     private static final BigDecimal LOW_LIMIT = new BigDecimal(".001");
 
-    final private Map<Exchange, ExchangeCache> context;
-
-    public Simulation(Map<Exchange, ExchangeCache> context) {
-        this.context = context;
-    }
-
-    public OrderUpdateEvent deal(LimitOrder worst, Exchange worstExchange, List<LimitOrder> closeOrders, Exchange bestExchange) {
-        ExchangeCache openExchange = context.get(worstExchange);
-        ExchangeCache closeExchange = context.get(bestExchange);
+    public OrderUpdateEvent deal(LimitOrder worst, IExchange worstExchange, List<LimitOrder> closeOrders, IExchange bestExchange) {
 
         //after my open order os closed on the worst exchange, this money should disappear
         String openOutgoingCur = outgoingCurrency(worst);
 
         String closeOutCur = incomingCurrency(worst);
 
-        BigDecimal openOutGross = openExchange.wallet.get(openOutgoingCur);
-        BigDecimal openOutNet = FeeHelper.addPercent(openOutGross, getFeePercent(worst.getCurrencyPair(), Order.OrderType.ASK, openExchange.feeService));
+        BigDecimal openOutGross = worstExchange.getWallet(openOutgoingCur);
+        BigDecimal openOutNet = FeeHelper.addPercent(openOutGross, getFeePercent(worst.getCurrencyPair(), Order.OrderType.ASK, worstExchange));
 
-        BigDecimal closeOutGross = closeExchange.wallet.get(closeOutCur);
-        BigDecimal closeOutNet = FeeHelper.addPercent(closeOutGross, getFeePercent(worst.getCurrencyPair(), Order.OrderType.ASK, closeExchange.feeService));
+        BigDecimal closeOutGross = bestExchange.getWallet(closeOutCur);
+        BigDecimal closeOutNet = FeeHelper.addPercent(closeOutGross, getFeePercent(worst.getCurrencyPair(), Order.OrderType.ASK, bestExchange));
 
         log.debug("type: {}, best {}, worst {}", worst.getType(), bestExchange, worstExchange);
         log.debug("open  {} {} -> {}", openOutgoingCur, openOutGross, openOutNet);
@@ -69,10 +57,10 @@ public class Simulation {
         BigDecimal closeAmount;
         if (worst.getType() == Order.OrderType.ASK) {
             openAmount = openOutNet;
-            closeAmount = totalAmountByValue(closeOrders, closeOutNet, worst.getNetPrice(), closeExchange.feeService);
+            closeAmount = totalAmountByValue(closeOrders, closeOutNet, worst.getNetPrice(), bestExchange);
         } else {
             openAmount = openOutNet.divide(worst.getLimitPrice(), c);
-            closeAmount = totalAmountByAmount(closeOrders, closeOutNet, worst.getNetPrice(), closeExchange.feeService);
+            closeAmount = totalAmountByAmount(closeOrders, closeOutNet, worst.getNetPrice(), bestExchange);
         }
 
         log.debug("open: {}", openAmount);
@@ -86,7 +74,7 @@ public class Simulation {
         return apply(worst, worstExchange, closeOrders, bestExchange, openAmountActual);
     }
 
-    private OrderUpdateEvent apply(LimitOrder worst, Exchange worstExchange, List<LimitOrder> closeOrders, Exchange bestExchange, BigDecimal openAmount) {
+    private OrderUpdateEvent apply(LimitOrder worst, IExchange worstExchange, List<LimitOrder> closeOrders, IExchange bestExchange, BigDecimal openAmount) {
         LimitOrder openOrder = new LimitOrder(worst.getType(), openAmount, worst.getCurrencyPair(), null, null, worst.getLimitPrice());
         List<LimitOrder> myCloseOrders = new LinkedList<>();
 
@@ -110,22 +98,6 @@ public class Simulation {
         }
 
         return new OrderUpdateEvent(worstExchange, bestExchange, openOrder, myCloseOrders);
-    }
-
-    static void apply(ExchangeCache x, LimitOrder order) {
-        order.setNetPrice(getNetPrice(order, x.feeService.getFeePercent(order.getCurrencyPair())));
-        String outCurrency = outgoingCurrency(order);
-        BigDecimal outAmount = outgoingAmount(order);
-        BigDecimal outBefore = x.wallet.get(outCurrency);
-        BigDecimal outBalance = outBefore.subtract(outAmount);
-        x.wallet.put(outCurrency, outBalance);
-
-        String inCurrency = incomingCurrency(order);
-        BigDecimal inAmount = incomingAmount(order);
-        BigDecimal inBefore = x.wallet.get(inCurrency);
-        BigDecimal inBalance = inBefore.add(inAmount);
-        x.wallet.put(inCurrency, inBalance);
-        log.debug("{} {} {} + {} = {} | {} {} - {} = {} --- {}", x, inCurrency, inBefore, inAmount, inBalance, outCurrency, outBefore, outAmount, outBalance, order);
     }
 
     static BigDecimal totalAmountByAmount(List<LimitOrder> orders, BigDecimal amountLimit, BigDecimal netPriceLimit, IFeeService feeService) {
@@ -192,36 +164,4 @@ public class Simulation {
         return totalAmount;
     }
 
-    public void report() {
-        Map<String, BigDecimal> totals = new HashMap<>();
-        for (Map.Entry<Exchange, ExchangeCache> e : context.entrySet()) {
-            log.info("{}", e.getKey());
-            for (Map.Entry<String, BigDecimal> f : e.getValue().wallet.entrySet()) {
-                String currency = f.getKey();
-                BigDecimal amount = f.getValue();
-                log.info("{} = {}", currency, amount);
-                BigDecimal current = totals.getOrDefault(currency, ZERO);
-                totals.put(currency, current.add(amount));
-            }
-        }
-        log.info("=== Totals ===");
-        for (Map.Entry<String, BigDecimal> e : totals.entrySet())
-            log.info("{} = {}", e.getKey(), e.getValue());
-        log.info("=== End ===");
-    }
-
-    public Map<Exchange, ExchangeCache> getContext() {
-        return context;
-    }
-
-    /*
-    public void apply(Queue<OrderUpdateEvent> outQueue) {
-        for (Map.Entry<Exchange, List<LimitOrder>> e : batch.entrySet()) {
-            for (LimitOrder order : e.getValue()) {
-                outQueue.add(new OrderUpdateEvent(e.getKey(), order));
-            }
-        }
-        batch.clear();
-    }
-*/
 }

@@ -1,8 +1,6 @@
 package com.hashnot.fx.framework;
 
 import com.hashnot.fx.spi.ConnectionException;
-import com.hashnot.fx.spi.ExchangeCache;
-import com.xeiam.xchange.Exchange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,8 +15,8 @@ import static com.xeiam.xchange.dto.Order.OrderType;
 public class NoopOrderUpdater extends OrderUpdater {
     final private static Logger log = LoggerFactory.getLogger(NoopOrderUpdater.class);
 
-    public NoopOrderUpdater(Map<OrderType, OrderUpdateEvent> openOrders, Map<Exchange, ExchangeCache> ctx) {
-        super(ctx, openOrders);
+    public NoopOrderUpdater(Map<OrderType, OrderUpdateEvent> openOrders) {
+        super(openOrders);
     }
 
     protected void open(OrderUpdateEvent update) throws IOException {
