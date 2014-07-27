@@ -20,7 +20,11 @@ public interface IExchange extends Exchange, IFeeService {
     /**
      * @return 10^{@link #getScale(com.xeiam.xchange.currency.CurrencyPair)}
      */
-    BigDecimal getMinIncrease(CurrencyPair pair);
+    BigDecimal getLimitPriceUnit(CurrencyPair pair);
+
+    BigDecimal getWalletUnit(String currency);
+
+    BigDecimal getTradeAmountUnit(CurrencyPair pair);
 
     BigDecimal getFeePercent(CurrencyPair pair);
 

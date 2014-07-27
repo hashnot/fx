@@ -2,18 +2,19 @@ package com.hashnot.fx.framework;
 
 import com.hashnot.fx.spi.ext.IExchange;
 import com.hashnot.fx.spi.ext.IFeeService;
-import com.hashnot.fx.util.FeeHelper;
 import com.hashnot.fx.util.Numbers;
 import com.hashnot.fx.util.Orders;
+import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.math.RoundingMode;
+import java.util.LinkedList;
+import java.util.List;
 
-import static com.hashnot.fx.util.FeeHelper.getFeePercent;
 import static com.hashnot.fx.util.Orders.*;
 import static java.math.BigDecimal.ZERO;
 
@@ -32,10 +33,10 @@ public class Simulation {
         String closeOutCur = incomingCurrency(worst);
 
         BigDecimal openOutGross = worstExchange.getWallet(openOutgoingCur);
-        BigDecimal openOutNet = FeeHelper.addPercent(openOutGross, getFeePercent(worst.getCurrencyPair(), Order.OrderType.ASK, worstExchange));
+        BigDecimal openOutNet = getNetPrice(openOutGross, Order.OrderType.ASK, worstExchange.getFeePercent(worst.getCurrencyPair()));
 
         BigDecimal closeOutGross = bestExchange.getWallet(closeOutCur);
-        BigDecimal closeOutNet = FeeHelper.addPercent(closeOutGross, getFeePercent(worst.getCurrencyPair(), Order.OrderType.ASK, bestExchange));
+        BigDecimal closeOutNet = getNetPrice(closeOutGross, Order.OrderType.ASK, bestExchange.getFeePercent(worst.getCurrencyPair()));
 
         log.debug("type: {}, best {}, worst {}", worst.getType(), bestExchange, worstExchange);
         log.debug("open  {} {} -> {}", openOutgoingCur, openOutGross, openOutNet);
@@ -66,12 +67,19 @@ public class Simulation {
         log.debug("open: {}", openAmount);
         log.debug("close: {}", closeAmount);
 
-        BigDecimal openAmountActual = Numbers.min(openAmount, closeAmount);
+        BigDecimal openAmountActual = Numbers.min(openAmount, closeAmount).setScale(getScale(worstExchange, bestExchange, worst.getCurrencyPair()),RoundingMode.FLOOR);
 
-        if (openAmountActual.compareTo(LOW_LIMIT) < 0) return null;
+        if (openAmountActual.compareTo(LOW_LIMIT) < 0 || openAmountActual.compareTo(worstExchange.getTradeAmountUnit(worst.getCurrencyPair())) < 0)
+            return null;
         log.info("open for {}", openAmountActual);
 
         return apply(worst, worstExchange, closeOrders, bestExchange, openAmountActual);
+    }
+
+    private static int getScale(IExchange e1, IExchange e2, CurrencyPair pair) {
+        int s1 = e1.getScale(pair);
+        int s2 = e2.getScale(pair);
+        return Math.min(s1, s2);
     }
 
     private OrderUpdateEvent apply(LimitOrder worst, IExchange worstExchange, List<LimitOrder> closeOrders, IExchange bestExchange, BigDecimal openAmount) {

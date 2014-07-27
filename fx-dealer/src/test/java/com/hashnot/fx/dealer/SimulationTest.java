@@ -93,11 +93,11 @@ public class SimulationTest {
     protected Simulation createSimulator(BigDecimal... fee) {
         if (fee.length == 0) fee = new BigDecimal[]{ZERO};
 
-        e1 = new SimpleExchange(new MockExchange(), new StaticFeeService(fee[0]), 8);
+        e1 = new SimpleExchange(new MockExchange(), new StaticFeeService(fee[0]), null, 5, 8);
         e1.getWallet().put(EUR, TEN);
         e1.getWallet().put(BTC, TEN);
 
-        e2 = new SimpleExchange(new MockExchange(), new StaticFeeService(fee[Math.min(1, fee.length - 1)]), 8);
+        e2 = new SimpleExchange(new MockExchange(), new StaticFeeService(fee[Math.min(1, fee.length - 1)]), null, 5, 8);
         e2.getWallet().put(EUR, TEN);
         e2.getWallet().put(BTC, TEN);
 

@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 
+import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 
 /**
@@ -25,7 +26,7 @@ import static java.math.BigDecimal.ZERO;
  */
 public class SimpleExchange implements IExchange {
     private final Exchange exchange;
-    private final BigDecimal minIncrease;
+    private final BigDecimal limitPriceUnit;
     private final IFeeService feeService;
     private ScheduledExecutorService executor;
     private final int scale;
@@ -33,11 +34,16 @@ public class SimpleExchange implements IExchange {
     final public Map<String, BigDecimal> wallet = new HashMap<>();
     static private final BigDecimal TWO = new BigDecimal(2);
 
-    public SimpleExchange(Exchange exchange, IFeeService feeService, int scale) {
-        this.scale = scale;
+    final private Map<String, BigDecimal> walletUnit;
+    final private BigDecimal tradeAmountUnit;
+
+    public SimpleExchange(Exchange exchange, IFeeService feeService, Map<String, BigDecimal> walletUnit, int limitPriceScale, int tradeAmountScale) {
+        this.scale = limitPriceScale;
         this.exchange = exchange;
         this.feeService = feeService;
-        minIncrease = new BigDecimal(1).movePointLeft(this.scale);
+        this.walletUnit = walletUnit;
+        limitPriceUnit = ONE.movePointLeft(this.scale);
+        tradeAmountUnit = ONE.movePointLeft(tradeAmountScale);
     }
 
     @Override
@@ -46,8 +52,20 @@ public class SimpleExchange implements IExchange {
     }
 
     @Override
-    public BigDecimal getMinIncrease(CurrencyPair pair) {
-        return minIncrease;
+    public BigDecimal getLimitPriceUnit(CurrencyPair pair) {
+        return limitPriceUnit;
+    }
+
+    @Override
+    public BigDecimal getTradeAmountUnit(CurrencyPair pair) {
+        return tradeAmountUnit;
+    }
+
+    @Override
+    public BigDecimal getWalletUnit(String currency) {
+        BigDecimal result = walletUnit.get(currency);
+        if (result == null) throw new IllegalArgumentException("No wallet unit for " + currency + " @" + toString());
+        return result;
     }
 
     @Override

@@ -58,8 +58,12 @@ public class Orders {
 
     public static LimitOrder closing(LimitOrder order, IFeeService feeService) {
         LimitOrder result = closing(order);
-        result.setNetPrice(getNetPrice(result, FeeHelper.getFeePercent(feeService, result)));
+        updateLimitPrice(result, feeService);
         return result;
+    }
+
+    public static void updateLimitPrice(LimitOrder order, IFeeService x){
+        order.setNetPrice(getNetPrice(order, x.getFeePercent(order.getCurrencyPair())));
     }
 
     public static BigDecimal getNetPrice(LimitOrder order, BigDecimal feePercent) {
@@ -67,7 +71,8 @@ public class Orders {
     }
 
     public static BigDecimal getNetPrice(BigDecimal limitPrice, Order.OrderType type, BigDecimal feePercent) {
-        return limitPrice.multiply(BigDecimal.ONE.add(feePercent), c).stripTrailingZeros();
+        BigDecimal myFeePercent = (type == Order.OrderType.BID) ? feePercent : feePercent.negate();
+        return limitPrice.multiply(BigDecimal.ONE.add(myFeePercent));
     }
 
     public static String incomingCurrency(Order order) {
