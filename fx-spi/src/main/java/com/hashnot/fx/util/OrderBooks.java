@@ -7,8 +7,7 @@ import com.xeiam.xchange.dto.marketdata.OrderBook;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 
 import java.math.BigDecimal;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Rafał Krupiński
@@ -27,8 +26,21 @@ public class OrderBooks {
     }
 
     public static boolean equals(OrderBook o1, OrderBook o2) {
-        return o1.getAsks().equals(o2.getAsks()) && o1.getBids().equals(o2.getBids());
+        return equals(o1.getAsks(), o2.getAsks()) && equals(o1.getBids(), o2.getBids());
     }
+
+    private static boolean equals(List<LimitOrder> l1, List<LimitOrder> l2) {
+        ListIterator<LimitOrder> e1 = l1.listIterator();
+        ListIterator<LimitOrder> e2 = l2.listIterator();
+        while (e1.hasNext() && e2.hasNext()) {
+            LimitOrder o1 = e1.next();
+            LimitOrder o2 = e2.next();
+            if (!(o1 == null ? o2 == null : Orders.equals(o1, o2)))
+                return false;
+        }
+        return !(e1.hasNext() || e2.hasNext());
+    }
+
 
     public static List<LimitOrder> get(OrderBook orderBook, Order.OrderType dir) {
         assert orderBook != null : "null orderBook";

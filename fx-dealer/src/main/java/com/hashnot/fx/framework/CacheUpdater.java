@@ -4,7 +4,6 @@ import com.hashnot.fx.spi.ExchangeUpdateEvent;
 import com.hashnot.fx.spi.ext.IExchange;
 import com.hashnot.fx.util.OrderBooks;
 import com.hashnot.fx.util.Orders;
-import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.marketdata.OrderBook;
@@ -83,12 +82,12 @@ public class CacheUpdater implements Runnable {
         }
     }
 
-    private void injectOpenOrders(Exchange exchange, OrderBook orderBook) {
+    private void injectOpenOrders(IExchange exchange, OrderBook orderBook) {
         injectOpenOrders(exchange, orderBook, Order.OrderType.ASK);
         injectOpenOrders(exchange, orderBook, Order.OrderType.BID);
     }
 
-    private void injectOpenOrders(Exchange exchange, OrderBook orderBook, Order.OrderType type) {
+    private void injectOpenOrders(IExchange exchange, OrderBook orderBook, Order.OrderType type) {
         OrderUpdateEvent orderUpdate = openOrders.get(type);
         if (orderUpdate!=null && orderUpdate.openExchange.equals(exchange)) {
             List<LimitOrder> limitOrders = OrderBooks.get(orderBook, type);

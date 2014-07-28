@@ -1,6 +1,6 @@
 package com.hashnot.fx.framework;
 
-import com.xeiam.xchange.Exchange;
+import com.hashnot.fx.spi.ext.IExchange;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.service.polling.PollingTradeService;
@@ -21,14 +21,14 @@ public class TradeMonitor implements Runnable {
 
     final private static Logger log = LoggerFactory.getLogger(TradeMonitor.class);
 
-    final private Exchange exchange;
+    final private IExchange exchange;
     final private PollingTradeService pollingTradeService;
     final private IOrderClosedListener orderClosedListener;
     final private Map<Order.OrderType, OrderUpdateEvent> openOrders;
 
     final private Map<Order.OrderType, LimitOrder> currentOrders = new HashMap<>();
 
-    public TradeMonitor(Exchange exchange, IOrderClosedListener orderClosedListener, Map<Order.OrderType, OrderUpdateEvent> openOrders) {
+    public TradeMonitor(IExchange exchange, IOrderClosedListener orderClosedListener, Map<Order.OrderType, OrderUpdateEvent> openOrders) {
         this.exchange = exchange;
         this.pollingTradeService = exchange.getPollingTradeService();
         this.orderClosedListener = orderClosedListener;

@@ -1,17 +1,20 @@
 package com.hashnot.fx.spi.ext;
 
-import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.marketdata.OrderBook;
+import com.xeiam.xchange.service.polling.PollingAccountService;
+import com.xeiam.xchange.service.polling.PollingMarketDataService;
+import com.xeiam.xchange.service.polling.PollingTradeService;
+import com.xeiam.xchange.service.streaming.ExchangeStreamingConfiguration;
+import com.xeiam.xchange.service.streaming.StreamingExchangeService;
 
 import java.math.BigDecimal;
 import java.util.Map;
-import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * @author Rafał Krupiński
  */
-public interface IExchange extends Exchange, IFeeService {
+public interface IExchange extends IFeeService {
     /**
      * @return scale (number of )
      */
@@ -36,11 +39,19 @@ public interface IExchange extends Exchange, IFeeService {
 
     OrderBook getOrderBook(CurrencyPair pair);
 
+    PollingMarketDataService getPollingMarketDataService();
+
+    StreamingExchangeService getStreamingExchangeService(ExchangeStreamingConfiguration configuration);
+
+    PollingTradeService getPollingTradeService();
+
+    PollingAccountService getPollingAccountService();
+
     Map<CurrencyPair, OrderBook> getOrderBooks();
 
     BigDecimal getLimit(String currency);
 
-    void start(ScheduledExecutorService scheduler);
+    void start();
 
     void stop();
 }

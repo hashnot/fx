@@ -35,7 +35,7 @@ public class Main {
 
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(10, new ConfigurableThreadFactory());
 
-        exchanges.forEach(x -> x.start(scheduler));
+        exchanges.forEach(x -> x.start());
 
         Map<Order.OrderType, OrderUpdateEvent> myOpenOrders = new HashMap<>();
 
