@@ -21,14 +21,16 @@ public class OrderUpdater implements IOrderUpdater {
         this.openOrders = openOrders;
     }
 
+    /*
+     old value is called self, new - evt
+     */
     @Override
     public void update(OrderUpdateEvent evt) {
         try {
             if (evt.clear != null) {
                 OrderUpdateEvent self = openOrders.get(evt.clear);
                 if (self != null) {
-                    cancel(self);
-                    openOrders.remove(evt.clear);
+                    cancel(evt.clear, self);
                 }
                 return;
             }
@@ -36,33 +38,37 @@ public class OrderUpdater implements IOrderUpdater {
             OrderUpdateEvent self = openOrders.get(key);
 
             if (self == null) {
-                open(evt);
-            } else if (evt.openExchange.equals(self.openExchange)) {
-                if (!Orders.equals(evt.openedOrder, self.openedOrder))
-                    updateOrder(self, evt);
-            } else {
-                cancel(self);
-                open(evt);
+                open(key, evt);
+            } else if (!evt.openExchange.equals(self.openExchange)) {
+                updateOrder(self, evt, key);
+            } else if (!Orders.equalsOrLess(evt.openedOrder, self.openedOrder)) {
+                updateOrder(self, evt, key);
             }
-            openOrders.put(key, evt);
         } catch (IOException e) {
             throw new ConnectionException(e);
         }
     }
 
-    protected void open(OrderUpdateEvent update) throws IOException {
+    protected void open(OrderType type, OrderUpdateEvent update) throws IOException {
+        if(openOrders.containsKey(type))
+            throw new IllegalStateException("Seems order already open " + type);
         log.info("Open @{} {} ", update.openExchange, update.openedOrder);
         update.openOrderId = update.openExchange.getPollingTradeService().placeLimitOrder(update.openedOrder);
+        log.info("Opened {}", update.openOrderId);
+        openOrders.put(type, update);
     }
 
-    protected void cancel(OrderUpdateEvent self) throws IOException {
-        log.info("Cancel @{} {} ", self.openExchange, self.openedOrder);
+    protected void cancel(OrderType key, OrderUpdateEvent self) throws IOException {
+        log.info("Cancel @{} {} {}", self.openExchange, self.openOrderId, self.openedOrder);
         self.openExchange.getPollingTradeService().cancelOrder(self.openOrderId);
+        self.openOrderId = null;
+        openOrders.remove(key);
+
     }
 
-    protected void updateOrder(OrderUpdateEvent self, OrderUpdateEvent event) throws ConnectionException, IOException {
-        cancel(self);
-        open(event);
+    protected void updateOrder(OrderUpdateEvent self, OrderUpdateEvent event, OrderType type) throws ConnectionException, IOException {
+        cancel(type, self);
+        open(type, event);
     }
 
 }

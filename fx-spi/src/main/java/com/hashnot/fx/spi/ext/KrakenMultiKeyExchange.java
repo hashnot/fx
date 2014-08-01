@@ -14,12 +14,15 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author Rafał Krupiński
  */
 public class KrakenMultiKeyExchange extends AbstractExchange {
     private List<Exchange> exchanges;
+
+    private final AtomicInteger keyCounter = new AtomicInteger(0);
 
     public KrakenMultiKeyExchange(List<ExchangeSpecification> exchanges, IFeeService feeService, Map<String, BigDecimal> walletUnit, Map<String, BigDecimal> minimumOrder, int limitPriceScale, int tradeAmountScale) {
         super(feeService, walletUnit, minimumOrder, limitPriceScale, tradeAmountScale);
@@ -28,33 +31,33 @@ public class KrakenMultiKeyExchange extends AbstractExchange {
             this.exchanges.add(ExchangeFactory.INSTANCE.createExchange(spec));
     }
 
-    protected Exchange getExchange(int i) {
-        return exchanges.get(i % exchanges.size());
+    protected Exchange getExchange() {
+        return exchanges.get((keyCounter.incrementAndGet() % exchanges.size()));
     }
 
     @Override
     public PollingMarketDataService getPollingMarketDataService() {
-        return getExchange(0).getPollingMarketDataService();
+        return getExchange().getPollingMarketDataService();
     }
 
     @Override
     public StreamingExchangeService getStreamingExchangeService(ExchangeStreamingConfiguration configuration) {
-        return getExchange(1).getStreamingExchangeService(configuration);
+        return getExchange().getStreamingExchangeService(configuration);
     }
 
     @Override
     public PollingTradeService getPollingTradeService() {
-        return getExchange(2).getPollingTradeService();
+        return getExchange().getPollingTradeService();
     }
 
     @Override
     public PollingAccountService getPollingAccountService() {
-        return getExchange(3).getPollingAccountService();
+        return getExchange().getPollingAccountService();
     }
 
     @Override
     protected void updateWallet() throws IOException {
-        updateWallet(getExchange(4));
+        updateWallet(getExchange());
     }
 
     @Override

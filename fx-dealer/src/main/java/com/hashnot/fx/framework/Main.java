@@ -9,10 +9,7 @@ import groovy.lang.GroovyShell;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.*;
 
 import static com.hashnot.fx.util.Exchanges.report;
@@ -26,45 +23,50 @@ public class Main {
 
     public static void main(String[] args) throws IOException, InterruptedException {
         Collection<IExchange> exchanges = load(args[0]);
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> exchanges.forEach(IExchange::stop)));
+
+        Map<Order.OrderType, OrderUpdateEvent> myOpenOrders = new HashMap<>();
+
+        ThreadFactory tf = new ConfigurableThreadFactory("p-%d-t-%d");
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            myOpenOrders.clear();
+            exchanges.parallelStream().forEach(IExchange::stop);
+        }, "Clear"));
 
         int capacity = 2 << 8;
         BlockingQueue<ExchangeUpdateEvent> updates = new ArrayBlockingQueue<>(capacity);
-        BlockingQueue<CacheUpdateEvent> cacheUpdateQueue = new ArrayBlockingQueue<>(capacity);
-        ArrayBlockingQueue<OrderUpdateEvent> orderUpdates = new ArrayBlockingQueue<>(capacity);
 
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(10, new ConfigurableThreadFactory());
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(10, tf);
 
-        exchanges.forEach(x -> x.start());
-
-        Map<Order.OrderType, OrderUpdateEvent> myOpenOrders = new HashMap<>();
+        exchanges.forEach(IExchange::start);
 
         IOrderClosedListener orderClosedListener = new OrderClosedListener(myOpenOrders);
 
         for (IExchange exchange : exchanges) {
             scheduler.scheduleAtFixedRate(
                     new OrderBookPoller(exchange, updates, allowedPairs)
-                    , 100, 100, MILLISECONDS);
+                    , 100, 170, MILLISECONDS);
             scheduler.scheduleAtFixedRate(new TradeMonitor(exchange, orderClosedListener, myOpenOrders), 0, 200, MILLISECONDS);
         }
 
         Simulation simulation = new Simulation();
-        //OrderUpdater orderUpdater = new OrderUpdater(context, myOpenOrders);
-        Dealer dealer = new Dealer(exchanges, simulation, new OrderUpdater(myOpenOrders));
+        OrderUpdater orderUpdater = new OrderUpdater(myOpenOrders);
+        Dealer dealer = new Dealer(exchanges, simulation, orderUpdater);
 
         report(exchanges);
 
         scheduler.execute(new CacheUpdater(updates, dealer, myOpenOrders));
-        scheduler.scheduleAtFixedRate(new StatusMonitor(updates, cacheUpdateQueue, orderUpdates), 0, 200, MILLISECONDS);
+//        scheduler.scheduleAtFixedRate(new StatusMonitor(updates, cacheUpdateQueue, orderUpdates), 0, 200, MILLISECONDS);
 
+/*
         Thread.sleep(60000);
         scheduler.shutdown();
         scheduler.awaitTermination(2, TimeUnit.SECONDS);
         scheduler.shutdownNow();
         report(exchanges);
+*/
     }
 
-    private static Collection<IExchange> load(String path) {
+    public static Collection<IExchange> load(String path) {
         GroovyShell sh = new GroovyShell();
         try {
             return (Collection<IExchange>) sh.evaluate(new File(path));

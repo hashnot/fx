@@ -58,8 +58,11 @@ public class CacheUpdater implements Runnable {
         try {
             for (ExchangeUpdateEvent evt : localQueue) {
                 if (evt.orderBook != null)
-                    if (processedOrderBooks.add(evt.exchange))
-                        update(evt.exchange, evt.orderBook, evt.orderBookPair);
+                    if (processedOrderBooks.add(evt.exchange)) {
+                        injectOpenOrders(evt.exchange, evt.orderBook);
+                        if (evt.exchange.updateOrderBook(evt.orderBookPair, evt.orderBook))
+                            affectedPairs.add(evt.orderBookPair);
+                    }
             }
         } catch (Throwable x) {
             log.warn("Error", x);
@@ -71,17 +74,6 @@ public class CacheUpdater implements Runnable {
         }
     }
 
-    private void update(IExchange x, OrderBook orderBook, CurrencyPair orderBookPair) {
-        injectOpenOrders(x, orderBook);
-        OrderBooks.removeOverLimit(orderBook, x.getLimit(orderBookPair.baseSymbol), x.getLimit(orderBookPair.counterSymbol));
-        OrderBook current = x.getOrderBook(orderBookPair);
-        if (current == null || !OrderBooks.equals(current, orderBook)) {
-            x.getOrderBooks().put(orderBookPair, orderBook);
-            OrderBooks.updateNetPrices(x, orderBookPair);
-            affectedPairs.add(orderBookPair);
-        }
-    }
-
     private void injectOpenOrders(IExchange exchange, OrderBook orderBook) {
         injectOpenOrders(exchange, orderBook, Order.OrderType.ASK);
         injectOpenOrders(exchange, orderBook, Order.OrderType.BID);
@@ -89,7 +81,7 @@ public class CacheUpdater implements Runnable {
 
     private void injectOpenOrders(IExchange exchange, OrderBook orderBook, Order.OrderType type) {
         OrderUpdateEvent orderUpdate = openOrders.get(type);
-        if (orderUpdate!=null && orderUpdate.openExchange.equals(exchange)) {
+        if (orderUpdate != null && orderUpdate.openExchange.equals(exchange)) {
             List<LimitOrder> limitOrders = OrderBooks.get(orderBook, type);
             int i = Collections.binarySearch(limitOrders, orderUpdate.openedOrder);
             if (i < 0)

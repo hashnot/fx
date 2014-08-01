@@ -58,10 +58,10 @@ public class Simulation {
         BigDecimal openAmount;
         BigDecimal closeAmount;
         if (worst.getType() == Order.OrderType.ASK) {
-            openAmount = openOutNet;
+            openAmount = openOutGross;
             closeAmount = totalAmountByValue(closeOrders, closeOutNet, worst.getNetPrice(), bestExchange);
         } else {
-            openAmount = openOutNet.divide(worst.getLimitPrice(), c);
+            openAmount = openOutGross.divide(worst.getLimitPrice(), c);
             closeAmount = totalAmountByAmount(closeOrders, closeOutNet, worst.getNetPrice(), bestExchange);
         }
 

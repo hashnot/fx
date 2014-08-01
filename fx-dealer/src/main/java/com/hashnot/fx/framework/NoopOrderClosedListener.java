@@ -21,6 +21,6 @@ public class NoopOrderClosedListener extends OrderClosedListener {
 
     @Override
     protected void placeLimitOrder(LimitOrder order, PollingTradeService tradeService) throws IOException {
-        log.info("Open {} @{}", order, tradeService.getClass().getSimpleName());
+        log.info("Open {} #{}", order, tradeService.getClass().getSimpleName());
     }
 }

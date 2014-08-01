@@ -5,6 +5,7 @@ import com.hashnot.fx.framework.IOrderUpdater;
 import com.hashnot.fx.framework.OrderUpdateEvent;
 import com.hashnot.fx.framework.Simulation;
 import com.hashnot.fx.spi.ext.IExchange;
+import com.hashnot.fx.util.Orders;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.trade.LimitOrder;
@@ -70,14 +71,26 @@ public class Dealer implements ICacheUpdateListener {
         }
     }
 
-    private SortedMap<LimitOrder, IExchange> getBestOffers(CurrencyPair pair, Collection<IExchange> exchanges, Order.OrderType dir) {
-        SortedMap<LimitOrder, IExchange> result = new TreeMap<>((o1, o2) -> o1.getNetPrice().compareTo(o2.getNetPrice()) * factor(o1.getType()));
+    private NavigableMap<LimitOrder, IExchange> getBestOffers(CurrencyPair pair, Collection<IExchange> exchanges, Order.OrderType dir) {
+        NavigableMap<LimitOrder, IExchange> result = new TreeMap<>((o1, o2) -> o1.getNetPrice().compareTo(o2.getNetPrice()) * factor(o1.getType()));
         for (IExchange x : exchanges) {
             List<LimitOrder> orders = get(x.getOrderBook(pair), dir);
             if (!orders.isEmpty())
                 result.put(orders.get(0), x);
         }
         return result;
+    }
+
+    private boolean hasMinimumMoney(IExchange x, LimitOrder order, Order.OrderType dir) {
+        BigDecimal outAmount = x.getWallet(Orders.outgoingCurrency(order));
+
+        BigDecimal baseAmount;
+        if (dir == Order.OrderType.ASK)
+            baseAmount = outAmount;
+        else
+            baseAmount = outAmount.divide(order.getLimitPrice(), c);
+
+        return baseAmount.compareTo(x.getMinimumTrade(order.getCurrencyPair().baseSymbol)) >= 0;
     }
 
     private void clearOrders(CurrencyPair pair) {
@@ -89,19 +102,51 @@ public class Dealer implements ICacheUpdateListener {
         // - limitu stanu konta
         // - limitu różnicy ceny
 
-        SortedMap<LimitOrder, IExchange> bestOrders = getBestOffers(pair, exchanges, type);
+        NavigableMap<LimitOrder, IExchange> bestOrders = getBestOffers(pair, exchanges, type);
         if (bestOrders.size() < 2) {
             clearOrders(pair);
             return;
         }
 
-        List<Map.Entry<LimitOrder, IExchange>> bestOrdersList = new ArrayList<>(bestOrders.entrySet());
+        // find best - closing orders
+        Map.Entry<LimitOrder, IExchange> best = null;
+        for (Map.Entry<LimitOrder, IExchange> e : bestOrders.entrySet()) {
+            if (hasMinimumMoney(e.getValue(), closing(e.getKey()), type)) {
+                best = e;
+                break;
+            }
+        }
 
-        Map.Entry<LimitOrder, IExchange> best = bestOrdersList.get(0);
-        LimitOrder worstOrder = bestOrders.lastKey();
+        if (best == null) {
+            log.info("No exchange has sufficient funds");
+            return;
+        }
+
+        // find worst - opening orders
+        Map.Entry<LimitOrder, IExchange> worst = null;
+        for (Map.Entry<LimitOrder, IExchange> e : bestOrders.descendingMap().entrySet()) {
+            if (hasMinimumMoney(e.getValue(), e.getKey(), type)) {
+                worst = e;
+                break;
+            }
+        }
+
+        if (worst == null) {
+            log.info("No exchange has sufficient funds");
+            return;
+        }
+
+        else if (worst == best) {
+            log.info("Didn't find 2 exchanges with sufficient funds");
+            return;
+        }
+
+        LimitOrder worstOrder = worst.getKey();
         LimitOrder openOrder = createOpenOrder(worstOrder, bestOrders.get(worstOrder));
-        IExchange worstExchange = bestOrders.get(openOrder);
+
+        IExchange worstExchange = worst.getValue();
         IExchange bestExchange = best.getValue();
+
         LimitOrder closingBest = closing(best.getKey(), bestExchange);
         if (!isProfitable(openOrder, closingBest)) {
             orderUpdater.update(new OrderUpdateEvent(type));

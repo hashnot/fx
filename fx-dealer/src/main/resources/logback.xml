@@ -4,9 +4,18 @@
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss} %.5level [%.10thread] %c{30} - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} %.5level [%.16thread] %c{30} - %msg%n</pattern>
         </encoder>
     </appender>
+
+    <appender name="io" class="ch.qos.logback.core.FileAppender">
+        <file>io.log</file>
+        <append>false</append>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} %.5level [%.10thread] %c{30} - %msg%n</pattern>
+        </encoder>
+      </appender>
+
 
     <logger name="com.hashnot.fx" level="debug" />
     <logger name="com.hashnot.fx.kokos.to" level="warn" />
@@ -15,7 +24,9 @@
 
     <logger name="com.gargoylesoftware.htmlunit.IncorrectnessListenerImpl" level="off" />
 
-    <!--<logger name="si.mazi.rescu" level="TRACE" />-->
+    <logger name="si.mazi.rescu" level="TRACE" additivity="false" >
+            <appender-ref ref="io" />
+    </logger>
 
     <root>
         <level value="warn" />

@@ -1,6 +1,7 @@
 package com.hashnot.fx.spi.ext;
 
 import com.hashnot.fx.spi.ConnectionException;
+import com.hashnot.fx.util.OrderBooks;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.account.AccountInfo;
@@ -123,13 +124,13 @@ public abstract class AbstractExchange implements IExchange {
 
     @Override
     public void stop() {
+        cancelAll();
     }
 
     protected void cancelAll() {
         PollingTradeService tradeService = getPollingTradeService();
-        OpenOrders openOrders = null;
         try {
-            openOrders = tradeService.getOpenOrders();
+            OpenOrders openOrders = tradeService.getOpenOrders();
             for (LimitOrder order : openOrders.getOpenOrders()) {
                 tradeService.cancelOrder(order.getId());
             }
@@ -140,7 +141,7 @@ public abstract class AbstractExchange implements IExchange {
 
     @Override
     public void start() {
-        Runtime.getRuntime().addShutdownHook(new Thread(this::cancelAll));
+        //Runtime.getRuntime().addShutdownHook(new Thread(this::cancelAll));
         try {
             updateWallet();
         } catch (IOException e) {
@@ -161,5 +162,17 @@ public abstract class AbstractExchange implements IExchange {
                 continue;
             wallet.put(currency, w.getBalance());
         }
+    }
+
+    @Override
+    public boolean updateOrderBook(CurrencyPair orderBookPair, OrderBook orderBook) {
+        OrderBooks.removeOverLimit(orderBook, getLimit(orderBookPair.baseSymbol), getLimit(orderBookPair.counterSymbol));
+        OrderBook current = getOrderBook(orderBookPair);
+        if (current == null || !OrderBooks.equals(current, orderBook)) {
+            orderBooks.put(orderBookPair, orderBook);
+            OrderBooks.updateNetPrices(this, orderBookPair);
+            return true;
+        } else
+            return false;
     }
 }

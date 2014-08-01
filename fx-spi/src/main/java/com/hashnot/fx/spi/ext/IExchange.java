@@ -54,4 +54,6 @@ public interface IExchange extends IFeeService {
     void start();
 
     void stop();
+
+    boolean updateOrderBook(CurrencyPair orderBookPair, OrderBook orderBook);
 }

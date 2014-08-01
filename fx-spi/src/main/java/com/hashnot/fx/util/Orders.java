@@ -17,11 +17,17 @@ import java.math.RoundingMode;
 public class Orders {
     final private static Logger log = LoggerFactory.getLogger(Orders.class);
     public static final BigDecimal _ONE = BigDecimal.ONE.negate();
-    public static MathContext c = new MathContext(8, RoundingMode.HALF_UP);
+    public static MathContext c = new MathContext(16, RoundingMode.HALF_UP);
 
     public static boolean equals(LimitOrder o1, LimitOrder o2) {
         return o1.getCurrencyPair().equals(o2.getCurrencyPair()) && o1.getType() == o2.getType()
                 && equals(o1.getLimitPrice(), o2.getLimitPrice()) && equals(o1.getTradableAmount(), o2.getTradableAmount());
+    }
+
+    public static boolean equalsOrLess(LimitOrder o1, LimitOrder o2) {
+        return o1.getCurrencyPair().equals(o2.getCurrencyPair()) && o1.getType() == o2.getType()
+                && equals(o1.getLimitPrice(), o2.getLimitPrice())
+                && o1.getTradableAmount().compareTo(o2.getTradableAmount()) <= 0;
     }
 
     private static boolean equals(BigDecimal o1, BigDecimal o2) {
@@ -40,14 +46,6 @@ public class Orders {
         return type == Order.OrderType.ASK ? BigDecimal.ONE : _ONE;
     }
 
-    public static LimitOrder revert(LimitOrder order) {
-        Order.OrderType type = revert(order.getType());
-        BigDecimal orderPrice = order.getLimitPrice();
-        BigDecimal price = BigDecimal.ONE.divide(orderPrice, c);
-        BigDecimal amount = order.getTradableAmount().divide(orderPrice, c).stripTrailingZeros();
-        return new LimitOrder(type, amount, revert(order.getCurrencyPair()), null, null, price);
-    }
-
     public static Order.OrderType revert(Order.OrderType type) {
         return type == Order.OrderType.ASK ? Order.OrderType.BID : Order.OrderType.ASK;
     }
@@ -62,7 +60,7 @@ public class Orders {
         return result;
     }
 
-    public static void updateLimitPrice(LimitOrder order, IFeeService x){
+    public static void updateLimitPrice(LimitOrder order, IFeeService x) {
         order.setNetPrice(getNetPrice(order, x.getFeePercent(order.getCurrencyPair())));
     }
 
@@ -151,5 +149,14 @@ public class Orders {
 
     public static LimitOrder withAmount(LimitOrder order, BigDecimal tradableAmount) {
         return new LimitOrder(order.getType(), tradableAmount, order.getCurrencyPair(), null, null, order.getLimitPrice());
+    }
+
+    public static BigDecimal betterPrice(BigDecimal price, BigDecimal delta, Order.OrderType type) {
+        BigDecimal myDelta = type == Order.OrderType.ASK ? delta : delta.negate();
+        return price.add(myDelta);
+    }
+
+    public static BigDecimal worsePrice(BigDecimal price, BigDecimal delta, Order.OrderType type) {
+        return betterPrice(price, delta, type == Order.OrderType.ASK ? Order.OrderType.BID : Order.OrderType.ASK);
     }
 }
