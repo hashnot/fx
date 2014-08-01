@@ -79,8 +79,15 @@ public class Orders {
     }
 
     public static String outgoingCurrency(Order order) {
+        return outgoingCurrency(order, order.getType());
+    }
+
+    /**
+     * @param type override order type
+     */
+    public static String outgoingCurrency(Order order, Order.OrderType type) {
         CurrencyPair pair = order.getCurrencyPair();
-        return order.getType() == Order.OrderType.ASK ? pair.baseSymbol : pair.counterSymbol;
+        return type == Order.OrderType.ASK ? pair.baseSymbol : pair.counterSymbol;
     }
 
     // TODO take fee policy into account

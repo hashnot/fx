@@ -28,7 +28,6 @@ public class Main {
 
         ThreadFactory tf = new ConfigurableThreadFactory("p-%d-t-%d");
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            myOpenOrders.clear();
             exchanges.parallelStream().forEach(IExchange::stop);
         }, "Clear"));
 
@@ -37,7 +36,8 @@ public class Main {
 
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(10, tf);
 
-        exchanges.forEach(IExchange::start);
+        exchanges.parallelStream().forEach(x -> x.start(scheduler));
+        report(exchanges);
 
         IOrderClosedListener orderClosedListener = new OrderClosedListener(myOpenOrders);
 
@@ -51,8 +51,6 @@ public class Main {
         Simulation simulation = new Simulation();
         OrderUpdater orderUpdater = new OrderUpdater(myOpenOrders);
         Dealer dealer = new Dealer(exchanges, simulation, orderUpdater);
-
-        report(exchanges);
 
         scheduler.execute(new CacheUpdater(updates, dealer, myOpenOrders));
 //        scheduler.scheduleAtFixedRate(new StatusMonitor(updates, cacheUpdateQueue, orderUpdates), 0, 200, MILLISECONDS);

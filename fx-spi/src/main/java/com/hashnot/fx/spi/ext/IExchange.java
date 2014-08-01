@@ -1,15 +1,21 @@
 package com.hashnot.fx.spi.ext;
 
+import com.xeiam.xchange.ExchangeException;
+import com.xeiam.xchange.NotAvailableFromExchangeException;
+import com.xeiam.xchange.NotYetImplementedForExchangeException;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.marketdata.OrderBook;
+import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.service.polling.PollingAccountService;
 import com.xeiam.xchange.service.polling.PollingMarketDataService;
 import com.xeiam.xchange.service.polling.PollingTradeService;
 import com.xeiam.xchange.service.streaming.ExchangeStreamingConfiguration;
 import com.xeiam.xchange.service.streaming.StreamingExchangeService;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * @author Rafał Krupiński
@@ -51,9 +57,15 @@ public interface IExchange extends IFeeService {
 
     BigDecimal getLimit(String currency);
 
-    void start();
+    void start(ScheduledExecutorService scheduler);
+
+    String placeLimitOrder(LimitOrder limitOrder) throws ExchangeException, NotAvailableFromExchangeException, NotYetImplementedForExchangeException, IOException;
+
+    boolean cancelOrder(String orderId) throws ExchangeException, NotAvailableFromExchangeException, NotYetImplementedForExchangeException, IOException;
 
     void stop();
 
     boolean updateOrderBook(CurrencyPair orderBookPair, OrderBook orderBook);
+
+    void cancelAll();
 }

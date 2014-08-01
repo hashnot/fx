@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 import java.util.*;
 
+import static com.hashnot.fx.util.Numbers.lt;
 import static com.hashnot.fx.util.OrderBooks.get;
 import static com.hashnot.fx.util.Orders.*;
 
@@ -82,7 +83,7 @@ public class Dealer implements ICacheUpdateListener {
     }
 
     private boolean hasMinimumMoney(IExchange x, LimitOrder order, Order.OrderType dir) {
-        BigDecimal outAmount = x.getWallet(Orders.outgoingCurrency(order));
+        BigDecimal outAmount = x.getWallet(Orders.outgoingCurrency(order, dir));
 
         BigDecimal baseAmount;
         if (dir == Order.OrderType.ASK)
@@ -90,7 +91,7 @@ public class Dealer implements ICacheUpdateListener {
         else
             baseAmount = outAmount.divide(order.getLimitPrice(), c);
 
-        return baseAmount.compareTo(x.getMinimumTrade(order.getCurrencyPair().baseSymbol)) >= 0;
+        return !lt(baseAmount, x.getMinimumTrade(order.getCurrencyPair().baseSymbol));
     }
 
     private void clearOrders(CurrencyPair pair) {
@@ -108,17 +109,19 @@ public class Dealer implements ICacheUpdateListener {
             return;
         }
 
+        Order.OrderType reverseType = revert(type);
+
         // find best - closing orders
         Map.Entry<LimitOrder, IExchange> best = null;
         for (Map.Entry<LimitOrder, IExchange> e : bestOrders.entrySet()) {
-            if (hasMinimumMoney(e.getValue(), closing(e.getKey()), type)) {
+            if (hasMinimumMoney(e.getValue(), e.getKey(), reverseType)) {
                 best = e;
                 break;
             }
         }
 
         if (best == null) {
-            log.info("No exchange has sufficient funds");
+            log.info("No exchange has sufficient funds to close {}", type);
             return;
         }
 
@@ -132,12 +135,10 @@ public class Dealer implements ICacheUpdateListener {
         }
 
         if (worst == null) {
-            log.info("No exchange has sufficient funds");
+            log.info("No exchange has sufficient funds to open {}", type);
             return;
-        }
-
-        else if (worst == best) {
-            log.info("Didn't find 2 exchanges with sufficient funds");
+        } else if (worst == best) {
+            log.info("Didn't find 2 exchanges with sufficient funds ({})", type);
             return;
         }
 
