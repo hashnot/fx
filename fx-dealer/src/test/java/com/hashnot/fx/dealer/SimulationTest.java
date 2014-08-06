@@ -5,6 +5,8 @@ import com.hashnot.fx.framework.Simulation;
 import com.hashnot.fx.spi.ext.IExchange;
 import com.hashnot.fx.spi.ext.SimpleExchange;
 import com.hashnot.fx.util.Exchanges;
+import com.hashnot.fx.util.IExecutorStrategyFactory;
+import com.hashnot.fx.util.SchedulerExecutorFactory;
 import com.xeiam.xchange.BaseExchange;
 import com.xeiam.xchange.ExchangeSpecification;
 import com.xeiam.xchange.currency.CurrencyPair;
@@ -93,11 +95,12 @@ public class SimulationTest {
     protected Simulation createSimulator(BigDecimal... fee) {
         if (fee.length == 0) fee = new BigDecimal[]{ZERO};
 
-        e1 = new SimpleExchange(new MockExchange(), new StaticFeeService(fee[0]), null, null, 5, 8);
+        IExecutorStrategyFactory executorStrategyFactory = new SchedulerExecutorFactory(100);
+        e1 = new SimpleExchange(new MockExchange(), new StaticFeeService(fee[0]), executorStrategyFactory, null, null, 5, 8);
         e1.getWallet().put(EUR, TEN);
         e1.getWallet().put(BTC, TEN);
 
-        e2 = new SimpleExchange(new MockExchange(), new StaticFeeService(fee[Math.min(1, fee.length - 1)]), null, null, 5, 8);
+        e2 = new SimpleExchange(new MockExchange(), new StaticFeeService(fee[Math.min(1, fee.length - 1)]), executorStrategyFactory, null, null, 5, 8);
         e2.getWallet().put(EUR, TEN);
         e2.getWallet().put(BTC, TEN);
 

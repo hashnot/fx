@@ -158,6 +158,10 @@ public class Orders {
         return new LimitOrder(order.getType(), tradableAmount, order.getCurrencyPair(), null, null, order.getLimitPrice());
     }
 
+    public static LimitOrder withPrice(LimitOrder order, BigDecimal limitPrice) {
+        return new LimitOrder(order.getType(), order.getTradableAmount(), order.getCurrencyPair(), null, null, limitPrice);
+    }
+
     public static BigDecimal betterPrice(BigDecimal price, BigDecimal delta, Order.OrderType type) {
         BigDecimal myDelta = type == Order.OrderType.ASK ? delta : delta.negate();
         return price.add(myDelta);

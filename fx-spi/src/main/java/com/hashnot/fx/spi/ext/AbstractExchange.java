@@ -1,5 +1,12 @@
 package com.hashnot.fx.spi.ext;
 
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
+import com.hashnot.fx.spi.IOrderBookListener;
+import com.hashnot.fx.spi.ITradeListener;
+import com.hashnot.fx.util.IExecutorStrategy;
+import com.hashnot.fx.util.IExecutorStrategyFactory;
 import com.hashnot.fx.util.Numbers;
 import com.hashnot.fx.util.OrderBooks;
 import com.xeiam.xchange.Exchange;
@@ -7,18 +14,23 @@ import com.xeiam.xchange.ExchangeException;
 import com.xeiam.xchange.NotAvailableFromExchangeException;
 import com.xeiam.xchange.NotYetImplementedForExchangeException;
 import com.xeiam.xchange.currency.CurrencyPair;
+import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.account.AccountInfo;
 import com.xeiam.xchange.dto.marketdata.OrderBook;
 import com.xeiam.xchange.dto.trade.LimitOrder;
+import com.xeiam.xchange.dto.trade.OpenOrders;
+import com.xeiam.xchange.service.polling.PollingAccountService;
+import com.xeiam.xchange.service.polling.PollingMarketDataService;
 import com.xeiam.xchange.service.polling.PollingTradeService;
+import com.xeiam.xchange.service.streaming.ExchangeStreamingConfiguration;
+import com.xeiam.xchange.service.streaming.StreamingExchangeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 
 import static java.math.BigDecimal.ONE;
@@ -32,6 +44,7 @@ public abstract class AbstractExchange implements IExchange {
     static private final BigDecimal TWO = new BigDecimal(2);
     final public Map<CurrencyPair, OrderBook> orderBooks = new HashMap<>();
     final public Map<String, BigDecimal> wallet = new HashMap<>();
+
     protected final BigDecimal limitPriceUnit;
     protected final IFeeService feeService;
     protected final int scale;
@@ -39,8 +52,16 @@ public abstract class AbstractExchange implements IExchange {
     protected final Map<String, BigDecimal> minimumOrder;
     protected final BigDecimal tradeAmountUnit;
     protected final Map<String, LimitOrder> openOrders = new HashMap<>();
+    protected final Map<String, Long> trades = new HashMap<>();
 
-    public AbstractExchange(IFeeService feeService, Map<String, BigDecimal> walletUnit, Map<String, BigDecimal> minimumOrder, int limitPriceScale, int tradeAmountScale) {
+    protected ScheduledExecutorService scheduler;
+    protected final IExecutorStrategy orderBookMonitor;
+
+    private final Multimap<CurrencyPair, ITradeListener> tradeListeners = Multimaps.newMultimap(new ConcurrentHashMap<>(), () -> Collections.newSetFromMap(new ConcurrentHashMap<>()));
+    private final Map<CurrencyPair, BigDecimal> tradeListenerAmounts = new ConcurrentHashMap<>();
+    private final IExecutorStrategy tradeMonitor;
+
+    public AbstractExchange(IFeeService feeService, IExecutorStrategyFactory executorStrategyFactory, Map<String, BigDecimal> walletUnit, Map<String, BigDecimal> minimumOrder, int limitPriceScale, int tradeAmountScale) {
         this.feeService = feeService;
         this.walletUnit = walletUnit;
         this.minimumOrder = minimumOrder != null ? minimumOrder : Collections.emptyMap();
@@ -48,6 +69,8 @@ public abstract class AbstractExchange implements IExchange {
 
         limitPriceUnit = ONE.movePointLeft(this.scale);
         tradeAmountUnit = ONE.movePointLeft(tradeAmountScale);
+        orderBookMonitor = executorStrategyFactory.create(this::updateOrderBooks);
+        tradeMonitor = executorStrategyFactory.create(this::updateOpenOrders);
     }
 
     @Override
@@ -108,7 +131,9 @@ public abstract class AbstractExchange implements IExchange {
     }
 
     @Override
-    public abstract String toString();
+    public String toString() {
+        return getExchange().toString();
+    }
 
     @Override
     public String placeLimitOrder(LimitOrder limitOrder) throws ExchangeException, NotAvailableFromExchangeException, NotYetImplementedForExchangeException, IOException {
@@ -147,6 +172,7 @@ public abstract class AbstractExchange implements IExchange {
 
     @Override
     public void start(ScheduledExecutorService scheduler) {
+        this.scheduler = scheduler;
         try {
             updateWallet();
         } catch (IOException e) {
@@ -154,7 +180,32 @@ public abstract class AbstractExchange implements IExchange {
         }
     }
 
-    protected abstract void updateWallet() throws IOException;
+    protected abstract Exchange getExchange();
+
+    @Override
+    public PollingMarketDataService getPollingMarketDataService() {
+        return getExchange().getPollingMarketDataService();
+    }
+
+    @Override
+    public StreamingExchangeService getStreamingExchangeService(ExchangeStreamingConfiguration configuration) {
+        return getExchange().getStreamingExchangeService(configuration);
+    }
+
+    @Override
+    public PollingTradeService getPollingTradeService() {
+        return getExchange().getPollingTradeService();
+    }
+
+    @Override
+    public PollingAccountService getPollingAccountService() {
+        return getExchange().getPollingAccountService();
+    }
+
+    @Override
+    public void updateWallet() throws IOException {
+        updateWallet(getExchange());
+    }
 
     protected void updateWallet(Exchange x) throws IOException {
         AccountInfo accountInfo = x.getPollingAccountService().getAccountInfo();
@@ -180,4 +231,102 @@ public abstract class AbstractExchange implements IExchange {
         } else
             return false;
     }
+
+    private final Multimap<CurrencyPair, OrderBookMonitorSettings> orderBookMonitors = Multimaps.newMultimap(new ConcurrentHashMap<>(), () -> Collections.newSetFromMap(new ConcurrentHashMap<>()));
+
+
+    static class OrderBookMonitorSettings {
+        public final Order.OrderType type;
+        public final BigDecimal maxAmount;
+        public final BigDecimal maxValue;
+        public final IOrderBookListener listener;
+
+        OrderBookMonitorSettings(Order.OrderType type, BigDecimal maxAmount, BigDecimal maxValue, IOrderBookListener listener) {
+            this.type = type;
+            this.maxAmount = maxAmount;
+            this.maxValue = maxValue;
+            this.listener = listener;
+        }
+    }
+
+    @Override
+    public void addOrderBookListener(CurrencyPair pair, Order.OrderType type, BigDecimal maxAmount, BigDecimal maxValue, IOrderBookListener orderBookMonitor) {
+        OrderBookMonitorSettings settings = new OrderBookMonitorSettings(type, maxAmount, maxValue, orderBookMonitor);
+        orderBookMonitors.put(pair, settings);
+        synchronized (orderBookMonitors) {
+            setOrderBookMonitoringEnabled(true);
+        }
+    }
+
+    public void removeOrderBookListener(IOrderBookListener orderBookMonitor) {
+        orderBookMonitors.entries().stream().filter(e -> e.getValue().listener.equals(orderBookMonitor)).forEach(e -> orderBookMonitors.remove(e.getKey(), e.getValue()));
+
+        synchronized (orderBookMonitors) {
+            if (orderBookMonitors.isEmpty())
+                setOrderBookMonitoringEnabled(false);
+        }
+    }
+
+    @Override
+    public void addTradeListener(CurrencyPair pair, ITradeListener tradeListener) {
+        tradeListeners.put(pair, tradeListener);
+        if (!tradeMonitor.isStarted())
+            tradeMonitor.start(scheduler);
+    }
+
+    protected void setOrderBookMonitoringEnabled(boolean enabled) {
+        if (enabled)
+            orderBookMonitor.start(scheduler);
+        else
+            orderBookMonitor.stop();
+    }
+
+    protected void updateOrderBooks() {
+        orderBooks.keySet().stream().filter(pair -> !orderBookMonitors.containsKey(pair)).forEach(orderBooks::remove);
+
+        for (Map.Entry<CurrencyPair, Collection<OrderBookMonitorSettings>> e : orderBookMonitors.asMap().entrySet()) {
+            try {
+                OrderBook orderBook = getPollingMarketDataService().getOrderBook(e.getKey());
+                boolean changed = updateOrderBook(e.getKey(), orderBook);
+                if (changed) {
+                    for (OrderBookMonitorSettings settings : e.getValue()) {
+                        settings.listener.changed(OrderBooks.get(orderBook, settings.type));
+                    }
+                }
+            } catch (IOException e1) {
+                log.warn("Error", e1);
+            }
+        }
+    }
+
+    private void updateOpenOrders() {
+        try {
+            OpenOrders orders = getPollingTradeService().getOpenOrders();
+            if (orders == null) return;
+
+            List<LimitOrder> currentOrders = orders.getOpenOrders();
+            Map<String, LimitOrder> currentOrdersMap = Maps.uniqueIndex(currentOrders, Order::getId);
+
+            List<String> remove = new LinkedList<>();
+            for (Map.Entry<String, LimitOrder> e : openOrders.entrySet()) {
+                LimitOrder currentOrder = currentOrdersMap.get(e.getKey());
+                LimitOrder storedOrder = e.getValue();
+                if (currentOrder != null && Numbers.equals(currentOrder.getTradableAmount(), storedOrder.getTradableAmount()))
+                    continue;
+
+                for (ITradeListener tradeListener : tradeListeners.get(storedOrder.getCurrencyPair())) {
+                    tradeListener.trade(storedOrder, currentOrder);
+                }
+                if (currentOrder == null) {
+                    remove.add(e.getKey());
+                }
+
+            }
+            remove.forEach(openOrders::remove);
+
+        } catch (IOException e) {
+            log.warn("Error getting open orders");
+        }
+    }
+
 }
