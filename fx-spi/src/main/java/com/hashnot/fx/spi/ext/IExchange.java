@@ -1,13 +1,9 @@
 package com.hashnot.fx.spi.ext;
 
 import com.hashnot.fx.spi.IOrderBookListener;
-import com.hashnot.fx.spi.ITradeListener;
-import com.xeiam.xchange.ExchangeException;
-import com.xeiam.xchange.NotAvailableFromExchangeException;
-import com.xeiam.xchange.NotYetImplementedForExchangeException;
+import com.hashnot.fx.spi.IOrderListener;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.marketdata.OrderBook;
-import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.service.polling.PollingAccountService;
 import com.xeiam.xchange.service.polling.PollingMarketDataService;
 import com.xeiam.xchange.service.polling.PollingTradeService;
@@ -60,21 +56,15 @@ public interface IExchange extends IFeeService {
 
     void start();
 
-    String placeLimitOrder(LimitOrder limitOrder) throws ExchangeException, NotAvailableFromExchangeException, NotYetImplementedForExchangeException, IOException;
-
-    boolean cancelOrder(String orderId) throws ExchangeException, NotAvailableFromExchangeException, NotYetImplementedForExchangeException, IOException;
-
     void stop();
 
     boolean updateOrderBook(CurrencyPair orderBookPair, OrderBook orderBook);
-
-    void cancelAll();
 
     void addOrderBookListener(CurrencyPair pair, BigDecimal maxAmount, BigDecimal maxValue, IOrderBookListener orderBookMonitor);
 
     void removeOrderBookListener(IOrderBookListener orderBookMonitor);
 
-    void addTradeListener(CurrencyPair pair, ITradeListener tradeListener);
+    void addOrderListener(CurrencyPair pair, IOrderListener tradeListener);
 
     void updateWallet() throws IOException;
 }

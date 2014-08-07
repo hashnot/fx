@@ -1,24 +1,15 @@
 package com.hashnot.fx.spi.ext;
 
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
 import com.hashnot.fx.spi.IOrderBookListener;
-import com.hashnot.fx.spi.ITradeListener;
-import com.hashnot.fx.util.IExecutorStrategy;
+import com.hashnot.fx.spi.IOrderListener;
 import com.hashnot.fx.util.IExecutorStrategyFactory;
 import com.hashnot.fx.util.Numbers;
 import com.hashnot.fx.util.OrderBooks;
 import com.xeiam.xchange.Exchange;
-import com.xeiam.xchange.ExchangeException;
-import com.xeiam.xchange.NotAvailableFromExchangeException;
-import com.xeiam.xchange.NotYetImplementedForExchangeException;
 import com.xeiam.xchange.currency.CurrencyPair;
-import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.account.AccountInfo;
 import com.xeiam.xchange.dto.marketdata.OrderBook;
 import com.xeiam.xchange.dto.trade.LimitOrder;
-import com.xeiam.xchange.dto.trade.OpenOrders;
 import com.xeiam.xchange.service.polling.PollingAccountService;
 import com.xeiam.xchange.service.polling.PollingMarketDataService;
 import com.xeiam.xchange.service.polling.PollingTradeService;
@@ -29,8 +20,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
@@ -51,13 +43,10 @@ public abstract class AbstractExchange implements IExchange {
     protected final Map<String, BigDecimal> minimumOrder;
     protected final BigDecimal tradeAmountUnit;
     protected final Map<String, LimitOrder> openOrders = new HashMap<>();
-    protected final Map<String, Long> trades = new HashMap<>();
 
     protected final OrderBookMonitor orderBookMonitor;
-
-    private final Multimap<CurrencyPair, ITradeListener> tradeListeners = Multimaps.newMultimap(new ConcurrentHashMap<>(), () -> Collections.newSetFromMap(new ConcurrentHashMap<>()));
-    private final Map<CurrencyPair, BigDecimal> tradeListenerAmounts = new ConcurrentHashMap<>();
-    private final IExecutorStrategy tradeMonitor;
+    final protected OpenOrderMonitor openOrderMonitor;
+    final protected CachingTradeService tradeService;
 
     public AbstractExchange(IFeeService feeService, IExecutorStrategyFactory executorStrategyFactory, Map<String, BigDecimal> walletUnit, Map<String, BigDecimal> minimumOrder, int limitPriceScale, int tradeAmountScale) {
         this.feeService = feeService;
@@ -68,7 +57,8 @@ public abstract class AbstractExchange implements IExchange {
         limitPriceUnit = ONE.movePointLeft(this.scale);
         tradeAmountUnit = ONE.movePointLeft(tradeAmountScale);
         orderBookMonitor = new OrderBookMonitor(executorStrategyFactory, orderBooks, this);
-        tradeMonitor = executorStrategyFactory.create(this::updateOpenOrders);
+        openOrderMonitor = new OpenOrderMonitor(executorStrategyFactory, openOrders, this);
+        tradeService = new CachingTradeService(() -> getExchange().getPollingTradeService(), openOrders);
     }
 
     @Override
@@ -134,38 +124,8 @@ public abstract class AbstractExchange implements IExchange {
     }
 
     @Override
-    public String placeLimitOrder(LimitOrder limitOrder) throws ExchangeException, NotAvailableFromExchangeException, NotYetImplementedForExchangeException, IOException {
-        PollingTradeService tradeService = getPollingTradeService();
-        String id = tradeService.placeLimitOrder(limitOrder);
-        if (openOrders.containsKey(id))
-            log.warn("ID {} present @{}", id, this);
-        openOrders.put(id, limitOrder);
-        return id;
-    }
-
-    @Override
-    public boolean cancelOrder(String orderId) throws ExchangeException, NotAvailableFromExchangeException, NotYetImplementedForExchangeException, IOException {
-        if (!openOrders.containsKey(orderId))
-            throw new ExchangeException("Unknown order " + orderId);
-        boolean result = getPollingTradeService().cancelOrder(orderId);
-        openOrders.remove(orderId);
-        return result;
-    }
-
-    @Override
     public void stop() {
-        cancelAll();
-    }
-
-    public void cancelAll() {
-        openOrders.forEach((k, v) -> {
-            try {
-                if (!cancelOrder(k))
-                    log.warn("Unsuccessful cancel {}@{}", k, this);
-            } catch (IOException e) {
-                log.warn("Error while cancelling");
-            }
-        });
+        tradeService.cancelAll();
     }
 
     @Override
@@ -191,7 +151,7 @@ public abstract class AbstractExchange implements IExchange {
 
     @Override
     public PollingTradeService getPollingTradeService() {
-        return getExchange().getPollingTradeService();
+        return tradeService;
     }
 
     @Override
@@ -239,41 +199,8 @@ public abstract class AbstractExchange implements IExchange {
     }
 
     @Override
-    public void addTradeListener(CurrencyPair pair, ITradeListener tradeListener) {
-        tradeListeners.put(pair, tradeListener);
-        if (!tradeMonitor.isStarted())
-            tradeMonitor.start();
-    }
-
-
-    private void updateOpenOrders() {
-        try {
-            OpenOrders orders = getPollingTradeService().getOpenOrders();
-            if (orders == null) return;
-
-            List<LimitOrder> currentOrders = orders.getOpenOrders();
-            Map<String, LimitOrder> currentOrdersMap = Maps.uniqueIndex(currentOrders, Order::getId);
-
-            List<String> remove = new LinkedList<>();
-            for (Map.Entry<String, LimitOrder> e : openOrders.entrySet()) {
-                LimitOrder currentOrder = currentOrdersMap.get(e.getKey());
-                LimitOrder storedOrder = e.getValue();
-                if (currentOrder != null && Numbers.equals(currentOrder.getTradableAmount(), storedOrder.getTradableAmount()))
-                    continue;
-
-                for (ITradeListener tradeListener : tradeListeners.get(storedOrder.getCurrencyPair())) {
-                    tradeListener.trade(storedOrder, currentOrder);
-                }
-                if (currentOrder == null) {
-                    remove.add(e.getKey());
-                }
-
-            }
-            remove.forEach(openOrders::remove);
-
-        } catch (IOException e) {
-            log.warn("Error getting open orders");
-        }
+    public void addOrderListener(CurrencyPair pair, IOrderListener tradeListener) {
+        openOrderMonitor.addOrderListener(pair, tradeListener);
     }
 
 }

@@ -60,7 +60,7 @@ public class OrderUpdater implements IOrderUpdater {
 
     protected void cancel(OrderType key, OrderUpdateEvent self) throws IOException {
         log.info("Cancel @{} {} {}", self.openExchange, self.openOrderId, self.openedOrder);
-        self.openExchange.cancelOrder(self.openOrderId);
+        self.openExchange.getPollingTradeService().cancelOrder(self.openOrderId);
         self.openOrderId = null;
         openOrders.remove(key);
 
