@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledExecutorService;
 
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
@@ -54,8 +53,7 @@ public abstract class AbstractExchange implements IExchange {
     protected final Map<String, LimitOrder> openOrders = new HashMap<>();
     protected final Map<String, Long> trades = new HashMap<>();
 
-    protected ScheduledExecutorService scheduler;
-    protected final IExecutorStrategy orderBookMonitor;
+    protected final OrderBookMonitor orderBookMonitor;
 
     private final Multimap<CurrencyPair, ITradeListener> tradeListeners = Multimaps.newMultimap(new ConcurrentHashMap<>(), () -> Collections.newSetFromMap(new ConcurrentHashMap<>()));
     private final Map<CurrencyPair, BigDecimal> tradeListenerAmounts = new ConcurrentHashMap<>();
@@ -69,7 +67,7 @@ public abstract class AbstractExchange implements IExchange {
 
         limitPriceUnit = ONE.movePointLeft(this.scale);
         tradeAmountUnit = ONE.movePointLeft(tradeAmountScale);
-        orderBookMonitor = executorStrategyFactory.create(this::updateOrderBooks);
+        orderBookMonitor = new OrderBookMonitor(executorStrategyFactory, orderBooks, this);
         tradeMonitor = executorStrategyFactory.create(this::updateOpenOrders);
     }
 
@@ -171,8 +169,7 @@ public abstract class AbstractExchange implements IExchange {
     }
 
     @Override
-    public void start(ScheduledExecutorService scheduler) {
-        this.scheduler = scheduler;
+    public void start() {
         try {
             updateWallet();
         } catch (IOException e) {
@@ -232,72 +229,22 @@ public abstract class AbstractExchange implements IExchange {
             return false;
     }
 
-    private final Multimap<CurrencyPair, OrderBookMonitorSettings> orderBookMonitors = Multimaps.newMultimap(new ConcurrentHashMap<>(), () -> Collections.newSetFromMap(new ConcurrentHashMap<>()));
-
-
-    static class OrderBookMonitorSettings {
-        public final Order.OrderType type;
-        public final BigDecimal maxAmount;
-        public final BigDecimal maxValue;
-        public final IOrderBookListener listener;
-
-        OrderBookMonitorSettings(Order.OrderType type, BigDecimal maxAmount, BigDecimal maxValue, IOrderBookListener listener) {
-            this.type = type;
-            this.maxAmount = maxAmount;
-            this.maxValue = maxValue;
-            this.listener = listener;
-        }
-    }
-
     @Override
-    public void addOrderBookListener(CurrencyPair pair, Order.OrderType type, BigDecimal maxAmount, BigDecimal maxValue, IOrderBookListener orderBookMonitor) {
-        OrderBookMonitorSettings settings = new OrderBookMonitorSettings(type, maxAmount, maxValue, orderBookMonitor);
-        orderBookMonitors.put(pair, settings);
-        synchronized (orderBookMonitors) {
-            setOrderBookMonitoringEnabled(true);
-        }
+    public void addOrderBookListener(CurrencyPair pair, BigDecimal maxAmount, BigDecimal maxValue, IOrderBookListener orderBookMonitor) {
+        this.orderBookMonitor.addOrderBookListener(pair, maxAmount, maxValue, orderBookMonitor);
     }
 
     public void removeOrderBookListener(IOrderBookListener orderBookMonitor) {
-        orderBookMonitors.entries().stream().filter(e -> e.getValue().listener.equals(orderBookMonitor)).forEach(e -> orderBookMonitors.remove(e.getKey(), e.getValue()));
-
-        synchronized (orderBookMonitors) {
-            if (orderBookMonitors.isEmpty())
-                setOrderBookMonitoringEnabled(false);
-        }
+        this.orderBookMonitor.removeOrderBookListener(orderBookMonitor);
     }
 
     @Override
     public void addTradeListener(CurrencyPair pair, ITradeListener tradeListener) {
         tradeListeners.put(pair, tradeListener);
         if (!tradeMonitor.isStarted())
-            tradeMonitor.start(scheduler);
+            tradeMonitor.start();
     }
 
-    protected void setOrderBookMonitoringEnabled(boolean enabled) {
-        if (enabled)
-            orderBookMonitor.start(scheduler);
-        else
-            orderBookMonitor.stop();
-    }
-
-    protected void updateOrderBooks() {
-        orderBooks.keySet().stream().filter(pair -> !orderBookMonitors.containsKey(pair)).forEach(orderBooks::remove);
-
-        for (Map.Entry<CurrencyPair, Collection<OrderBookMonitorSettings>> e : orderBookMonitors.asMap().entrySet()) {
-            try {
-                OrderBook orderBook = getPollingMarketDataService().getOrderBook(e.getKey());
-                boolean changed = updateOrderBook(e.getKey(), orderBook);
-                if (changed) {
-                    for (OrderBookMonitorSettings settings : e.getValue()) {
-                        settings.listener.changed(OrderBooks.get(orderBook, settings.type));
-                    }
-                }
-            } catch (IOException e1) {
-                log.warn("Error", e1);
-            }
-        }
-    }
 
     private void updateOpenOrders() {
         try {

@@ -10,23 +10,27 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author Rafał Krupiński
  */
-public class SchedulerExecutor implements IExecutorStrategy {
+public class SchedulerExecutor implements IExecutorStrategy, Runnable {
     final private static Logger log = LoggerFactory.getLogger(SchedulerExecutor.class);
-    private final long rate;
-    private ScheduledFuture<?> future;
-    private final Runnable runnable;
 
-    public SchedulerExecutor(Runnable runnable, long rate) {
-        this.rate = rate;
+    private final Runnable runnable;
+    private ScheduledExecutorService executor;
+    private final long rate;
+
+    private ScheduledFuture<?> future;
+
+    public SchedulerExecutor(Runnable runnable, ScheduledExecutorService executor, long rate) {
         this.runnable = runnable;
+        this.executor = executor;
+        this.rate = rate;
     }
 
     @Override
-    public void start(ScheduledExecutorService scheduler) {
+    public void start() {
         synchronized (this) {
             if (future != null) return;
         }
-        future = scheduler.scheduleAtFixedRate(this::run, 0, rate, TimeUnit.MILLISECONDS);
+        future = executor.scheduleAtFixedRate(this, 0, rate, TimeUnit.MILLISECONDS);
     }
 
     public void run() {

@@ -6,7 +6,6 @@ import com.xeiam.xchange.ExchangeException;
 import com.xeiam.xchange.NotAvailableFromExchangeException;
 import com.xeiam.xchange.NotYetImplementedForExchangeException;
 import com.xeiam.xchange.currency.CurrencyPair;
-import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.marketdata.OrderBook;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.service.polling.PollingAccountService;
@@ -18,7 +17,6 @@ import com.xeiam.xchange.service.streaming.StreamingExchangeService;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Map;
-import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * @author Rafał Krupiński
@@ -60,7 +58,7 @@ public interface IExchange extends IFeeService {
 
     BigDecimal getLimit(String currency);
 
-    void start(ScheduledExecutorService scheduler);
+    void start();
 
     String placeLimitOrder(LimitOrder limitOrder) throws ExchangeException, NotAvailableFromExchangeException, NotYetImplementedForExchangeException, IOException;
 
@@ -72,7 +70,7 @@ public interface IExchange extends IFeeService {
 
     void cancelAll();
 
-    void addOrderBookListener(CurrencyPair pair, Order.OrderType type, BigDecimal maxAmount, BigDecimal maxValue, IOrderBookListener orderBookMonitor);
+    void addOrderBookListener(CurrencyPair pair, BigDecimal maxAmount, BigDecimal maxValue, IOrderBookListener orderBookMonitor);
 
     void removeOrderBookListener(IOrderBookListener orderBookMonitor);
 

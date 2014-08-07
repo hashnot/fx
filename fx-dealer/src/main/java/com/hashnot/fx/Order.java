@@ -39,9 +39,9 @@ public class Order {
      * price or delta or auto (default)
      */
     public static void main(String[] args) throws Exception {
-        Collection<IExchange> exchanges = Main.load(args[0]);
+        Collection<IExchange> exchanges = Main.load(args[0], Executors.newScheduledThreadPool(10));
         IExchange x = find(exchanges, args[1]);
-        x.start(Executors.newScheduledThreadPool(10));
+        x.start();
         order(x, args[2], args[3], args[4], args.length == 6 ? args[5] : null);
     }
 
@@ -68,7 +68,7 @@ public class Order {
 
         Dealer dealer = new Dealer(x, new LimitOrder(type, amount, pair, null, null, null), value);
 
-        x.addOrderBookListener(pair, type, x.getMinimumTrade(pair.baseSymbol), null, dealer);
+        x.addOrderBookListener(pair, x.getMinimumTrade(pair.baseSymbol), null, dealer);
         x.addTradeListener(pair, dealer);
 
         return dealer.get();
@@ -104,7 +104,8 @@ class Dealer implements IOrderBookListener, ITradeListener {
     }
 
     @Override
-    public void changed(List<LimitOrder> orders) {
+    public void changed(OrderBookUpdateEvent event) {
+        List<LimitOrder> orders = event.after.getOrders(order.getType());
         log.info("changed {}", orders);
         if (orders.isEmpty())
             throw new IllegalStateException("No " + order.getType() + " orders found");

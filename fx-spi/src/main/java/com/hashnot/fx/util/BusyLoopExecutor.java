@@ -9,15 +9,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class BusyLoopExecutor implements IExecutorStrategy {
     private AtomicBoolean run = new AtomicBoolean(false);
     private final Runnable runnable;
+    private ScheduledExecutorService executor;
 
-    public BusyLoopExecutor(Runnable runnable) {
+    public BusyLoopExecutor(Runnable runnable, ScheduledExecutorService executor) {
         this.runnable = runnable;
+        this.executor = executor;
     }
 
     @Override
-    public void start(ScheduledExecutorService scheduler) {
+    public void start() {
         if (!run.compareAndSet(false, true)) return;
-        scheduler.execute(() -> {
+        executor.execute(() -> {
             while (run.get())
                 runnable.run();
         });

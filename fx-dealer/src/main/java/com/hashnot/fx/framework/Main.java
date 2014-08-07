@@ -22,21 +22,18 @@ public class Main {
     static Collection<CurrencyPair> allowedPairs = Arrays.asList(/*CurrencyPairUtil.EUR_PLN, CurrencyPair.BTC_PLN, */CurrencyPair.BTC_EUR);
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        Collection<IExchange> exchanges = load(args[0]);
+        ThreadFactory tf = new ConfigurableThreadFactory("p-%d-t-%d");
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(10, tf);
+        Collection<IExchange> exchanges = load(args[0], scheduler);
 
         Map<Order.OrderType, OrderUpdateEvent> myOpenOrders = new HashMap<>();
 
-        ThreadFactory tf = new ConfigurableThreadFactory("p-%d-t-%d");
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            exchanges.parallelStream().forEach(IExchange::stop);
-        }, "Clear"));
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> exchanges.parallelStream().forEach(IExchange::stop), "Clear"));
 
         int capacity = 2 << 8;
         BlockingQueue<ExchangeUpdateEvent> updates = new ArrayBlockingQueue<>(capacity);
 
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(10, tf);
-
-        exchanges.parallelStream().forEach(x -> x.start(scheduler));
+        exchanges.parallelStream().forEach(IExchange::start);
         report(exchanges);
 
         IOrderClosedListener orderClosedListener = new OrderClosedListener(myOpenOrders);
@@ -64,8 +61,9 @@ public class Main {
 */
     }
 
-    public static Collection<IExchange> load(String path) {
+    public static Collection<IExchange> load(String path, ScheduledExecutorService scheduler) {
         GroovyShell sh = new GroovyShell();
+        sh.setVariable("executor", scheduler);
         try {
             return (Collection<IExchange>) sh.evaluate(new File(path));
         } catch (IOException e) {

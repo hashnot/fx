@@ -1,12 +1,10 @@
 package com.hashnot.fx.spi;
 
-import com.xeiam.xchange.dto.trade.LimitOrder;
-
-import java.util.List;
+import com.hashnot.fx.OrderBookUpdateEvent;
 
 /**
  * @author Rafał Krupiński
  */
 public interface IOrderBookListener {
-    void changed(List<LimitOrder> orders);
+    void changed(OrderBookUpdateEvent orderBookUpdateEvent);
 }

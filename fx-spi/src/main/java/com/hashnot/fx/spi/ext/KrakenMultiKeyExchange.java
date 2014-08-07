@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -19,8 +20,8 @@ public class KrakenMultiKeyExchange extends AbstractExchange {
 
     private final AtomicInteger keyCounter = new AtomicInteger(0);
 
-    public KrakenMultiKeyExchange(List<ExchangeSpecification> exchanges, IFeeService feeService, Map<String, BigDecimal> walletUnit, Map<String, BigDecimal> minimumOrder, int limitPriceScale, int tradeAmountScale) {
-        super(feeService, new SchedulerExecutorFactory(200), walletUnit, minimumOrder, limitPriceScale, tradeAmountScale);
+    public KrakenMultiKeyExchange(List<ExchangeSpecification> exchanges, IFeeService feeService, ScheduledExecutorService executor, Map<String, BigDecimal> walletUnit, Map<String, BigDecimal> minimumOrder, int limitPriceScale, int tradeAmountScale) {
+        super(feeService, new SchedulerExecutorFactory(executor, 200), walletUnit, minimumOrder, limitPriceScale, tradeAmountScale);
         this.exchanges = new ArrayList<>(exchanges.size());
         for (ExchangeSpecification spec : exchanges)
             this.exchanges.add(ExchangeFactory.INSTANCE.createExchange(spec));

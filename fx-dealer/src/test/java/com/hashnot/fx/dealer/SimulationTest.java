@@ -17,6 +17,7 @@ import org.junit.Test;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Executors;
 
 import static com.xeiam.xchange.currency.Currencies.BTC;
 import static com.xeiam.xchange.currency.Currencies.EUR;
@@ -95,7 +96,7 @@ public class SimulationTest {
     protected Simulation createSimulator(BigDecimal... fee) {
         if (fee.length == 0) fee = new BigDecimal[]{ZERO};
 
-        IExecutorStrategyFactory executorStrategyFactory = new SchedulerExecutorFactory(100);
+        IExecutorStrategyFactory executorStrategyFactory = new SchedulerExecutorFactory(Executors.newSingleThreadScheduledExecutor(), 100);
         e1 = new SimpleExchange(new MockExchange(), new StaticFeeService(fee[0]), executorStrategyFactory, null, null, 5, 8);
         e1.getWallet().put(EUR, TEN);
         e1.getWallet().put(BTC, TEN);

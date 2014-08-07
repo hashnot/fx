@@ -6,7 +6,7 @@ import java.util.concurrent.ScheduledExecutorService;
  * @author Rafał Krupiński
  */
 public interface IExecutorStrategy {
-    public void start(ScheduledExecutorService scheduler);
+    public void start();
 
     public void stop();
 
