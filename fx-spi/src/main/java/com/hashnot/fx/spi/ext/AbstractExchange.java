@@ -2,7 +2,7 @@ package com.hashnot.fx.spi.ext;
 
 import com.hashnot.fx.spi.IOrderBookListener;
 import com.hashnot.fx.spi.IOrderListener;
-import com.hashnot.fx.util.IExecutorStrategyFactory;
+import com.hashnot.fx.util.exec.IExecutorStrategyFactory;
 import com.hashnot.fx.util.Numbers;
 import com.hashnot.fx.util.OrderBooks;
 import com.xeiam.xchange.Exchange;

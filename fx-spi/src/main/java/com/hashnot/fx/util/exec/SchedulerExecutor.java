@@ -1,4 +1,4 @@
-package com.hashnot.fx.util;
+package com.hashnot.fx.util.exec;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,6 +1,6 @@
 package com.hashnot.fx.spi.ext;
 
-import com.hashnot.fx.util.IExecutorStrategyFactory;
+import com.hashnot.fx.util.exec.IExecutorStrategyFactory;
 import com.xeiam.xchange.Exchange;
 
 import java.math.BigDecimal;

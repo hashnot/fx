@@ -1,4 +1,4 @@
-package com.hashnot.fx.util;
+package com.hashnot.fx.util.exec;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;

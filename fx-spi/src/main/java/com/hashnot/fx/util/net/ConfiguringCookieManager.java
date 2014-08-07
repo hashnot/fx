@@ -1,4 +1,4 @@
-package com.hashnot.fx.util;
+package com.hashnot.fx.util.net;
 
 import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.util.Cookie;

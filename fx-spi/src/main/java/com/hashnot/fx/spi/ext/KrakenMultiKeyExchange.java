@@ -1,6 +1,6 @@
 package com.hashnot.fx.spi.ext;
 
-import com.hashnot.fx.util.SchedulerExecutorFactory;
+import com.hashnot.fx.util.exec.SchedulerExecutorFactory;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.ExchangeFactory;
 import com.xeiam.xchange.ExchangeSpecification;

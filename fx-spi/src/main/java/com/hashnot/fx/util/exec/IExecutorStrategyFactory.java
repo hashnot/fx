@@ -1,4 +1,4 @@
-package com.hashnot.fx.util;
+package com.hashnot.fx.util.exec;
 
 /**
  * @author Rafał Krupiński
