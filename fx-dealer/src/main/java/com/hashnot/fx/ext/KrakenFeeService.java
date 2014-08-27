@@ -8,6 +8,7 @@ import com.xeiam.xchange.kraken.Kraken;
 import com.xeiam.xchange.kraken.dto.account.KrakenTradeVolume;
 import com.xeiam.xchange.kraken.service.polling.KrakenAccountService;
 import com.xeiam.xchange.kraken.service.polling.KrakenBasePollingService;
+import si.mazi.rescu.SynchronizedValueFactory;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -19,15 +20,15 @@ public class KrakenFeeService<T extends Kraken> extends KrakenBasePollingService
     private KrakenAccountService accountService;
 
     public KrakenFeeService(Class<T> type, ExchangeSpecification exchangeSpecification, KrakenAccountService accountService) {
-        super(type, exchangeSpecification);
+        super(type, exchangeSpecification, null);
         this.accountService = accountService;
     }
 
     @Override
     public BigDecimal getFeePercent(CurrencyPair pair) {
         try {
-        KrakenTradeVolume tradeVolume = accountService.getTradeVolume(pair);
-        return tradeVolume.getFees().get(createKrakenCurrencyPair(pair)).getFee();
+            KrakenTradeVolume tradeVolume = accountService.getTradeVolume(pair);
+            return tradeVolume.getFees().get(createKrakenCurrencyPair(pair)).getFee();
         } catch (IOException e) {
             throw new ConnectionException(e);
         }

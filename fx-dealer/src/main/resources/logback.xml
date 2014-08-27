@@ -19,8 +19,6 @@
 
     <logger name="com.hashnot.fx" level="debug" />
     <logger name="com.hashnot.fx.kokos.to" level="warn" />
-    <logger name="com.hashnot.fx.framework.OrderBookPoller" level="warn" />
-    <logger name="com.hashnot.fx.framework.CacheUpdater" level="warn" />
 
     <logger name="com.gargoylesoftware.htmlunit.IncorrectnessListenerImpl" level="off" />
 

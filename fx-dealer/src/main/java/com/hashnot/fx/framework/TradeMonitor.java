@@ -1,5 +1,6 @@
 package com.hashnot.fx.framework;
 
+import com.hashnot.fx.spi.IOrderListener;
 import com.hashnot.fx.spi.ext.IExchange;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.trade.LimitOrder;
@@ -23,12 +24,12 @@ public class TradeMonitor implements Runnable {
 
     final private IExchange exchange;
     final private PollingTradeService pollingTradeService;
-    final private IOrderClosedListener orderClosedListener;
+    final private IOrderListener orderClosedListener;
     final private Map<Order.OrderType, OrderUpdateEvent> openOrders;
 
     final private Map<Order.OrderType, LimitOrder> currentOrders = new HashMap<>();
 
-    public TradeMonitor(IExchange exchange, IOrderClosedListener orderClosedListener, Map<Order.OrderType, OrderUpdateEvent> openOrders) {
+    public TradeMonitor(IExchange exchange, IOrderListener orderClosedListener, Map<Order.OrderType, OrderUpdateEvent> openOrders) {
         this.exchange = exchange;
         this.pollingTradeService = exchange.getPollingTradeService();
         this.orderClosedListener = orderClosedListener;
@@ -54,7 +55,7 @@ public class TradeMonitor implements Runnable {
                 LimitOrder current = this.currentOrders.get(e.getKey());
                 // if closed or touched
                 if (current == null || current.getTradableAmount().compareTo(e.getValue().openedOrder.getTradableAmount()) < 0)
-                    orderClosedListener.orderClosed(e.getValue().openedOrder, current);
+                    orderClosedListener.trade(e.getValue().openedOrder, current);
             }
         } catch (IOException e) {
             log.error("Error", e);

@@ -27,15 +27,16 @@ import java.util.concurrent.ConcurrentHashMap;
 public class OpenOrderMonitor implements Runnable {
     final private static Logger log = LoggerFactory.getLogger(OpenOrderMonitor.class);
 
-    private final Multimap<CurrencyPair, IOrderListener> tradeListeners = Multimaps.newMultimap(new ConcurrentHashMap<>(), () -> Collections.newSetFromMap(new ConcurrentHashMap<>()));
-    private final IExecutorStrategy orderMonitor;
-    private final Map<String, LimitOrder> openOrders;
     final private IExchange parent;
+    final private IExecutorStrategy poll;
+
+    private final Multimap<CurrencyPair, IOrderListener> tradeListeners = Multimaps.newMultimap(new ConcurrentHashMap<>(), () -> Collections.newSetFromMap(new ConcurrentHashMap<>()));
+    private final Map<String, LimitOrder> openOrders;
 
     public OpenOrderMonitor(IExecutorStrategyFactory executorStrategyFactory, Map<String, LimitOrder> openOrders, IExchange parent) {
         this.openOrders = openOrders;
         this.parent = parent;
-        orderMonitor = executorStrategyFactory.create(this);
+        poll = executorStrategyFactory.create(this);
     }
 
     public void run() {
@@ -70,7 +71,7 @@ public class OpenOrderMonitor implements Runnable {
 
     public void addOrderListener(CurrencyPair pair, IOrderListener tradeListener) {
         tradeListeners.put(pair, tradeListener);
-        if (!orderMonitor.isStarted())
-            orderMonitor.start();
+        if (!poll.isStarted())
+            poll.start();
     }
 }

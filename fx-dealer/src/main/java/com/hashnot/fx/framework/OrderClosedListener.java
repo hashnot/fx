@@ -1,6 +1,7 @@
 package com.hashnot.fx.framework;
 
 import com.hashnot.fx.spi.ConnectionException;
+import com.hashnot.fx.spi.IOrderListener;
 import com.hashnot.fx.util.Orders;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.trade.LimitOrder;
@@ -18,7 +19,7 @@ import static java.math.BigDecimal.ZERO;
 /**
  * @author Rafał Krupiński
  */
-public class OrderClosedListener implements IOrderClosedListener {
+public class OrderClosedListener implements IOrderListener {
     final private static Logger log = LoggerFactory.getLogger(OrderClosedListener.class);
 
     final private Map<Order.OrderType, OrderUpdateEvent> openOrders;
@@ -28,7 +29,7 @@ public class OrderClosedListener implements IOrderClosedListener {
     }
 
     @Override
-    public void orderClosed(LimitOrder openedOrder, LimitOrder currentOrder) {
+    public void trade(LimitOrder openedOrder, LimitOrder currentOrder) {
         List<LimitOrder> closingOrders = openOrders.get(openedOrder.getType()).closingOrders;
 
         PollingTradeService tradeService = openOrders.get(closingOrders.get(0).getType()).closeExchange.getPollingTradeService();

@@ -36,10 +36,10 @@ public class OrderBookMonitor {
         this.parent = parent;
 
         orderBookMonitor = executorStrategyFactory.create(this::updateOrderBooks);
-
     }
 
     protected void updateOrderBooks() {
+        // Remove not monitored order books.
         orderBooks.keySet().stream().filter(pair -> !orderBookMonitors.containsKey(pair)).forEach(orderBooks::remove);
 
         for (Map.Entry<CurrencyPair, Collection<OrderBookMonitorSettings>> e : orderBookMonitors.asMap().entrySet()) {
@@ -59,14 +59,6 @@ public class OrderBookMonitor {
         }
     }
 
-    protected void setOrderBookMonitoringEnabled(boolean enabled) {
-        if (enabled)
-            orderBookMonitor.start();
-        else
-            orderBookMonitor.stop();
-    }
-
-
     static class OrderBookMonitorSettings {
         public final BigDecimal maxAmount;
         public final BigDecimal maxValue;
@@ -79,22 +71,19 @@ public class OrderBookMonitor {
         }
     }
 
-    public void addOrderBookListener(CurrencyPair pair, BigDecimal maxAmount, BigDecimal maxValue, IOrderBookListener orderBookMonitor) {
-        OrderBookMonitorSettings settings = new OrderBookMonitorSettings(maxAmount, maxValue, orderBookMonitor);
+    public void addOrderBookListener(CurrencyPair pair, BigDecimal maxAmount, BigDecimal maxValue, IOrderBookListener orderBookListener) {
+        OrderBookMonitorSettings settings = new OrderBookMonitorSettings(maxAmount, maxValue, orderBookListener);
         orderBookMonitors.put(pair, settings);
         if (!this.orderBookMonitor.isStarted())
-            this.orderBookMonitor.start();
-        synchronized (orderBookMonitors) {
-            setOrderBookMonitoringEnabled(true);
-        }
+            orderBookMonitor.start();
     }
 
-    public void removeOrderBookListener(IOrderBookListener orderBookMonitor) {
-        orderBookMonitors.entries().stream().filter(e -> e.getValue().listener.equals(orderBookMonitor)).forEach(e -> orderBookMonitors.remove(e.getKey(), e.getValue()));
+    public void removeOrderBookListener(IOrderBookListener orderBookListener) {
+        orderBookMonitors.entries().stream().filter(e -> e.getValue().listener.equals(orderBookListener)).forEach(e -> orderBookMonitors.remove(e.getKey(), e.getValue()));
 
         synchronized (orderBookMonitors) {
             if (orderBookMonitors.isEmpty())
-                setOrderBookMonitoringEnabled(false);
+                orderBookMonitor.stop();
         }
     }
 }

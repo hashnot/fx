@@ -1,9 +1,10 @@
 package com.hashnot.fx.dealer;
 
-import com.hashnot.fx.framework.ICacheUpdateListener;
+import com.hashnot.fx.OrderBookUpdateEvent;
 import com.hashnot.fx.framework.IOrderUpdater;
 import com.hashnot.fx.framework.OrderUpdateEvent;
 import com.hashnot.fx.framework.Simulation;
+import com.hashnot.fx.spi.IOrderBookListener;
 import com.hashnot.fx.spi.ext.IExchange;
 import com.hashnot.fx.util.Orders;
 import com.xeiam.xchange.currency.CurrencyPair;
@@ -22,8 +23,7 @@ import static com.hashnot.fx.util.Orders.*;
 /**
  * @author Rafał Krupiński
  */
-public class Dealer implements ICacheUpdateListener {
-
+public class Dealer implements IOrderBookListener {
     private static final BigDecimal LOW_LIMIT = new BigDecimal(".01");
     private final Collection<IExchange> context;
 
@@ -40,13 +40,14 @@ public class Dealer implements ICacheUpdateListener {
     final private Collection<IExchange> dirtyExchanges = new HashSet<>();
 
     @Override
-    public void cacheUpdated(Collection<CurrencyPair> pairs) {
+    public synchronized void changed(OrderBookUpdateEvent orderBookUpdateEvent) {
         try {
-            process(pairs);
-            clear();
+            process(Arrays.asList(orderBookUpdateEvent.pair));
         } catch (RuntimeException | Error e) {
             log.error("Error", e);
             throw e;
+        }finally {
+            clear();
         }
     }
 

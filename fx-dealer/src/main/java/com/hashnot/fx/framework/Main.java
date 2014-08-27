@@ -2,13 +2,16 @@ package com.hashnot.fx.framework;
 
 import com.hashnot.fx.dealer.Dealer;
 import com.hashnot.fx.spi.ExchangeUpdateEvent;
+import com.hashnot.fx.spi.IOrderListener;
 import com.hashnot.fx.spi.ext.IExchange;
+import com.hashnot.fx.spi.ext.OrderBookTradeMonitor;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
 import groovy.lang.GroovyShell;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -19,7 +22,8 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
  * @author Rafał Krupiński
  */
 public class Main {
-    static Collection<CurrencyPair> allowedPairs = Arrays.asList(/*CurrencyPairUtil.EUR_PLN, CurrencyPair.BTC_PLN, */CurrencyPair.BTC_EUR);
+    private static final CurrencyPair pair = CurrencyPair.BTC_EUR;
+    static Collection<CurrencyPair> allowedPairs = Arrays.asList(/*CurrencyPairUtil.EUR_PLN, CurrencyPair.BTC_PLN, */pair);
 
     public static void main(String[] args) throws IOException, InterruptedException {
         ThreadFactory tf = new ConfigurableThreadFactory("p-%d-t-%d");
@@ -34,23 +38,24 @@ public class Main {
         BlockingQueue<ExchangeUpdateEvent> updates = new ArrayBlockingQueue<>(capacity);
 
         exchanges.parallelStream().forEach(IExchange::start);
+
         report(exchanges);
 
-        IOrderClosedListener orderClosedListener = new OrderClosedListener(myOpenOrders);
-
-        for (IExchange exchange : exchanges) {
-            scheduler.scheduleAtFixedRate(
-                    new OrderBookPoller(exchange, updates, allowedPairs)
-                    , 100, 170, MILLISECONDS);
-            scheduler.scheduleAtFixedRate(new TradeMonitor(exchange, orderClosedListener, myOpenOrders), 0, 200, MILLISECONDS);
-        }
+        IOrderListener orderClosedListener = new OrderClosedListener(myOpenOrders);
 
         Simulation simulation = new Simulation();
         OrderUpdater orderUpdater = new OrderUpdater(myOpenOrders);
         Dealer dealer = new Dealer(exchanges, simulation, orderUpdater);
 
-        scheduler.execute(new CacheUpdater(updates, dealer, myOpenOrders));
-//        scheduler.scheduleAtFixedRate(new StatusMonitor(updates, cacheUpdateQueue, orderUpdates), 0, 200, MILLISECONDS);
+        for (IExchange exchange : exchanges) {
+
+            //exchange.addOrderBookListener(pair, BigDecimal.ONE, BigDecimal.ONE, dealer);
+            exchange.addOrderBookListener(pair, BigDecimal.ONE, BigDecimal.ONE, new OrderBookTradeMonitor());
+
+            exchange.addOrderListener(pair, orderClosedListener);
+        }
+
+
 
 /*
         Thread.sleep(60000);
