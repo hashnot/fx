@@ -45,10 +45,11 @@ public class OrderBookMonitor {
         for (Map.Entry<CurrencyPair, Collection<OrderBookMonitorSettings>> e : orderBookMonitors.asMap().entrySet()) {
             try {
                 CurrencyPair pair = e.getKey();
+                OrderBook before = parent.getOrderBook(pair);
                 OrderBook orderBook = parent.getPollingMarketDataService().getOrderBook(pair);
                 boolean changed = parent.updateOrderBook(pair, orderBook);
                 if (changed) {
-                    OrderBookUpdateEvent evt = new OrderBookUpdateEvent(pair, orderBooks.get(pair), orderBook);
+                    OrderBookUpdateEvent evt = new OrderBookUpdateEvent(pair, before, orderBook);
                     for (OrderBookMonitorSettings settings : e.getValue()) {
                         settings.listener.changed(evt);
                     }

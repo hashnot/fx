@@ -3,12 +3,14 @@ package com.hashnot.fx;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.hashnot.fx.util.Numbers;
+import com.hashnot.fx.util.Orders;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.marketdata.OrderBook;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 
 import java.math.BigDecimal;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -35,6 +37,9 @@ public class OrderBookUpdateEvent {
     }
 
     protected OrderBook diff() {
+        if (before == null)
+            return after;
+
         List<LimitOrder> asks = diff(before, after, Order.OrderType.ASK);
         List<LimitOrder> bids = diff(before, after, Order.OrderType.BID);
         return new OrderBook(after.getTimeStamp(), asks, bids);
@@ -46,21 +51,33 @@ public class OrderBookUpdateEvent {
         List<LimitOrder> beforeOrders = beforeBook.getOrders(type);
         List<LimitOrder> afterOrders = afterBook.getOrders(type);
 
-        for (int i = 0, j = 0; j < afterOrders.size() && i < beforeOrders.size(); ) {
-            LimitOrder before = beforeOrders.get(i);
-            LimitOrder after = afterOrders.get(j);
+        Iterator<LimitOrder> beforeIter = beforeOrders.iterator();
+        Iterator<LimitOrder> afterIter = afterOrders.iterator();
 
-            BigDecimal priceDiff = after.getLimitPrice().subtract(before.getLimitPrice());
-            if (Numbers.equals(priceDiff, BigDecimal.ZERO)) {
+        LimitOrder before = beforeIter.next();
+        LimitOrder after = afterIter.next();
+
+        while (beforeIter.hasNext() || afterIter.hasNext()) {
+            // if there are orders with same price, add the (price) difference, if non-zero
+            // from before add with negative amount
+            // from after add with positive amount
+
+            int diff = after.getLimitPrice().compareTo(before.getLimitPrice());
+            if (diff == 0) {
                 BigDecimal amountDiff = after.getTradableAmount().subtract(before.getTradableAmount());
-                if(!Numbers.equals(amountDiff, BigDecimal.ZERO))
-                    result.add(new LimitOrder(type,amountDiff,before.getCurrencyPair(),null,null,before.getLimitPrice()));
-                ++i;
-                ++j;
-                continue;
-            }
-            // TODO add smaller order to result, increase index
 
+                if (!Numbers.equals(amountDiff, BigDecimal.ZERO))
+                    result.add(Orders.withAmount(before, amountDiff));
+
+                if (beforeIter.hasNext()) before = beforeIter.next();
+                if (afterIter.hasNext()) after = afterIter.next();
+            } else if (diff < 1) {
+                result.add(after);
+                if (afterIter.hasNext()) after = afterIter.next();
+            } else {
+                result.add(Orders.withPrice(before, before.getLimitPrice().negate()));
+                if (beforeIter.hasNext()) before = beforeIter.next();
+            }
         }
 
         return result;
