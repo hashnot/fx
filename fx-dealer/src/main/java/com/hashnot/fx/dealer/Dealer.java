@@ -17,7 +17,6 @@ import java.math.BigDecimal;
 import java.util.*;
 
 import static com.hashnot.fx.util.Numbers.lt;
-import static com.hashnot.fx.util.OrderBooks.get;
 import static com.hashnot.fx.util.Orders.*;
 
 /**
@@ -76,7 +75,7 @@ public class Dealer implements IOrderBookListener {
     private NavigableMap<LimitOrder, IExchange> getBestOffers(CurrencyPair pair, Collection<IExchange> exchanges, Order.OrderType dir) {
         NavigableMap<LimitOrder, IExchange> result = new TreeMap<>((o1, o2) -> o1.getNetPrice().compareTo(o2.getNetPrice()) * factor(o1.getType()));
         for (IExchange x : exchanges) {
-            List<LimitOrder> orders = get(x.getOrderBook(pair), dir);
+            List<LimitOrder> orders = x.getOrderBook(pair).getOrders(dir);
             if (!orders.isEmpty())
                 result.put(orders.get(0), x);
         }
@@ -155,7 +154,7 @@ public class Dealer implements IOrderBookListener {
             return;
         }
 
-        List<LimitOrder> closeOrders = get(bestExchange.getOrderBook(pair), type);
+        List<LimitOrder> closeOrders = bestExchange.getOrderBook(pair).getOrders(type);
         OrderUpdateEvent event = simulation.deal(openOrder, worstExchange, closeOrders, bestExchange);
         if (event != null)
             orderUpdater.update(event);

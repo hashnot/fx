@@ -41,13 +41,6 @@ public class OrderBooks {
         return !(e1.hasNext() || e2.hasNext());
     }
 
-
-    public static List<LimitOrder> get(OrderBook orderBook, Order.OrderType dir) {
-        assert orderBook != null : "null orderBook";
-        assert dir != null : "null orderType";
-        return dir == Order.OrderType.ASK ? orderBook.getAsks() : orderBook.getBids();
-    }
-
     private static int amountIndex(OrderBook orderBook, BigDecimal baseLimit, BigDecimal counterLimit) {
         BigDecimal totalAsk = BigDecimal.ZERO;
         BigDecimal totalBid = BigDecimal.ZERO;
@@ -79,7 +72,7 @@ public class OrderBooks {
     }
 
     private static void updateNetPrices(OrderBook orderBook, BigDecimal fee, Order.OrderType type) {
-        List<LimitOrder> orders = get(orderBook, type);
+        List<LimitOrder> orders = orderBook.getOrders(type);
         for (LimitOrder order : orders) {
             order.setNetPrice(Orders.getNetPrice(order, fee));
         }
