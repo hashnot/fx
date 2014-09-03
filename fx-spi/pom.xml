@@ -28,7 +28,7 @@
             <version>1.7.1</version>
         </dependency>
         <dependency>
-            <groupId>com.xeiam.xchange</groupId>
+            <groupId>com.hashnot.xchange</groupId>
             <artifactId>xchange-core</artifactId>
             <version>${v.xchange}</version>
         </dependency>

@@ -13,7 +13,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.xeiam.xchange</groupId>
+            <groupId>com.hashnot.xchange</groupId>
             <artifactId>xchange-core</artifactId>
             <version>${v.xchange}</version>
         </dependency>
