@@ -2,9 +2,9 @@ package com.hashnot.fx.spi.ext;
 
 import com.hashnot.fx.spi.IOrderBookListener;
 import com.hashnot.fx.spi.IOrderListener;
-import com.hashnot.fx.util.exec.IExecutorStrategyFactory;
 import com.hashnot.fx.util.Numbers;
 import com.hashnot.fx.util.OrderBooks;
+import com.hashnot.fx.util.exec.IExecutorStrategyFactory;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.account.AccountInfo;
@@ -31,7 +31,7 @@ import static java.math.BigDecimal.ZERO;
  * @author Rafał Krupiński
  */
 public abstract class AbstractExchange implements IExchange {
-    final private static Logger log = LoggerFactory.getLogger(SimpleExchange.class);
+    final private static Logger log = LoggerFactory.getLogger(AbstractExchange.class);
     static private final BigDecimal TWO = new BigDecimal(2);
     final public Map<CurrencyPair, OrderBook> orderBooks = new HashMap<>();
     final public Map<String, BigDecimal> wallet = new HashMap<>();
@@ -179,10 +179,10 @@ public abstract class AbstractExchange implements IExchange {
 
     @Override
     public boolean updateOrderBook(CurrencyPair orderBookPair, OrderBook orderBook) {
-        OrderBooks.removeOverLimit(orderBook, getLimit(orderBookPair.baseSymbol), getLimit(orderBookPair.counterSymbol));
+        OrderBook limited = OrderBooks.removeOverLimit(orderBook, getLimit(orderBookPair.baseSymbol), getLimit(orderBookPair.counterSymbol));
         OrderBook current = getOrderBook(orderBookPair);
-        if (current == null || !OrderBooks.equals(current, orderBook)) {
-            orderBooks.put(orderBookPair, orderBook);
+        if (current == null || !OrderBooks.equals(current, limited)) {
+            orderBooks.put(orderBookPair, limited);
             OrderBooks.updateNetPrices(this, orderBookPair);
             return true;
         } else

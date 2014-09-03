@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class OrderBookTradeMonitor implements IOrderBookListener {
     final private static Logger log = LoggerFactory.getLogger(OrderBookTradeMonitor.class);
 
-    protected final Map<String, LimitOrder> openOrders=new HashMap<>();
+    protected final Map<String, LimitOrder> openOrders = new HashMap<>();
 
     /* my part -> current */
     protected final Map<LimitOrder, LimitOrder> monitoredOrders = new ConcurrentHashMap<>();

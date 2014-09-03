@@ -7,22 +7,23 @@ import com.xeiam.xchange.dto.marketdata.OrderBook;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
 
 /**
  * @author Rafał Krupiński
  */
 public class OrderBooks {
 
-    public static void removeOverLimit(OrderBook orderBook, BigDecimal baseLimit, BigDecimal counterLimit) {
-        int limit = amountIndex(orderBook, baseLimit, counterLimit);
-        removeOverIndex(orderBook.getAsks(), limit);
-        removeOverIndex(orderBook.getBids(), limit);
+    public static OrderBook removeOverLimit(OrderBook orderBook, BigDecimal baseLimit, BigDecimal counterLimit) {
+        List<LimitOrder> asks = removeOverIndex(orderBook.getAsks(), amountIndex(orderBook.getAsks(), baseLimit, counterLimit));
+        List<LimitOrder> bids = removeOverIndex(orderBook.getBids(), amountIndex(orderBook.getBids(), baseLimit, counterLimit));
+        return new OrderBook(orderBook.getTimeStamp(), asks, bids);
     }
 
-    private static void removeOverIndex(List<LimitOrder> orders, int limitIndex) {
-        for (int i = orders.size() - 1; i > limitIndex; i--)
-            orders.remove(i);
+    private static List<LimitOrder> removeOverIndex(List<LimitOrder> orders, int limitIndex) {
+        return orders.subList(0, limitIndex);
     }
 
     public static boolean equals(OrderBook o1, OrderBook o2) {
@@ -41,25 +42,18 @@ public class OrderBooks {
         return !(e1.hasNext() || e2.hasNext());
     }
 
-    private static int amountIndex(OrderBook orderBook, BigDecimal baseLimit, BigDecimal counterLimit) {
-        BigDecimal totalAsk = BigDecimal.ZERO;
-        BigDecimal totalBid = BigDecimal.ZERO;
+    private static int amountIndex(List<LimitOrder> orders, BigDecimal baseLimit, BigDecimal counterLimit) {
+        BigDecimal totalValue = BigDecimal.ZERO;
+        BigDecimal totalAmount = BigDecimal.ZERO;
 
-        Iterator<LimitOrder> ai = orderBook.getAsks().iterator();
-        Iterator<LimitOrder> bi = orderBook.getBids().iterator();
-        int i = -1;
-        while ((ai.hasNext() || bi.hasNext()) && (totalAsk.compareTo(counterLimit) <= 0 || totalBid.compareTo(baseLimit) <= 0)) {
+        Iterator<LimitOrder> oi = orders.iterator();
+        int i = 0;
+        while (oi.hasNext() && (totalValue.compareTo(counterLimit) <= 0 || totalAmount.compareTo(baseLimit) <= 0)) {
             ++i;
 
-            if (ai.hasNext()) {
-                LimitOrder order = ai.next();
-                totalAsk = totalAsk.add(order.getTradableAmount().multiply(order.getLimitPrice(), Orders.c));
-            }
-
-            if (bi.hasNext()) {
-                LimitOrder order = bi.next();
-                totalBid = totalBid.add(order.getTradableAmount());
-            }
+            LimitOrder order = oi.next();
+            totalAmount = totalAmount.add(order.getTradableAmount());
+            totalValue = totalValue.add(order.getTradableAmount().multiply(order.getLimitPrice(), Orders.c));
         }
         return i;
     }
