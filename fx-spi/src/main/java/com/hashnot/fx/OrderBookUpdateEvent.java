@@ -14,6 +14,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import static java.math.BigDecimal.ZERO;
+
 /**
  * @author Rafał Krupiński
  */
@@ -54,32 +56,45 @@ public class OrderBookUpdateEvent {
         Iterator<LimitOrder> beforeIter = beforeOrders.iterator();
         Iterator<LimitOrder> afterIter = afterOrders.iterator();
 
-        LimitOrder before = beforeIter.next();
-        LimitOrder after = afterIter.next();
+        LimitOrder before = next(beforeIter);
+        LimitOrder after = next(afterIter);
 
-        while (beforeIter.hasNext() || afterIter.hasNext()) {
+        while (before != null || after != null) {
             // if there are orders with same price, add the (price) difference, if non-zero
             // from before add with negative amount
             // from after add with positive amount
 
-            int diff = after.getLimitPrice().compareTo(before.getLimitPrice());
+            // simulate diff result if any or both orders are null
+            int diff;
+            if (after != null && before != null)
+                diff = after.getLimitPrice().compareTo(before.getLimitPrice());
+            else if (after != null)
+                diff = -1;
+            else
+                diff = 1;
+
             if (diff == 0) {
                 BigDecimal amountDiff = after.getTradableAmount().subtract(before.getTradableAmount());
 
-                if (!Numbers.equals(amountDiff, BigDecimal.ZERO))
+                if (!Numbers.equals(amountDiff, ZERO))
                     result.add(Orders.withAmount(before, amountDiff));
 
-                if (beforeIter.hasNext()) before = beforeIter.next();
-                if (afterIter.hasNext()) after = afterIter.next();
+                before = next(beforeIter);
+                after = next(afterIter);
             } else if (diff < 1) {
                 result.add(after);
-                if (afterIter.hasNext()) after = afterIter.next();
+                after = next(afterIter);
             } else {
-                result.add(Orders.withPrice(before, before.getLimitPrice().negate()));
-                if (beforeIter.hasNext()) before = beforeIter.next();
+                assert before != null;
+                result.add(Orders.withAmount(before, before.getLimitPrice().negate()));
+                before = next(beforeIter);
             }
         }
 
         return result;
+    }
+
+    private static <T> T next(Iterator<T> iter) {
+        return iter.hasNext() ? iter.next() : null;
     }
 }
