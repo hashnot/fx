@@ -16,7 +16,6 @@ import java.util.*;
 import java.util.concurrent.*;
 
 import static com.hashnot.fx.util.Exchanges.report;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
  * @author Rafał Krupiński
@@ -50,7 +49,7 @@ public class Main {
         for (IExchange exchange : exchanges) {
 
             //exchange.addOrderBookListener(pair, BigDecimal.ONE, BigDecimal.ONE, dealer);
-            exchange.addOrderBookListener(pair, BigDecimal.ONE, BigDecimal.ONE, new OrderBookTradeMonitor());
+            exchange.addOrderBookListener(pair, BigDecimal.ONE, BigDecimal.ONE, new OrderBookTradeMonitor(exchange.getPollingTradeService()));
 
             exchange.addOrderListener(pair, orderClosedListener);
         }
