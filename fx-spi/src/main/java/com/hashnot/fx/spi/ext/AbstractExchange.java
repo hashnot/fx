@@ -1,5 +1,6 @@
 package com.hashnot.fx.spi.ext;
 
+import com.google.common.base.Suppliers;
 import com.hashnot.fx.spi.IOrderBookListener;
 import com.hashnot.fx.spi.IOrderListener;
 import com.hashnot.fx.util.Numbers;
@@ -12,7 +13,6 @@ import com.xeiam.xchange.dto.marketdata.OrderBook;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.service.polling.PollingAccountService;
 import com.xeiam.xchange.service.polling.PollingMarketDataService;
-import com.xeiam.xchange.service.polling.PollingTradeService;
 import com.xeiam.xchange.service.streaming.ExchangeStreamingConfiguration;
 import com.xeiam.xchange.service.streaming.StreamingExchangeService;
 import org.slf4j.Logger;
@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.hashnot.fx.util.Numbers.isEqual;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 
@@ -58,7 +59,9 @@ public abstract class AbstractExchange implements IExchange {
         tradeAmountUnit = ONE.movePointLeft(tradeAmountScale);
         orderBookMonitor = new OrderBookMonitor(executorStrategyFactory, orderBooks, this);
         openOrderMonitor = new OpenOrderMonitor(executorStrategyFactory, openOrders, this);
-        tradeService = new CachingTradeService(() -> getExchange().getPollingTradeService(), openOrders);
+
+        //lazy evaluation
+        tradeService = new CachingTradeService(Suppliers.memoize(() -> new NotifyingTradeService(getExchange().getPollingTradeService())), openOrders);
     }
 
     @Override
@@ -150,7 +153,7 @@ public abstract class AbstractExchange implements IExchange {
     }
 
     @Override
-    public PollingTradeService getPollingTradeService() {
+    public ITradeService getPollingTradeService() {
         return tradeService;
     }
 
@@ -167,7 +170,7 @@ public abstract class AbstractExchange implements IExchange {
     protected void updateWallet(Exchange x) throws IOException {
         AccountInfo accountInfo = x.getPollingAccountService().getAccountInfo();
         for (com.xeiam.xchange.dto.trade.Wallet w : accountInfo.getWallets()) {
-            if (Numbers.equals(w.getBalance(), ZERO)) continue;
+            if (isEqual(w.getBalance(), ZERO)) continue;
 
             String currency = w.getCurrency();
             BigDecimal current = wallet.getOrDefault(currency, ZERO);

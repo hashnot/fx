@@ -3,7 +3,6 @@ package com.hashnot.fx.spi.ext;
 import com.hashnot.fx.OrderBookUpdateEvent;
 import com.hashnot.fx.spi.IOrderBookListener;
 import com.hashnot.fx.spi.IOrderListener;
-import com.hashnot.fx.util.Numbers;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.marketdata.OrderBook;
 import com.xeiam.xchange.dto.trade.LimitOrder;
@@ -14,6 +13,8 @@ import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static com.hashnot.fx.util.Numbers.isEqual;
 
 /**
  * Lifecycle of a monitored order
@@ -40,7 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class OrderBookTradeMonitor implements IOrderBookListener {
     final private static Logger log = LoggerFactory.getLogger(OrderBookTradeMonitor.class);
 
-    /* price -> my open order */
+    /* price -> my open order, before the confirmation */
     protected final Map<BigDecimal, LimitOrder> openOrders = new HashMap<>();
 
     /* price -> current order amount*/
@@ -109,7 +110,13 @@ public class OrderBookTradeMonitor implements IOrderBookListener {
         LimitOrder monitored = monitoredOrder.get(price);
 
         if (monitored != null) {
-            // TODO update or close monitored, call listeners
+
+            int amountCmp = monitored.getTradableAmount().compareTo(afterOrder.getTradableAmount());
+            if(amountCmp>0){
+                addNotMonitorable(afterOrder);
+                monitoredOrder.remove(price);
+            }
+
         } else if (openOrders.containsKey(price)) {
             LimitOrder original = openOrders.remove(price);
             int amountCmp = original.getTradableAmount().compareTo(afterOrder.getTradableAmount());
@@ -141,7 +148,7 @@ public class OrderBookTradeMonitor implements IOrderBookListener {
     private LimitOrder find(Iterator<LimitOrder> iter, BigDecimal price) {
         while (iter.hasNext()) {
             LimitOrder next = iter.next();
-            if (Numbers.equals(next.getLimitPrice(), price))
+            if (isEqual(next.getLimitPrice(), price))
                 return next;
         }
         return null;

@@ -2,7 +2,6 @@ package com.hashnot.fx;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import com.hashnot.fx.util.Numbers;
 import com.hashnot.fx.util.Orders;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
@@ -14,6 +13,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import static com.hashnot.fx.util.Numbers.isEqual;
 import static java.math.BigDecimal.ZERO;
 
 /**
@@ -76,7 +76,7 @@ public class OrderBookUpdateEvent {
             if (diff == 0) {
                 BigDecimal amountDiff = after.getTradableAmount().subtract(before.getTradableAmount());
 
-                if (!Numbers.equals(amountDiff, ZERO))
+                if (!isEqual(amountDiff, ZERO))
                     result.add(Orders.withAmount(before, amountDiff));
 
                 before = next(beforeIter);

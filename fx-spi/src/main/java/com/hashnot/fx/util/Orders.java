@@ -11,6 +11,8 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 
+import static com.hashnot.fx.util.Numbers.isEqual;
+
 /**
  * @author Rafał Krupiński
  */
@@ -21,17 +23,13 @@ public class Orders {
 
     public static boolean equals(LimitOrder o1, LimitOrder o2) {
         return o1.getCurrencyPair().equals(o2.getCurrencyPair()) && o1.getType() == o2.getType()
-                && equals(o1.getLimitPrice(), o2.getLimitPrice()) && equals(o1.getTradableAmount(), o2.getTradableAmount());
+                && isEqual(o1.getLimitPrice(), o2.getLimitPrice()) && isEqual(o1.getTradableAmount(), o2.getTradableAmount());
     }
 
     public static boolean equalsOrLess(LimitOrder o1, LimitOrder o2) {
         return o1.getCurrencyPair().equals(o2.getCurrencyPair()) && o1.getType() == o2.getType()
-                && equals(o1.getLimitPrice(), o2.getLimitPrice())
+                && isEqual(o1.getLimitPrice(), o2.getLimitPrice())
                 && o1.getTradableAmount().compareTo(o2.getTradableAmount()) <= 0;
-    }
-
-    private static boolean equals(BigDecimal o1, BigDecimal o2) {
-        return Numbers.equals(o1, o2);
     }
 
     public static CurrencyPair revert(CurrencyPair cp) {
@@ -154,12 +152,12 @@ public class Orders {
         return new LimitOrder(o1.getType(), o1.getTradableAmount().add(o2.getTradableAmount()), o1.getCurrencyPair(), null, null, o1.getLimitPrice());
     }
 
-    public static LimitOrder withAmount(LimitOrder order, BigDecimal tradableAmount) {
-        return new LimitOrder(order.getType(), tradableAmount, order.getCurrencyPair(), null, null, order.getLimitPrice());
+    public static LimitOrder withAmount(LimitOrder o, BigDecimal tradableAmount) {
+        return new LimitOrder(o.getType(), tradableAmount, o.getCurrencyPair(), o.getId(), o.getTimestamp(), o.getLimitPrice());
     }
 
-    public static LimitOrder withPrice(LimitOrder order, BigDecimal limitPrice) {
-        return new LimitOrder(order.getType(), order.getTradableAmount(), order.getCurrencyPair(), null, null, limitPrice);
+    public static LimitOrder withPrice(LimitOrder o, BigDecimal limitPrice) {
+        return new LimitOrder(o.getType(), o.getTradableAmount(), o.getCurrencyPair(), o.getId(), o.getTimestamp(), limitPrice);
     }
 
     public static BigDecimal betterPrice(BigDecimal price, BigDecimal delta, Order.OrderType type) {

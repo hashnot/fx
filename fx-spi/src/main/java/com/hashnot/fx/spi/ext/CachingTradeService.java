@@ -5,7 +5,6 @@ import com.xeiam.xchange.ExchangeException;
 import com.xeiam.xchange.NotAvailableFromExchangeException;
 import com.xeiam.xchange.NotYetImplementedForExchangeException;
 import com.xeiam.xchange.dto.trade.LimitOrder;
-import com.xeiam.xchange.service.polling.PollingTradeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +19,7 @@ public class CachingTradeService extends AbstractTradeService {
 
     final private Map<String, LimitOrder> openOrders;
 
-    public CachingTradeService(Supplier<PollingTradeService> backend, Map<String, LimitOrder> openOrders) {
+    public CachingTradeService(Supplier<ITradeService> backend, Map<String, LimitOrder> openOrders) {
         super(backend);
         this.openOrders = openOrders;
     }

@@ -12,7 +12,7 @@ public class Numbers {
         return a.compareTo(b) <= 0 ? a : b;
     }
 
-    public static <T extends Comparable<T>> boolean equals(T o1, T o2) {
+    public static <T extends Comparable<T>> boolean isEqual(T o1, T o2) {
         return o1.compareTo(o2) == 0;
     }
 

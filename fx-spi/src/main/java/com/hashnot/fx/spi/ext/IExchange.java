@@ -46,7 +46,7 @@ public interface IExchange extends IFeeService {
 
     StreamingExchangeService getStreamingExchangeService(ExchangeStreamingConfiguration configuration);
 
-    PollingTradeService getPollingTradeService();
+    ITradeService getPollingTradeService();
 
     PollingAccountService getPollingAccountService();
 
