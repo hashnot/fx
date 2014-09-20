@@ -1,9 +1,9 @@
-package com.hashnot.fx.ext;
+package com.hashnot.fx.spi.ext;
 
-import com.hashnot.fx.framework.TradeMonitor;
 import com.hashnot.fx.spi.IOrderListener;
 import com.hashnot.fx.spi.ext.IExchange;
 import com.hashnot.fx.spi.ext.ITradeService;
+import com.hashnot.fx.spi.ext.TradeMonitor;
 import com.xeiam.xchange.dto.marketdata.Trade;
 import com.xeiam.xchange.dto.marketdata.Trades;
 import com.xeiam.xchange.dto.trade.LimitOrder;
