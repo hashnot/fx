@@ -20,4 +20,7 @@ public class Numbers {
         return o1.compareTo(o2) < 0;
     }
 
+    public static interface BigDecimal {
+        java.math.BigDecimal _ONE = java.math.BigDecimal.ONE.negate();
+    }
 }

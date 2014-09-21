@@ -12,13 +12,13 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 
 import static com.hashnot.fx.util.Numbers.isEqual;
+import static com.hashnot.fx.util.Numbers.BigDecimal._ONE;
 
 /**
  * @author Rafał Krupiński
  */
 public class Orders {
     final private static Logger log = LoggerFactory.getLogger(Orders.class);
-    public static final BigDecimal _ONE = BigDecimal.ONE.negate();
     public static MathContext c = new MathContext(16, RoundingMode.HALF_UP);
 
     public static boolean equals(LimitOrder o1, LimitOrder o2) {
