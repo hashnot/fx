@@ -1,7 +1,6 @@
 package com.hashnot.fx.framework;
 
 import com.hashnot.fx.spi.ext.IExchange;
-import com.hashnot.fx.spi.ext.IFeeService;
 import com.hashnot.fx.util.Numbers;
 import com.hashnot.fx.util.Orders;
 import com.xeiam.xchange.currency.CurrencyPair;
@@ -16,7 +15,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static com.hashnot.fx.util.Orders.*;
-import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.ZERO;
 
 /**
@@ -116,7 +114,7 @@ public class Simulation {
         return new OrderUpdateEvent(worstExchange, bestExchange, openOrder, myCloseOrders);
     }
 
-    static BigDecimal totalAmountByAmount(List<LimitOrder> orders, BigDecimal amountLimit, BigDecimal netPriceLimit, IFeeService feeService) {
+    static BigDecimal totalAmountByAmount(List<LimitOrder> orders, BigDecimal amountLimit, BigDecimal netPriceLimit, IExchange feeService) {
         BigDecimal totalValue = ZERO;
         BigDecimal totalAmount = ZERO;
         Order.OrderType type = revert(orders.get(0).getType());
@@ -146,7 +144,7 @@ public class Simulation {
         return totalAmount;
     }
 
-    static BigDecimal totalAmountByValue(List<LimitOrder> orders, BigDecimal valueLimit, BigDecimal netPriceLimit, IFeeService feeService) {
+    static BigDecimal totalAmountByValue(List<LimitOrder> orders, BigDecimal valueLimit, BigDecimal netPriceLimit, IExchange feeService) {
         BigDecimal totalValue = ZERO;
         BigDecimal totalAmount = ZERO;
         Order.OrderType type = revert(orders.get(0).getType());
