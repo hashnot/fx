@@ -6,15 +6,16 @@ import com.xeiam.xchange.dto.marketdata.Trade;
 import com.xeiam.xchange.dto.marketdata.Trades;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.service.polling.PollingTradeService;
-import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.hashnot.fx.util.Orders.withAmount;
 import static java.math.BigDecimal.ZERO;
@@ -28,7 +29,7 @@ public class TradeMonitor implements Runnable, ILimitOrderPlacementListener, ITr
     final private static Logger log = LoggerFactory.getLogger(TradeMonitor.class);
 
     final private PollingTradeService pollingTradeService;
-    final private Set<ITradeListener> tradeListeners = new ConcurrentHashSet<>();
+    final private Set<ITradeListener> tradeListeners = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
 
     //state
