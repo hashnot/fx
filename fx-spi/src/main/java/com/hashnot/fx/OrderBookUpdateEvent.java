@@ -13,8 +13,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import static com.hashnot.fx.util.Numbers.isEqual;
-import static java.math.BigDecimal.ZERO;
+import static com.hashnot.fx.util.Numbers.BigDecimal.isZero;
 
 /**
  * @author Rafał Krupiński
@@ -76,7 +75,7 @@ public class OrderBookUpdateEvent {
             if (diff == 0) {
                 BigDecimal amountDiff = after.getTradableAmount().subtract(before.getTradableAmount());
 
-                if (!isEqual(amountDiff, ZERO))
+                if (!isZero(amountDiff))
                     result.add(Orders.withAmount(before, amountDiff));
 
                 before = next(beforeIter);

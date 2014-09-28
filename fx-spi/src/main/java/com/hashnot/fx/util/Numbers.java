@@ -3,7 +3,7 @@ package com.hashnot.fx.util;
 /**
  * @author Rafał Krupiński
  */
-public class Numbers {
+public final class Numbers {
     public static <T extends Comparable<T>> T max(T a, T b) {
         return a.compareTo(b) >= 0 ? a : b;
     }
@@ -20,7 +20,17 @@ public class Numbers {
         return o1.compareTo(o2) < 0;
     }
 
-    public static interface BigDecimal {
-        java.math.BigDecimal _ONE = java.math.BigDecimal.ONE.negate();
+    public static final class BigDecimal {
+        public static final java.math.BigDecimal _ONE = java.math.BigDecimal.ONE.negate();
+
+        public static boolean isZero(java.math.BigDecimal number){
+            return isEqual(number, java.math.BigDecimal.ZERO);
+        }
+
+        private BigDecimal() {
+        }
+    }
+
+    private Numbers() {
     }
 }

@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.hashnot.fx.util.Numbers.isEqual;
+import static com.hashnot.fx.util.Numbers.BigDecimal.isZero;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 
@@ -180,7 +180,7 @@ public abstract class AbstractExchange implements IExchange {
     protected void updateWallet(Exchange x) throws IOException {
         AccountInfo accountInfo = x.getPollingAccountService().getAccountInfo();
         for (com.xeiam.xchange.dto.trade.Wallet w : accountInfo.getWallets()) {
-            if (isEqual(w.getBalance(), ZERO)) continue;
+            if (isZero(w.getBalance())) continue;
 
             String currency = w.getCurrency();
             BigDecimal current = wallet.getOrDefault(currency, ZERO);
