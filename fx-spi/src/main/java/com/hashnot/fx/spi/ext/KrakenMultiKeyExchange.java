@@ -1,5 +1,6 @@
 package com.hashnot.fx.spi.ext;
 
+import com.hashnot.fx.ext.StaticFeeService;
 import com.hashnot.fx.util.exec.SchedulerExecutorFactory;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.ExchangeFactory;
@@ -20,8 +21,8 @@ public class KrakenMultiKeyExchange extends AbstractExchange {
 
     private final AtomicInteger keyCounter = new AtomicInteger(0);
 
-    public KrakenMultiKeyExchange(List<ExchangeSpecification> exchanges, IFeeService feeService, ScheduledExecutorService executor, Map<String, BigDecimal> walletUnit, Map<String, BigDecimal> minimumOrder, int limitPriceScale, int tradeAmountScale) {
-        super(feeService, new SchedulerExecutorFactory(executor, 200), walletUnit, minimumOrder, limitPriceScale, tradeAmountScale);
+    public KrakenMultiKeyExchange(List<ExchangeSpecification> exchanges, ScheduledExecutorService executor, Map<String, BigDecimal> walletUnit, Map<String, BigDecimal> minimumOrder) {
+        super(new StaticFeeService(new BigDecimal(".0035")), new SchedulerExecutorFactory(executor, 200), walletUnit, minimumOrder, 5, 8);
         this.exchanges = new ArrayList<>(exchanges.size());
         for (ExchangeSpecification spec : exchanges)
             this.exchanges.add(ExchangeFactory.INSTANCE.createExchange(spec));

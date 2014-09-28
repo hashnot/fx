@@ -1,18 +1,18 @@
 package com.hashnot.fx.spi.ext;
 
 import com.hashnot.fx.spi.ILimitOrderPlacementListener;
-import com.hashnot.fx.spi.IOrderListener;
+import com.hashnot.fx.spi.ITradeListener;
 import com.xeiam.xchange.dto.marketdata.Trade;
 import com.xeiam.xchange.dto.marketdata.Trades;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.service.polling.PollingTradeService;
+import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -24,26 +24,24 @@ import static java.math.BigDecimal.ZERO;
  *
  * @author Rafał Krupiński
  */
-public class TradeMonitor implements Runnable, ILimitOrderPlacementListener {
+public class TradeMonitor implements Runnable, ILimitOrderPlacementListener, ITradeMonitor {
     final private static Logger log = LoggerFactory.getLogger(TradeMonitor.class);
 
     final private PollingTradeService pollingTradeService;
-    final private IOrderListener orderClosedListener;
+    final private Set<ITradeListener> tradeListeners = new ConcurrentHashSet<>();
 
 
     //state
 
-    private final Set<OrderPair> changed = new HashSet<>();
-    protected volatile boolean run = false;
+    private final Map<OrderPair, Trade> changed = new HashMap<>();
+    private boolean running = false;
 
     // id -> order
     final private Map<String, OrderPair> orders = new HashMap<>();
+    private final RunnableScheduler scheduler;
 
     @Override
     public void run() {
-        if (!run)
-            return;
-
         try {
             Trades trades = getTradeHistory();
 
@@ -67,22 +65,35 @@ public class TradeMonitor implements Runnable, ILimitOrderPlacementListener {
                     pair.current = withAmount(pair.current, currentAmount);
                 }
 
-                changed.add(pair);
+                changed.put(pair, trade);
             }
 
-            for (OrderPair pair : changed) {
-                orderClosedListener.trade(pair.original, pair.current);
+            for (Map.Entry<OrderPair, Trade> e : changed.entrySet()) {
+                OrderPair pair = e.getKey();
+                Trade trade = e.getValue();
+                for (ITradeListener listener : tradeListeners) {
+                    listener.trade(pair.original, trade, pair.current);
+                }
             }
 
-            synchronized (orders) {
-                if (orders.isEmpty())
-                    run = false;
-            }
+            updateRunning();
 
         } catch (IOException e) {
             log.error("Error", e);
         } finally {
             changed.clear();
+        }
+    }
+
+    private synchronized void updateRunning() {
+        if (running) {
+            if (orders.isEmpty() || tradeListeners.isEmpty()) {
+                scheduler.disable(this);
+                running = false;
+            }
+        } else if (!orders.isEmpty() && !tradeListeners.isEmpty()) {
+            scheduler.enable(this);
+            running = true;
         }
     }
 
@@ -92,15 +103,25 @@ public class TradeMonitor implements Runnable, ILimitOrderPlacementListener {
 
     @Override
     public void limitOrderPlaced(LimitOrder order, String id) {
-        synchronized (orders) {
-            orders.put(id, new OrderPair(order, order));
-            run = true;
-        }
+        orders.put(id, new OrderPair(order, order));
+        updateRunning();
     }
 
-    public TradeMonitor(IExchange exchange, IOrderListener orderClosedListener) {
+    public TradeMonitor(IExchange exchange, RunnableScheduler scheduler) {
+        this.scheduler = scheduler;
         this.pollingTradeService = exchange.getPollingTradeService();
-        this.orderClosedListener = orderClosedListener;
+    }
+
+    @Override
+    public void addTradeListener(ITradeListener listener) {
+        tradeListeners.add(listener);
+        updateRunning();
+    }
+
+    @Override
+    public void removeTradeListener(ITradeListener listener) {
+        tradeListeners.remove(listener);
+        updateRunning();
     }
 
     // not implementing equals/hashcode - use identity

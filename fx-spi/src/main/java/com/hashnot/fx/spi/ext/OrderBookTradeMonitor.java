@@ -1,10 +1,12 @@
 package com.hashnot.fx.spi.ext;
 
 import com.hashnot.fx.OrderBookUpdateEvent;
+import com.hashnot.fx.spi.ILimitOrderPlacementListener;
 import com.hashnot.fx.spi.IOrderBookListener;
-import com.hashnot.fx.spi.IOrderListener;
+import com.hashnot.fx.spi.ITradeListener;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.marketdata.OrderBook;
+import com.xeiam.xchange.dto.marketdata.Trade;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.service.polling.PollingTradeService;
 import org.slf4j.Logger;
@@ -22,7 +24,7 @@ import static com.hashnot.fx.util.Numbers.isEqual;
  * 1 opened by us -> openOrders
  * 2 received from exchange
  * <p/>
- * 3 amount matches - monitored ->monitoredOrder, monitoredCurrent, monitoredRemaining
+ * 3 amount matches - monitored -> monitoredOrder, monitoredCurrent, monitoredRemaining
  * 4 received change
  * 5 if less than previous value - decrease current value
  * 6 if fully executed - remove
@@ -38,13 +40,17 @@ import static com.hashnot.fx.util.Numbers.isEqual;
  *
  * @author Rafał Krupiński
  */
-public class OrderBookTradeMonitor implements IOrderBookListener {
+public class OrderBookTradeMonitor implements IOrderBookListener, ILimitOrderPlacementListener, ITradeMonitor {
     final private static Logger log = LoggerFactory.getLogger(OrderBookTradeMonitor.class);
 
-    /* price -> my open order, before the confirmation */
+    /**
+     * price -> my open order, before the confirmation
+     */
     protected final Map<BigDecimal, LimitOrder> openOrders = new HashMap<>();
 
-    /* price -> current order amount*/
+    /**
+     * price -> current order amount
+     */
     protected final Map<BigDecimal, BigDecimal> monitoredCurrent = new ConcurrentHashMap<>();
 
     /**
@@ -52,7 +58,7 @@ public class OrderBookTradeMonitor implements IOrderBookListener {
      */
     protected final Map<BigDecimal, LimitOrder> monitoredOrder = new ConcurrentHashMap<>();
 
-    protected final List<IOrderListener> tradeListeners = new LinkedList<>();
+    protected final List<ITradeListener> tradeListeners = new LinkedList<>();
 
     /* orders that are not monitorable because we don't know if our order is first of all of its price,*/
     protected final Set<String> notMonitorable = new HashSet<>();
@@ -64,8 +70,8 @@ public class OrderBookTradeMonitor implements IOrderBookListener {
         this.tradeService = tradeService;
     }
 
-    // TODO make placeLimitOrder call this
-    public void afterPlaceLimitOrder(LimitOrder order) {
+    @Override
+    public void limitOrderPlaced(LimitOrder order, String id) {
         openOrders.put(order.getLimitPrice(), order);
     }
 
@@ -110,13 +116,22 @@ public class OrderBookTradeMonitor implements IOrderBookListener {
         LimitOrder monitored = monitoredOrder.get(price);
 
         if (monitored != null) {
-
-            int amountCmp = monitored.getTradableAmount().compareTo(afterOrder.getTradableAmount());
-            if(amountCmp>0){
-                addNotMonitorable(afterOrder);
-                monitoredOrder.remove(price);
+            BigDecimal currentAmount = monitoredCurrent.get(price);
+            if (afterOrder == null) {
+                notify(monitored, null);
+            } else {
+                int amountCmp = afterOrder.getTradableAmount().compareTo(currentAmount);
+                if (amountCmp > 0) {
+                    addNotMonitorable(afterOrder);
+                    monitoredOrder.remove(price);
+                    monitoredCurrent.remove(price);
+                } else if (amountCmp < 0) {
+                    monitoredCurrent.put(price, afterOrder.getTradableAmount());
+                    notify(monitored, afterOrder);
+                } else {
+                    log.warn("Illegal state: order after change is equal to the state before the change: {}", afterOrder);
+                }
             }
-
         } else if (openOrders.containsKey(price)) {
             LimitOrder original = openOrders.remove(price);
             int amountCmp = original.getTradableAmount().compareTo(afterOrder.getTradableAmount());
@@ -134,14 +149,18 @@ public class OrderBookTradeMonitor implements IOrderBookListener {
     }
 
     private void notify(LimitOrder original, LimitOrder afterOrder) {
-        for (IOrderListener orderListener : tradeListeners) {
-            orderListener.trade(original, afterOrder);
-        }
+        BigDecimal amount = afterOrder != null ? afterOrder.getTradableAmount() : BigDecimal.ZERO;
+        BigDecimal price = afterOrder != null ? afterOrder.getLimitPrice() : null;
+        Trade trade = new Trade(original.getType(), original.getTradableAmount().subtract(amount), original.getCurrencyPair(), price, null, null);
+
+        for (ITradeListener orderListener : tradeListeners)
+            orderListener.trade(original, trade, afterOrder);
     }
 
 
     private void addNotMonitorable(LimitOrder order) {
         notMonitorable.add(order.getId());
+        // TODO support for not monitorable
         if (notMonitorable.size() == 1) ;
     }
 
@@ -154,7 +173,13 @@ public class OrderBookTradeMonitor implements IOrderBookListener {
         return null;
     }
 
-    public void addOrderListener(IOrderListener listener) {
-        tradeListeners.add(listener);
+    @Override
+    public void addTradeListener(ITradeListener orderListener) {
+        tradeListeners.add(orderListener);
+    }
+
+    @Override
+    public void removeTradeListener(ITradeListener orderListener) {
+        tradeListeners.remove(orderListener);
     }
 }

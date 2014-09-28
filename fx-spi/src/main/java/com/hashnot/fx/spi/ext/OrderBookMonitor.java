@@ -4,8 +4,6 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.hashnot.fx.OrderBookUpdateEvent;
 import com.hashnot.fx.spi.IOrderBookListener;
-import com.hashnot.fx.util.exec.IExecutorStrategy;
-import com.hashnot.fx.util.exec.IExecutorStrategyFactory;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.marketdata.OrderBook;
 import org.slf4j.Logger;
@@ -21,24 +19,22 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author Rafał Krupiński
  */
-public class OrderBookMonitor {
+public class OrderBookMonitor implements Runnable {
     final private static Logger log = LoggerFactory.getLogger(OrderBookMonitor.class);
 
     final private IExchange parent;
 
-    final private IExecutorStrategy orderBookMonitor;
-
+    final private RunnableScheduler runnableScheduler;
     final private Map<CurrencyPair, OrderBook> orderBooks;
     final private Multimap<CurrencyPair, OrderBookMonitorSettings> orderBookMonitors = Multimaps.newMultimap(new ConcurrentHashMap<>(), () -> Collections.newSetFromMap(new ConcurrentHashMap<>()));
 
-    public OrderBookMonitor(IExecutorStrategyFactory executorStrategyFactory, Map<CurrencyPair, OrderBook> orderBooks, IExchange parent) {
+    public OrderBookMonitor(IExchange parent, RunnableScheduler runnableScheduler, Map<CurrencyPair, OrderBook> orderBooks) {
+        this.runnableScheduler = runnableScheduler;
         this.orderBooks = orderBooks;
         this.parent = parent;
-
-        orderBookMonitor = executorStrategyFactory.create(this::updateOrderBooks);
     }
 
-    protected void updateOrderBooks() {
+    public void run() {
         // Remove not monitored order books.
         orderBooks.keySet().stream().filter(pair -> !orderBookMonitors.containsKey(pair)).forEach(orderBooks::remove);
 
@@ -74,9 +70,10 @@ public class OrderBookMonitor {
 
     public void addOrderBookListener(CurrencyPair pair, BigDecimal maxAmount, BigDecimal maxValue, IOrderBookListener orderBookListener) {
         OrderBookMonitorSettings settings = new OrderBookMonitorSettings(maxAmount, maxValue, orderBookListener);
-        orderBookMonitors.put(pair, settings);
-        if (!this.orderBookMonitor.isStarted())
-            orderBookMonitor.start();
+        synchronized (orderBookMonitors) {
+            orderBookMonitors.put(pair, settings);
+            runnableScheduler.enable(this);
+        }
     }
 
     public void removeOrderBookListener(IOrderBookListener orderBookListener) {
@@ -84,7 +81,7 @@ public class OrderBookMonitor {
 
         synchronized (orderBookMonitors) {
             if (orderBookMonitors.isEmpty())
-                orderBookMonitor.stop();
+                runnableScheduler.disable(this);
         }
     }
 }

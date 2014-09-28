@@ -1,9 +1,6 @@
 package com.hashnot.fx.spi.ext;
 
-import com.hashnot.fx.spi.IOrderListener;
-import com.hashnot.fx.spi.ext.IExchange;
-import com.hashnot.fx.spi.ext.ITradeService;
-import com.hashnot.fx.spi.ext.TradeMonitor;
+import com.hashnot.fx.spi.ITradeListener;
 import com.xeiam.xchange.dto.marketdata.Trade;
 import com.xeiam.xchange.dto.marketdata.Trades;
 import com.xeiam.xchange.dto.trade.LimitOrder;
@@ -31,20 +28,22 @@ public class TradeMonitorTest {
 
         when(tradeService.getTradeHistory()).thenReturn(new Trades(Collections.emptyList(), 0L, Trades.TradeSortType.SortByID));
 
-        IOrderListener orderListener = mock(IOrderListener.class);
-        TradeMonitor tradeMonitor = new TradeMonitor(exchange, orderListener);
+        ITradeListener orderListener = mock(ITradeListener.class);
+        RunnableScheduler scheduler = mock(RunnableScheduler.class);
+
+        TradeMonitor tradeMonitor = new TradeMonitor(exchange, scheduler);
 
         String id = "ID";
         LimitOrder order = new LimitOrder(ASK, ONE, BTC_EUR, id, null, ONE);
         tradeMonitor.limitOrderPlaced(order, id);
 
         tradeMonitor.run();
-        Mockito.verify(orderListener, never()).trade(any(), any());
+        Mockito.verify(orderListener, never()).trade(any(), null, any());
 
         when(tradeService.getTradeHistory()).thenReturn(new Trades(asList(new Trade(ASK, ONE, BTC_EUR, ONE, null, "id", id)), 0l, Trades.TradeSortType.SortByID));
 
         tradeMonitor.run();
-        verify(orderListener).trade(order, null);
+        verify(orderListener).trade(order, null, null);
     }
 
     @Test
@@ -54,8 +53,10 @@ public class TradeMonitorTest {
 
         when(exchange.getPollingTradeService()).thenReturn(tradeService);
 
-        IOrderListener orderListener = mock(IOrderListener.class);
-        TradeMonitor tradeMonitor = new TradeMonitor(exchange, orderListener);
+        ITradeListener orderListener = mock(ITradeListener.class);
+        RunnableScheduler scheduler = mock(RunnableScheduler.class);
+
+        TradeMonitor tradeMonitor = new TradeMonitor(exchange, scheduler);
 
         String id = "ID";
         LimitOrder order = new LimitOrder(ASK, new BigDecimal(2), BTC_EUR, id, null, ONE);
@@ -66,7 +67,7 @@ public class TradeMonitorTest {
         when(tradeService.getTradeHistory()).thenReturn(new Trades(asList(t1, t2), 0l, Trades.TradeSortType.SortByID));
 
         tradeMonitor.run();
-        verify(orderListener).trade(order, null);
+        verify(orderListener).trade(order, null, null);
     }
 
     @Test
@@ -76,8 +77,10 @@ public class TradeMonitorTest {
 
         when(exchange.getPollingTradeService()).thenReturn(tradeService);
 
-        IOrderListener orderListener = mock(IOrderListener.class);
-        TradeMonitor tradeMonitor = new TradeMonitor(exchange, orderListener);
+        ITradeListener orderListener = mock(ITradeListener.class);
+        RunnableScheduler scheduler = mock(RunnableScheduler.class);
+
+        TradeMonitor tradeMonitor = new TradeMonitor(exchange, scheduler);
 
         String id = "ID";
         LimitOrder order = new LimitOrder(ASK, new BigDecimal(2), BTC_EUR, id, null, ONE);
@@ -92,9 +95,9 @@ public class TradeMonitorTest {
         LimitOrder one = new LimitOrder(ASK, ONE, BTC_EUR, id, null, ONE);
 
         tradeMonitor.run();
-        verify(orderListener).trade(order, one);
+        verify(orderListener).trade(order, null, one);
 
         tradeMonitor.run();
-        verify(orderListener).trade(order, null);
+        verify(orderListener).trade(order, null, null);
     }
 }

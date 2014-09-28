@@ -2,10 +2,11 @@ package com.hashnot.fx;
 
 import com.hashnot.fx.framework.Main;
 import com.hashnot.fx.spi.IOrderBookListener;
-import com.hashnot.fx.spi.IOrderListener;
+import com.hashnot.fx.spi.ITradeListener;
 import com.hashnot.fx.spi.ext.IExchange;
 import com.hashnot.fx.util.Orders;
 import com.xeiam.xchange.currency.CurrencyPair;
+import com.xeiam.xchange.dto.marketdata.Trade;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.service.polling.PollingTradeService;
 import org.slf4j.Logger;
@@ -85,7 +86,7 @@ public class Order {
 
 }
 
-class Dealer implements IOrderBookListener, IOrderListener {
+class Dealer implements IOrderBookListener, ITradeListener {
     final private static Logger log = LoggerFactory.getLogger(Dealer.class);
     private IExchange x;
     private LimitOrder order;
@@ -129,7 +130,7 @@ class Dealer implements IOrderBookListener, IOrderListener {
     }
 
     @Override
-    public synchronized void trade(LimitOrder monitored, LimitOrder current) {
+    public synchronized void trade(LimitOrder monitored, Trade trade, LimitOrder current) {
         if (current == null) {
             x.removeOrderBookListener(this);
             done = true;

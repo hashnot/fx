@@ -1,10 +1,8 @@
 package com.hashnot.fx.framework;
 
 import com.hashnot.fx.dealer.Dealer;
-import com.hashnot.fx.spi.ExchangeUpdateEvent;
-import com.hashnot.fx.spi.IOrderListener;
+import com.hashnot.fx.spi.ITradeListener;
 import com.hashnot.fx.spi.ext.IExchange;
-import com.hashnot.fx.spi.ext.OrderBookTradeMonitor;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
 import groovy.lang.GroovyShell;
@@ -12,8 +10,12 @@ import groovy.lang.GroovyShell;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 
 import static com.hashnot.fx.util.Exchanges.report;
 
@@ -22,7 +24,6 @@ import static com.hashnot.fx.util.Exchanges.report;
  */
 public class Main {
     private static final CurrencyPair pair = CurrencyPair.BTC_EUR;
-    static Collection<CurrencyPair> allowedPairs = Arrays.asList(/*CurrencyPairUtil.EUR_PLN, CurrencyPair.BTC_PLN, */pair);
 
     public static void main(String[] args) throws IOException, InterruptedException {
         ThreadFactory tf = new ConfigurableThreadFactory("p-%d-t-%d");
@@ -33,14 +34,11 @@ public class Main {
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> exchanges.parallelStream().forEach(IExchange::stop), "Clear"));
 
-        int capacity = 2 << 8;
-        BlockingQueue<ExchangeUpdateEvent> updates = new ArrayBlockingQueue<>(capacity);
-
         exchanges.parallelStream().forEach(IExchange::start);
 
         report(exchanges);
 
-        IOrderListener orderClosedListener = new OrderClosedListener(myOpenOrders);
+        ITradeListener orderClosedListener = new OrderClosedListener(myOpenOrders);
 
         Simulation simulation = new Simulation();
         OrderUpdater orderUpdater = new OrderUpdater(myOpenOrders);
@@ -48,9 +46,7 @@ public class Main {
 
         for (IExchange exchange : exchanges) {
 
-            //exchange.addOrderBookListener(pair, BigDecimal.ONE, BigDecimal.ONE, dealer);
-            exchange.addOrderBookListener(pair, BigDecimal.ONE, BigDecimal.ONE, new OrderBookTradeMonitor(exchange.getPollingTradeService()));
-
+            exchange.addOrderBookListener(pair, BigDecimal.ONE, BigDecimal.ONE, dealer);
             exchange.addOrderListener(pair, orderClosedListener);
         }
 

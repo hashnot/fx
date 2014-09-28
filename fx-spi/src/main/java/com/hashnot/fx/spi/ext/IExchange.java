@@ -1,12 +1,11 @@
 package com.hashnot.fx.spi.ext;
 
 import com.hashnot.fx.spi.IOrderBookListener;
-import com.hashnot.fx.spi.IOrderListener;
+import com.hashnot.fx.spi.ITradeListener;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.marketdata.OrderBook;
 import com.xeiam.xchange.service.polling.PollingAccountService;
 import com.xeiam.xchange.service.polling.PollingMarketDataService;
-import com.xeiam.xchange.service.polling.PollingTradeService;
 import com.xeiam.xchange.service.streaming.ExchangeStreamingConfiguration;
 import com.xeiam.xchange.service.streaming.StreamingExchangeService;
 
@@ -64,7 +63,7 @@ public interface IExchange extends IFeeService {
 
     void removeOrderBookListener(IOrderBookListener orderBookMonitor);
 
-    void addOrderListener(CurrencyPair pair, IOrderListener tradeListener);
+    void addOrderListener(CurrencyPair pair, ITradeListener tradeListener);
 
     void updateWallet() throws IOException;
 }

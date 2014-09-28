@@ -2,9 +2,9 @@ package com.hashnot.fx.spi.ext;
 
 import com.google.common.base.Suppliers;
 import com.hashnot.fx.spi.IOrderBookListener;
-import com.hashnot.fx.spi.IOrderListener;
-import com.hashnot.fx.util.Numbers;
+import com.hashnot.fx.spi.ITradeListener;
 import com.hashnot.fx.util.OrderBooks;
+import com.hashnot.fx.util.exec.IExecutorStrategy;
 import com.hashnot.fx.util.exec.IExecutorStrategyFactory;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
@@ -23,6 +23,7 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.hashnot.fx.util.Numbers.isEqual;
 import static java.math.BigDecimal.ONE;
@@ -43,11 +44,14 @@ public abstract class AbstractExchange implements IExchange {
     protected final Map<String, BigDecimal> walletUnit;
     protected final Map<String, BigDecimal> minimumOrder;
     protected final BigDecimal tradeAmountUnit;
-    protected final Map<String, LimitOrder> openOrders = new HashMap<>();
+    protected final Map<String, LimitOrder> openOrders = new ConcurrentHashMap<>();
 
     protected final OrderBookMonitor orderBookMonitor;
-    final protected OpenOrderMonitor openOrderMonitor;
+    final protected ITradeMonitor tradeMonitor;
     final protected CachingTradeService tradeService;
+
+    final protected RoundRobinRunnable runnableScheduler = new RoundRobinRunnable();
+    private final IExecutorStrategy executor;
 
     public AbstractExchange(IFeeService feeService, IExecutorStrategyFactory executorStrategyFactory, Map<String, BigDecimal> walletUnit, Map<String, BigDecimal> minimumOrder, int limitPriceScale, int tradeAmountScale) {
         this.feeService = feeService;
@@ -55,13 +59,18 @@ public abstract class AbstractExchange implements IExchange {
         this.minimumOrder = minimumOrder != null ? minimumOrder : Collections.emptyMap();
         this.scale = limitPriceScale;
 
+        executor = executorStrategyFactory.create(runnableScheduler);
+
         limitPriceUnit = ONE.movePointLeft(this.scale);
         tradeAmountUnit = ONE.movePointLeft(tradeAmountScale);
-        orderBookMonitor = new OrderBookMonitor(executorStrategyFactory, orderBooks, this);
-        openOrderMonitor = new OpenOrderMonitor(executorStrategyFactory, openOrders, this);
+        orderBookMonitor = new OrderBookMonitor(this, runnableScheduler, orderBooks);
+        tradeMonitor = new TradeMonitor(this, runnableScheduler);
 
         //lazy evaluation
         tradeService = new CachingTradeService(Suppliers.memoize(() -> new NotifyingTradeService(getExchange().getPollingTradeService())), openOrders);
+
+        //OrderBookTradeMonitor orderBookMonitor = new OrderBookTradeMonitor(getPollingTradeService());
+        //addOrderBookListener(pair, BigDecimal.ONE, BigDecimal.ONE, orderBookMonitor);
     }
 
     @Override
@@ -138,6 +147,7 @@ public abstract class AbstractExchange implements IExchange {
         } catch (IOException e) {
             log.warn("Error while updating wallet @{}", this, e);
         }
+        executor.start();
     }
 
     protected abstract Exchange getExchange();
@@ -202,8 +212,8 @@ public abstract class AbstractExchange implements IExchange {
     }
 
     @Override
-    public void addOrderListener(CurrencyPair pair, IOrderListener tradeListener) {
-        openOrderMonitor.addOrderListener(pair, tradeListener);
+    public void addOrderListener(CurrencyPair pair, ITradeListener tradeListener) {
+        tradeMonitor.addTradeListener(tradeListener);
     }
 
 }

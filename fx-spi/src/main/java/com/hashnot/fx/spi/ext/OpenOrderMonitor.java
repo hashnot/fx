@@ -3,10 +3,9 @@ package com.hashnot.fx.spi.ext;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
-import com.hashnot.fx.spi.IOrderListener;
+import com.hashnot.fx.spi.ITradeListener;
 import com.hashnot.fx.util.exec.IExecutorStrategy;
 import com.hashnot.fx.util.exec.IExecutorStrategyFactory;
-import com.hashnot.fx.util.Numbers;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.trade.LimitOrder;
@@ -32,7 +31,7 @@ public class OpenOrderMonitor implements Runnable {
     final private IExchange parent;
     final private IExecutorStrategy poll;
 
-    private final Multimap<CurrencyPair, IOrderListener> tradeListeners = Multimaps.newMultimap(new ConcurrentHashMap<>(), () -> Collections.newSetFromMap(new ConcurrentHashMap<>()));
+    private final Multimap<CurrencyPair, ITradeListener> tradeListeners = Multimaps.newMultimap(new ConcurrentHashMap<>(), () -> Collections.newSetFromMap(new ConcurrentHashMap<>()));
     private final Map<String, LimitOrder> openOrders;
 
     public OpenOrderMonitor(IExecutorStrategyFactory executorStrategyFactory, Map<String, LimitOrder> openOrders, IExchange parent) {
@@ -56,8 +55,8 @@ public class OpenOrderMonitor implements Runnable {
                 if (currentOrder != null && isEqual(currentOrder.getTradableAmount(), storedOrder.getTradableAmount()))
                     continue;
 
-                for (IOrderListener tradeListener : tradeListeners.get(storedOrder.getCurrencyPair())) {
-                    tradeListener.trade(storedOrder, currentOrder);
+                for (ITradeListener tradeListener : tradeListeners.get(storedOrder.getCurrencyPair())) {
+                    tradeListener.trade(storedOrder, null, currentOrder);
                 }
                 if (currentOrder == null) {
                     remove.add(e.getKey());
@@ -71,7 +70,7 @@ public class OpenOrderMonitor implements Runnable {
         }
     }
 
-    public void addOrderListener(CurrencyPair pair, IOrderListener tradeListener) {
+    public void addOrderListener(CurrencyPair pair, ITradeListener tradeListener) {
         tradeListeners.put(pair, tradeListener);
         if (!poll.isStarted())
             poll.start();
