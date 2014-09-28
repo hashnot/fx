@@ -1,7 +1,7 @@
 package com.hashnot.fx.spi.ext;
 
-import com.hashnot.fx.spi.IOrderBookListener;
-import com.hashnot.fx.spi.ITradeListener;
+import com.hashnot.fx.ext.IOrderBookListener;
+import com.hashnot.fx.ext.ITradesMonitor;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.marketdata.OrderBook;
 import com.xeiam.xchange.service.polling.PollingAccountService;
@@ -63,7 +63,9 @@ public interface IExchange {
 
     void removeOrderBookListener(IOrderBookListener orderBookMonitor);
 
-    void addOrderListener(CurrencyPair pair, ITradeListener tradeListener);
+    ITradesMonitor getUserTradesMonitor();
+
+    ITradeMonitor getTrackingUserTradesMonitor();
 
     void updateWallet() throws IOException;
 }

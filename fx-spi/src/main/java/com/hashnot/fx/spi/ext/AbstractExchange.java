@@ -1,8 +1,10 @@
 package com.hashnot.fx.spi.ext;
 
 import com.google.common.base.Suppliers;
-import com.hashnot.fx.spi.IOrderBookListener;
-import com.hashnot.fx.spi.ITradeListener;
+import com.hashnot.fx.ext.IOrderBookListener;
+import com.hashnot.fx.ext.ITradesMonitor;
+import com.hashnot.fx.ext.impl.TrackingTradesMonitor;
+import com.hashnot.fx.ext.impl.UserTradesMonitor;
 import com.hashnot.fx.util.OrderBooks;
 import com.hashnot.fx.util.exec.IExecutorStrategy;
 import com.hashnot.fx.util.exec.IExecutorStrategyFactory;
@@ -47,7 +49,8 @@ public abstract class AbstractExchange implements IExchange {
     protected final Map<String, LimitOrder> openOrders = new ConcurrentHashMap<>();
 
     protected final OrderBookMonitor orderBookMonitor;
-    final protected ITradeMonitor tradeMonitor;
+    final protected ITradesMonitor userTradesMonitor;
+    final protected TrackingTradesMonitor trackingUserTradesMonitor;
     final protected CachingTradeService tradeService;
 
     final protected RoundRobinRunnable runnableScheduler = new RoundRobinRunnable();
@@ -64,7 +67,8 @@ public abstract class AbstractExchange implements IExchange {
         limitPriceUnit = ONE.movePointLeft(this.scale);
         tradeAmountUnit = ONE.movePointLeft(tradeAmountScale);
         orderBookMonitor = new OrderBookMonitor(this, runnableScheduler, orderBooks);
-        tradeMonitor = new TradeMonitor(this, runnableScheduler);
+        userTradesMonitor = new UserTradesMonitor(getPollingTradeService(), runnableScheduler);
+        trackingUserTradesMonitor = new TrackingTradesMonitor(userTradesMonitor);
 
         //lazy evaluation
         tradeService = new CachingTradeService(Suppliers.memoize(() -> new NotifyingTradeService(getExchange().getPollingTradeService())), openOrders);
@@ -177,6 +181,16 @@ public abstract class AbstractExchange implements IExchange {
         updateWallet(getExchange());
     }
 
+    @Override
+    public ITradesMonitor getUserTradesMonitor() {
+        return userTradesMonitor;
+    }
+
+    @Override
+    public ITradeMonitor getTrackingUserTradesMonitor() {
+        return trackingUserTradesMonitor;
+    }
+
     protected void updateWallet(Exchange x) throws IOException {
         AccountInfo accountInfo = x.getPollingAccountService().getAccountInfo();
         for (com.xeiam.xchange.dto.trade.Wallet w : accountInfo.getWallets()) {
@@ -210,10 +224,4 @@ public abstract class AbstractExchange implements IExchange {
     public void removeOrderBookListener(IOrderBookListener orderBookMonitor) {
         this.orderBookMonitor.removeOrderBookListener(orderBookMonitor);
     }
-
-    @Override
-    public void addOrderListener(CurrencyPair pair, ITradeListener tradeListener) {
-        tradeMonitor.addTradeListener(tradeListener);
-    }
-
 }

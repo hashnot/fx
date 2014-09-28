@@ -1,6 +1,6 @@
 package com.hashnot.fx.dealer;
 
-import com.hashnot.fx.ext.StaticFeeService;
+import com.hashnot.fx.ext.impl.StaticFeeService;
 import com.hashnot.fx.framework.Simulation;
 import com.hashnot.fx.spi.ext.IExchange;
 import com.hashnot.fx.spi.ext.SimpleExchange;

@@ -1,7 +1,7 @@
 package com.hashnot.fx.framework;
 
 import com.hashnot.fx.dealer.Dealer;
-import com.hashnot.fx.spi.ITradeListener;
+import com.hashnot.fx.ext.ITradeListener;
 import com.hashnot.fx.spi.ext.IExchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
@@ -47,7 +47,7 @@ public class Main {
         for (IExchange exchange : exchanges) {
 
             exchange.addOrderBookListener(pair, BigDecimal.ONE, BigDecimal.ONE, dealer);
-            exchange.addOrderListener(pair, orderClosedListener);
+            exchange.getTrackingUserTradesMonitor().addTradeListener(orderClosedListener);
         }
 
 

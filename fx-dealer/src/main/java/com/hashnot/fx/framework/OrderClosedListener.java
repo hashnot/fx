@@ -1,7 +1,7 @@
 package com.hashnot.fx.framework;
 
 import com.hashnot.fx.spi.ConnectionException;
-import com.hashnot.fx.spi.ITradeListener;
+import com.hashnot.fx.ext.ITradeListener;
 import com.hashnot.fx.util.Orders;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.marketdata.Trade;
@@ -31,7 +31,7 @@ public class OrderClosedListener implements ITradeListener {
 
     @Override
     public void trade(LimitOrder openedOrder, Trade trade, LimitOrder currentOrder) {
-        List<LimitOrder> closingOrders = openOrders.get(openedOrder.getType()).closingOrders;
+        List<LimitOrder> closingOrders = openOrders.get(trade.getType()).closingOrders;
 
         PollingTradeService tradeService = openOrders.get(closingOrders.get(0).getType()).closeExchange.getPollingTradeService();
         if (currentOrder == null)

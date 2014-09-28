@@ -2,8 +2,8 @@ package com.hashnot.fx.spi.ext;
 
 import com.hashnot.fx.OrderBookUpdateEvent;
 import com.hashnot.fx.spi.ILimitOrderPlacementListener;
-import com.hashnot.fx.spi.IOrderBookListener;
-import com.hashnot.fx.spi.ITradeListener;
+import com.hashnot.fx.ext.IOrderBookListener;
+import com.hashnot.fx.ext.ITradeListener;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.marketdata.OrderBook;
 import com.xeiam.xchange.dto.marketdata.Trade;

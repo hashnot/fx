@@ -1,4 +1,4 @@
-package com.hashnot.fx.ext;
+package com.hashnot.fx.ext.impl;
 
 import com.hashnot.fx.spi.ext.IFeeService;
 import com.xeiam.xchange.currency.CurrencyPair;

@@ -1,4 +1,4 @@
-package com.hashnot.fx.spi;
+package com.hashnot.fx.ext;
 
 import com.hashnot.fx.OrderBookUpdateEvent;
 

@@ -4,7 +4,7 @@ import com.hashnot.fx.OrderBookUpdateEvent;
 import com.hashnot.fx.framework.IOrderUpdater;
 import com.hashnot.fx.framework.OrderUpdateEvent;
 import com.hashnot.fx.framework.Simulation;
-import com.hashnot.fx.spi.IOrderBookListener;
+import com.hashnot.fx.ext.IOrderBookListener;
 import com.hashnot.fx.spi.ext.IExchange;
 import com.hashnot.fx.util.Orders;
 import com.xeiam.xchange.currency.CurrencyPair;

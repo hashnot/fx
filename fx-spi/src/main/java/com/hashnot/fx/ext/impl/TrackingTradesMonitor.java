@@ -1,15 +1,16 @@
-package com.hashnot.fx.spi.ext;
+package com.hashnot.fx.ext.impl;
 
+import com.hashnot.fx.ext.ITradesListener;
+import com.hashnot.fx.ext.ITradesMonitor;
 import com.hashnot.fx.spi.ILimitOrderPlacementListener;
-import com.hashnot.fx.spi.ITradeListener;
+import com.hashnot.fx.ext.ITradeListener;
+import com.hashnot.fx.spi.ext.ITradeMonitor;
 import com.xeiam.xchange.dto.marketdata.Trade;
 import com.xeiam.xchange.dto.marketdata.Trades;
 import com.xeiam.xchange.dto.trade.LimitOrder;
-import com.xeiam.xchange.service.polling.PollingTradeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.HashMap;
@@ -21,30 +22,26 @@ import static com.hashnot.fx.util.Orders.withAmount;
 import static java.math.BigDecimal.ZERO;
 
 /**
- * timer task, run() works only until there are monitored orders
- *
  * @author Rafał Krupiński
  */
-public class TradeMonitor implements Runnable, ILimitOrderPlacementListener, ITradeMonitor {
-    final private static Logger log = LoggerFactory.getLogger(TradeMonitor.class);
+public class TrackingTradesMonitor implements ITradesListener, ILimitOrderPlacementListener, ITradeMonitor {
+    final private static Logger log = LoggerFactory.getLogger(TrackingTradesMonitor.class);
 
-    final private PollingTradeService pollingTradeService;
     final private Set<ITradeListener> tradeListeners = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    private final ITradesMonitor tradesMonitor;
 
 
     //state
 
-    private final Map<OrderPair, Trade> changed = new HashMap<>();
+    final private Map<String, OrderPair> orders = new HashMap<>();
     private boolean running = false;
 
-    // id -> order
-    final private Map<String, OrderPair> orders = new HashMap<>();
-    private final RunnableScheduler scheduler;
+    // volatile state, during single call
+    final private Map<OrderPair, Trade> changed = new HashMap<>();
 
     @Override
-    public void run() {
+    public void trades(Trades trades) {
         try {
-            Trades trades = getTradeHistory();
 
             for (Trade trade : trades.getTrades()) {
                 String id = trade.getOrderId();
@@ -78,9 +75,6 @@ public class TradeMonitor implements Runnable, ILimitOrderPlacementListener, ITr
             }
 
             updateRunning();
-
-        } catch (IOException e) {
-            log.error("Error", e);
         } finally {
             changed.clear();
         }
@@ -89,17 +83,13 @@ public class TradeMonitor implements Runnable, ILimitOrderPlacementListener, ITr
     private synchronized void updateRunning() {
         if (running) {
             if (orders.isEmpty() || tradeListeners.isEmpty()) {
-                scheduler.disable(this);
+                tradesMonitor.addTradesListener(this);
                 running = false;
             }
         } else if (!orders.isEmpty() && !tradeListeners.isEmpty()) {
-            scheduler.enable(this);
+            tradesMonitor.removeTradesListener(this);
             running = true;
         }
-    }
-
-    protected Trades getTradeHistory() throws IOException {
-        return pollingTradeService.getTradeHistory();
     }
 
     @Override
@@ -108,9 +98,8 @@ public class TradeMonitor implements Runnable, ILimitOrderPlacementListener, ITr
         updateRunning();
     }
 
-    public TradeMonitor(IExchange exchange, RunnableScheduler scheduler) {
-        this.scheduler = scheduler;
-        this.pollingTradeService = exchange.getPollingTradeService();
+    public TrackingTradesMonitor(ITradesMonitor tradesMonitor) {
+        this.tradesMonitor = tradesMonitor;
     }
 
     @Override

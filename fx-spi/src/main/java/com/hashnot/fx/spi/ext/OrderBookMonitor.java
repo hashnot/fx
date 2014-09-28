@@ -3,7 +3,7 @@ package com.hashnot.fx.spi.ext;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.hashnot.fx.OrderBookUpdateEvent;
-import com.hashnot.fx.spi.IOrderBookListener;
+import com.hashnot.fx.ext.IOrderBookListener;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.marketdata.OrderBook;
 import org.slf4j.Logger;

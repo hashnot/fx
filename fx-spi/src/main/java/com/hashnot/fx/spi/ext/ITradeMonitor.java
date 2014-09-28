@@ -1,6 +1,6 @@
 package com.hashnot.fx.spi.ext;
 
-import com.hashnot.fx.spi.ITradeListener;
+import com.hashnot.fx.ext.ITradeListener;
 
 /**
  * @author Rafał Krupiński

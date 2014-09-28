@@ -1,7 +1,7 @@
 package com.hashnot.fx.spi.ext;
 
 import com.hashnot.fx.OrderBookUpdateEvent;
-import com.hashnot.fx.spi.ITradeListener;
+import com.hashnot.fx.ext.ITradeListener;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.marketdata.OrderBook;
@@ -19,7 +19,7 @@ import static java.util.Collections.emptyList;
 import static org.mockito.Mockito.*;
 
 @Ignore
-public class OrderBookTradeMonitorTest {
+public class OrderBookTrackingTradesMonitorTest {
     private static final BigDecimal TWO = new BigDecimal(2);
 
     @Test

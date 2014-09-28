@@ -1,8 +1,8 @@
 package com.hashnot.fx;
 
 import com.hashnot.fx.framework.Main;
-import com.hashnot.fx.spi.IOrderBookListener;
-import com.hashnot.fx.spi.ITradeListener;
+import com.hashnot.fx.ext.IOrderBookListener;
+import com.hashnot.fx.ext.ITradeListener;
 import com.hashnot.fx.spi.ext.IExchange;
 import com.hashnot.fx.util.Orders;
 import com.xeiam.xchange.currency.CurrencyPair;
@@ -70,7 +70,7 @@ public class Order {
         Dealer dealer = new Dealer(x, new LimitOrder(type, amount, pair, null, null, null), value);
 
         x.addOrderBookListener(pair, x.getMinimumTrade(pair.baseSymbol), null, dealer);
-        x.addOrderListener(pair, dealer);
+        x.getTrackingUserTradesMonitor().addTradeListener(dealer);
 
         return dealer.get();
     }

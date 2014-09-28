@@ -1,6 +1,6 @@
 package com.hashnot.fx.spi.ext;
 
-import com.hashnot.fx.ext.StaticFeeService;
+import com.hashnot.fx.ext.impl.StaticFeeService;
 import com.hashnot.fx.util.exec.SchedulerExecutorFactory;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.ExchangeFactory;
