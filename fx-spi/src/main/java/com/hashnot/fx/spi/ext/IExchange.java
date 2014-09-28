@@ -16,7 +16,7 @@ import java.util.Map;
 /**
  * @author Rafał Krupiński
  */
-public interface IExchange extends IFeeService {
+public interface IExchange {
     /**
      * @return scale (number of )
      */

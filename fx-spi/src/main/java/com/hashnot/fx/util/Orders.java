@@ -1,6 +1,6 @@
 package com.hashnot.fx.util;
 
-import com.hashnot.fx.spi.ext.IFeeService;
+import com.hashnot.fx.spi.ext.IExchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.trade.LimitOrder;
@@ -11,8 +11,8 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 
-import static com.hashnot.fx.util.Numbers.isEqual;
 import static com.hashnot.fx.util.Numbers.BigDecimal._ONE;
+import static com.hashnot.fx.util.Numbers.isEqual;
 
 /**
  * @author Rafał Krupiński
@@ -52,13 +52,13 @@ public class Orders {
         return new LimitOrder(revert(order.getType()), order.getTradableAmount(), order.getCurrencyPair(), null, null, order.getLimitPrice());
     }
 
-    public static LimitOrder closing(LimitOrder order, IFeeService feeService) {
+    public static LimitOrder closing(LimitOrder order, IExchange feeService) {
         LimitOrder result = closing(order);
         updateLimitPrice(result, feeService);
         return result;
     }
 
-    public static void updateLimitPrice(LimitOrder order, IFeeService x) {
+    public static void updateLimitPrice(LimitOrder order, IExchange x) {
         order.setNetPrice(getNetPrice(order, x.getFeePercent(order.getCurrencyPair())));
     }
 
