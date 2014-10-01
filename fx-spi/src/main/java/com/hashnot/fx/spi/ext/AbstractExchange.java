@@ -1,17 +1,16 @@
 package com.hashnot.fx.spi.ext;
 
 import com.google.common.base.Suppliers;
-import com.hashnot.fx.ext.IOrderBookListener;
+import com.hashnot.fx.ext.IOrderBookMonitor;
 import com.hashnot.fx.ext.ITradesMonitor;
+import com.hashnot.fx.ext.impl.OrderBookMonitor;
 import com.hashnot.fx.ext.impl.TrackingTradesMonitor;
 import com.hashnot.fx.ext.impl.UserTradesMonitor;
-import com.hashnot.fx.util.OrderBooks;
 import com.hashnot.fx.util.exec.IExecutorStrategy;
 import com.hashnot.fx.util.exec.IExecutorStrategyFactory;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.account.AccountInfo;
-import com.xeiam.xchange.dto.marketdata.OrderBook;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.service.polling.PollingAccountService;
 import com.xeiam.xchange.service.polling.PollingMarketDataService;
@@ -37,7 +36,6 @@ import static java.math.BigDecimal.ZERO;
 public abstract class AbstractExchange implements IExchange {
     final private static Logger log = LoggerFactory.getLogger(AbstractExchange.class);
     static private final BigDecimal TWO = new BigDecimal(2);
-    final public Map<CurrencyPair, OrderBook> orderBooks = new HashMap<>();
     final public Map<String, BigDecimal> wallet = new HashMap<>();
 
     protected final BigDecimal limitPriceUnit;
@@ -48,7 +46,7 @@ public abstract class AbstractExchange implements IExchange {
     protected final BigDecimal tradeAmountUnit;
     protected final Map<String, LimitOrder> openOrders = new ConcurrentHashMap<>();
 
-    protected final OrderBookMonitor orderBookMonitor;
+    final protected IOrderBookMonitor orderBookMonitor;
     final protected ITradesMonitor userTradesMonitor;
     final protected TrackingTradesMonitor trackingUserTradesMonitor;
     final protected CachingTradeService tradeService;
@@ -66,8 +64,8 @@ public abstract class AbstractExchange implements IExchange {
 
         limitPriceUnit = ONE.movePointLeft(this.scale);
         tradeAmountUnit = ONE.movePointLeft(tradeAmountScale);
-        orderBookMonitor = new OrderBookMonitor(this, runnableScheduler, orderBooks);
-        userTradesMonitor = new UserTradesMonitor(getPollingTradeService(), runnableScheduler);
+        orderBookMonitor = new OrderBookMonitor(this, runnableScheduler);
+        userTradesMonitor = new UserTradesMonitor(this, runnableScheduler);
         trackingUserTradesMonitor = new TrackingTradesMonitor(userTradesMonitor);
 
         //lazy evaluation
@@ -110,18 +108,8 @@ public abstract class AbstractExchange implements IExchange {
     }
 
     @Override
-    public Map<CurrencyPair, OrderBook> getOrderBooks() {
-        return orderBooks;
-    }
-
-    @Override
     public BigDecimal getLimit(String currency) {
         return getWallet(currency).multiply(TWO);
-    }
-
-    @Override
-    public OrderBook getOrderBook(CurrencyPair pair) {
-        return orderBooks.get(pair);
     }
 
     @Override
@@ -191,6 +179,11 @@ public abstract class AbstractExchange implements IExchange {
         return trackingUserTradesMonitor;
     }
 
+    @Override
+    public IOrderBookMonitor getOrderBookMonitor() {
+        return orderBookMonitor;
+    }
+
     protected void updateWallet(Exchange x) throws IOException {
         AccountInfo accountInfo = x.getPollingAccountService().getAccountInfo();
         for (com.xeiam.xchange.dto.trade.Wallet w : accountInfo.getWallets()) {
@@ -202,26 +195,5 @@ public abstract class AbstractExchange implements IExchange {
                 continue;
             wallet.put(currency, w.getBalance());
         }
-    }
-
-    @Override
-    public boolean updateOrderBook(CurrencyPair orderBookPair, OrderBook orderBook) {
-        OrderBook limited = OrderBooks.removeOverLimit(orderBook, getLimit(orderBookPair.baseSymbol), getLimit(orderBookPair.counterSymbol));
-        OrderBook current = getOrderBook(orderBookPair);
-        if (current == null || !OrderBooks.equals(current, limited)) {
-            orderBooks.put(orderBookPair, limited);
-            OrderBooks.updateNetPrices(this, orderBookPair);
-            return true;
-        } else
-            return false;
-    }
-
-    @Override
-    public void addOrderBookListener(CurrencyPair pair, BigDecimal maxAmount, BigDecimal maxValue, IOrderBookListener orderBookMonitor) {
-        this.orderBookMonitor.addOrderBookListener(pair, maxAmount, maxValue, orderBookMonitor);
-    }
-
-    public void removeOrderBookListener(IOrderBookListener orderBookMonitor) {
-        this.orderBookMonitor.removeOrderBookListener(orderBookMonitor);
     }
 }

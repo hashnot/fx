@@ -69,7 +69,7 @@ public class Order {
 
         Dealer dealer = new Dealer(x, new LimitOrder(type, amount, pair, null, null, null), value);
 
-        x.addOrderBookListener(pair, x.getMinimumTrade(pair.baseSymbol), null, dealer);
+        x.getOrderBookMonitor().addOrderBookListener(pair, dealer);
         x.getTrackingUserTradesMonitor().addTradeListener(dealer);
 
         return dealer.get();
@@ -132,7 +132,7 @@ class Dealer implements IOrderBookListener, ITradeListener {
     @Override
     public synchronized void trade(LimitOrder monitored, Trade trade, LimitOrder current) {
         if (current == null) {
-            x.removeOrderBookListener(this);
+            x.getOrderBookMonitor().removeOrderBookListener(order.getCurrencyPair(), this);
             done = true;
             notify();
         } else

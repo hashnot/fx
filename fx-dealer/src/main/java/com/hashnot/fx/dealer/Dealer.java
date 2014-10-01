@@ -1,14 +1,16 @@
 package com.hashnot.fx.dealer;
 
 import com.hashnot.fx.OrderBookUpdateEvent;
+import com.hashnot.fx.ext.IOrderBookListener;
 import com.hashnot.fx.framework.IOrderUpdater;
 import com.hashnot.fx.framework.OrderUpdateEvent;
 import com.hashnot.fx.framework.Simulation;
-import com.hashnot.fx.ext.IOrderBookListener;
 import com.hashnot.fx.spi.ext.IExchange;
+import com.hashnot.fx.util.OrderBooks;
 import com.hashnot.fx.util.Orders;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
+import com.xeiam.xchange.dto.marketdata.OrderBook;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +32,8 @@ public class Dealer implements IOrderBookListener {
 
     public Simulation simulation;
 
+    private final Map<OrderBookKey, OrderBook> orderBooks = new HashMap<>();
+
     public Dealer(Collection<IExchange> context, Simulation simulation, IOrderUpdater orderUpdater) {
         this.context = context;
         this.simulation = simulation;
@@ -39,13 +43,15 @@ public class Dealer implements IOrderBookListener {
     final private Collection<IExchange> dirtyExchanges = new HashSet<>();
 
     @Override
-    public synchronized void changed(OrderBookUpdateEvent orderBookUpdateEvent) {
+    public synchronized void changed(OrderBookUpdateEvent evt) {
+        OrderBooks.updateNetPrices(evt.after, evt.source.getFeePercent(evt.pair));
+        orderBooks.put(new OrderBookKey(evt.source, evt.pair), evt.after);
         try {
-            process(Arrays.asList(orderBookUpdateEvent.pair));
+            process(Arrays.asList(evt.pair));
         } catch (RuntimeException | Error e) {
             log.error("Error", e);
             throw e;
-        }finally {
+        } finally {
             clear();
         }
     }
@@ -57,7 +63,7 @@ public class Dealer implements IOrderBookListener {
     protected void process(Collection<CurrencyPair> dirtyPairs) {
         for (IExchange e : context) {
             for (CurrencyPair pair : dirtyPairs) {
-                if (e.getOrderBooks().containsKey(pair)) {
+                if (orderBooks.containsKey(new OrderBookKey(e, pair))) {
                     dirtyExchanges.add(e);
                     break;
                 }
@@ -75,7 +81,7 @@ public class Dealer implements IOrderBookListener {
     private NavigableMap<LimitOrder, IExchange> getBestOffers(CurrencyPair pair, Collection<IExchange> exchanges, Order.OrderType dir) {
         NavigableMap<LimitOrder, IExchange> result = new TreeMap<>((o1, o2) -> o1.getNetPrice().compareTo(o2.getNetPrice()) * factor(o1.getType()));
         for (IExchange x : exchanges) {
-            List<LimitOrder> orders = x.getOrderBook(pair).getOrders(dir);
+            List<LimitOrder> orders = orderBooks.get(new OrderBookKey(x, pair)).getOrders(dir);
             if (!orders.isEmpty())
                 result.put(orders.get(0), x);
         }
@@ -154,7 +160,7 @@ public class Dealer implements IOrderBookListener {
             return;
         }
 
-        List<LimitOrder> closeOrders = bestExchange.getOrderBook(pair).getOrders(type);
+        List<LimitOrder> closeOrders = orderBooks.get(new OrderBookKey(bestExchange, pair)).getOrders(type);
         OrderUpdateEvent event = simulation.deal(openOrder, worstExchange, closeOrders, bestExchange);
         if (event != null)
             orderUpdater.update(event);
@@ -176,4 +182,32 @@ public class Dealer implements IOrderBookListener {
     }
 
     private static final Logger log = LoggerFactory.getLogger(Dealer.class);
+}
+
+class OrderBookKey {
+    private final IExchange exchange;
+    private final CurrencyPair pair;
+
+    public OrderBookKey(IExchange exchange, CurrencyPair pair) {
+        this.exchange = exchange;
+        this.pair = pair;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        OrderBookKey that = (OrderBookKey) o;
+
+        return exchange.equals(that.exchange) && pair.equals(that.pair);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = exchange.hashCode();
+        result = 31 * result + pair.hashCode();
+        return result;
+    }
 }

@@ -1,7 +1,5 @@
 package com.hashnot.fx.util;
 
-import com.hashnot.fx.spi.ext.IExchange;
-import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.marketdata.OrderBook;
 import com.xeiam.xchange.dto.trade.LimitOrder;
@@ -58,9 +56,7 @@ public class OrderBooks {
         return i;
     }
 
-    public static void updateNetPrices(IExchange exchange, CurrencyPair pair) {
-        BigDecimal fee = exchange.getFeePercent(pair);
-        OrderBook orderBook = exchange.getOrderBook(pair);
+    public static void updateNetPrices(OrderBook orderBook, BigDecimal fee) {
         updateNetPrices(orderBook, fee, Order.OrderType.ASK);
         updateNetPrices(orderBook, fee, Order.OrderType.BID);
     }

@@ -2,9 +2,9 @@ package com.hashnot.fx.ext.impl;
 
 import com.hashnot.fx.ext.ITradesListener;
 import com.hashnot.fx.ext.ITradesMonitor;
+import com.hashnot.fx.spi.ext.IExchange;
 import com.hashnot.fx.spi.ext.RunnableScheduler;
 import com.xeiam.xchange.dto.marketdata.Trades;
-import com.xeiam.xchange.service.polling.PollingTradeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,14 +19,14 @@ import java.util.concurrent.ConcurrentHashMap;
 public class UserTradesMonitor extends AbstractPollingMonitor implements ITradesMonitor, Runnable {
     final private Logger log = LoggerFactory.getLogger(UserTradesMonitor.class);
 
-    private final PollingTradeService service;
+    private final IExchange parent;
 
     private final Set<ITradesListener> listeners = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     @Override
     public void run() {
         try {
-            Trades trades = service.getTradeHistory();
+            Trades trades = parent.getPollingTradeService().getTradeHistory();
 
             for (ITradesListener listener : this.listeners)
                 listener.trades(trades);
@@ -35,9 +35,9 @@ public class UserTradesMonitor extends AbstractPollingMonitor implements ITrades
         }
     }
 
-    public UserTradesMonitor(PollingTradeService service, RunnableScheduler scheduler) {
+    public UserTradesMonitor(IExchange parent, RunnableScheduler scheduler) {
         super(scheduler);
-        this.service = service;
+        this.parent = parent;
     }
 
     @Override

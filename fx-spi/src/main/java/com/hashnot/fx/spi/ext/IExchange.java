@@ -1,9 +1,8 @@
 package com.hashnot.fx.spi.ext;
 
-import com.hashnot.fx.ext.IOrderBookListener;
+import com.hashnot.fx.ext.IOrderBookMonitor;
 import com.hashnot.fx.ext.ITradesMonitor;
 import com.xeiam.xchange.currency.CurrencyPair;
-import com.xeiam.xchange.dto.marketdata.OrderBook;
 import com.xeiam.xchange.service.polling.PollingAccountService;
 import com.xeiam.xchange.service.polling.PollingMarketDataService;
 import com.xeiam.xchange.service.streaming.ExchangeStreamingConfiguration;
@@ -39,8 +38,6 @@ public interface IExchange {
 
     Map<String, BigDecimal> getWallet();
 
-    OrderBook getOrderBook(CurrencyPair pair);
-
     PollingMarketDataService getPollingMarketDataService();
 
     StreamingExchangeService getStreamingExchangeService(ExchangeStreamingConfiguration configuration);
@@ -49,23 +46,17 @@ public interface IExchange {
 
     PollingAccountService getPollingAccountService();
 
-    Map<CurrencyPair, OrderBook> getOrderBooks();
-
     BigDecimal getLimit(String currency);
 
     void start();
 
     void stop();
 
-    boolean updateOrderBook(CurrencyPair orderBookPair, OrderBook orderBook);
-
-    void addOrderBookListener(CurrencyPair pair, BigDecimal maxAmount, BigDecimal maxValue, IOrderBookListener orderBookMonitor);
-
-    void removeOrderBookListener(IOrderBookListener orderBookMonitor);
-
     ITradesMonitor getUserTradesMonitor();
 
     ITradeMonitor getTrackingUserTradesMonitor();
+
+    IOrderBookMonitor getOrderBookMonitor();
 
     void updateWallet() throws IOException;
 }

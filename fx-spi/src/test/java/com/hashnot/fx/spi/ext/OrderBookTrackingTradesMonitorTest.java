@@ -42,9 +42,9 @@ public class OrderBookTrackingTradesMonitorTest {
         OrderBook stage0 = new OrderBook(null, emptyList(), emptyList());
         OrderBook stage1 = new OrderBook(null, asksAfter, emptyList());
 
-        mon.changed(new OrderBookUpdateEvent(pair, stage0, stage1));
+        mon.changed(new OrderBookUpdateEvent(null, pair, stage0, stage1));
 
-        mon.changed(new OrderBookUpdateEvent(pair, stage1, stage0));
+        mon.changed(new OrderBookUpdateEvent(null, pair, stage1, stage0));
 
         verify(orderListener, times(1)).trade(one, null, null);
 
@@ -68,13 +68,13 @@ public class OrderBookTrackingTradesMonitorTest {
         mon.limitOrderPlaced(one, "id");
 
         OrderBook stage1 = new OrderBook(null, asList(one), emptyList());
-        mon.changed(new OrderBookUpdateEvent(pair, stage0, stage1));
+        mon.changed(new OrderBookUpdateEvent(null, pair, stage0, stage1));
 
         LimitOrder two = new LimitOrder(Order.OrderType.ASK, TWO, pair, "o2", null, ONE);
         OrderBook stage2 = new OrderBook(null, asList(two), emptyList());
-        mon.changed(new OrderBookUpdateEvent(pair, stage1, stage2));
+        mon.changed(new OrderBookUpdateEvent(null, pair, stage1, stage2));
 
-        mon.changed(new OrderBookUpdateEvent(pair, stage2, stage1));
+        mon.changed(new OrderBookUpdateEvent(null, pair, stage2, stage1));
 
         verify(orderListener, times(1)).trade(one, null, one);
     }
@@ -97,13 +97,13 @@ public class OrderBookTrackingTradesMonitorTest {
         mon.limitOrderPlaced(two, "id");
 
         OrderBook stage1 = new OrderBook(null, asList(two), emptyList());
-        mon.changed(new OrderBookUpdateEvent(pair, stage0, stage1));
+        mon.changed(new OrderBookUpdateEvent(null, pair, stage0, stage1));
 
         OrderBook stage2 = new OrderBook(null, asList(one), emptyList());
-        mon.changed(new OrderBookUpdateEvent(pair, stage1, stage2));
+        mon.changed(new OrderBookUpdateEvent(null, pair, stage1, stage2));
         verify(orderListener).trade(two, null, one);
 
-        mon.changed(new OrderBookUpdateEvent(pair, stage2, stage0));
+        mon.changed(new OrderBookUpdateEvent(null, pair, stage2, stage0));
         verify(orderListener).trade(two, null, null);
     }
 }
