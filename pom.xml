@@ -17,7 +17,7 @@
         <v.htmlunit>2.15</v.htmlunit>
         <v.slf4j>1.7.7</v.slf4j>
         <v.logback>1.0.13</v.logback>
-        <v.xchange>2.1.0-SNAPSHOT</v.xchange>
+        <v.xchange>2.2.0-SNAPSHOT</v.xchange>
     </properties>
 
     <modules>
