@@ -1,17 +1,13 @@
 package com.hashnot.fx.framework;
 
 import com.hashnot.fx.dealer.Dealer;
-import com.hashnot.fx.ext.ITradeListener;
 import com.hashnot.fx.spi.ext.IExchange;
 import com.xeiam.xchange.currency.CurrencyPair;
-import com.xeiam.xchange.dto.Order;
 import groovy.lang.GroovyShell;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -29,24 +25,20 @@ public class Main {
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(10, tf);
         Collection<IExchange> exchanges = load(args[0], scheduler);
 
-        Map<Order.OrderType, OrderUpdateEvent> myOpenOrders = new HashMap<>();
-
         Runtime.getRuntime().addShutdownHook(new Thread(() -> exchanges.parallelStream().forEach(IExchange::stop), "Clear"));
 
         exchanges.parallelStream().forEach(IExchange::start);
 
         report(exchanges);
 
-        ITradeListener orderClosedListener = new OrderClosedListener(myOpenOrders);
-
         Simulation simulation = new Simulation();
-        OrderUpdater orderUpdater = new OrderUpdater(myOpenOrders);
-        Dealer dealer = new Dealer(exchanges, simulation, orderUpdater);
+        OrderManager orderManager = new OrderManager();
+        Dealer dealer = new Dealer(exchanges, simulation, orderManager);
 
         for (IExchange exchange : exchanges) {
 
             exchange.getOrderBookMonitor().addOrderBookListener(pair, dealer);
-            exchange.getTrackingUserTradesMonitor().addTradeListener(orderClosedListener);
+            exchange.getTrackingUserTradesMonitor().addTradeListener(orderManager);
         }
 
 
