@@ -8,7 +8,6 @@ import com.xeiam.xchange.kraken.Kraken;
 import com.xeiam.xchange.kraken.dto.account.KrakenTradeVolume;
 import com.xeiam.xchange.kraken.service.polling.KrakenAccountService;
 import com.xeiam.xchange.kraken.service.polling.KrakenBasePollingService;
-import si.mazi.rescu.SynchronizedValueFactory;
 
 import java.io.IOException;
 import java.math.BigDecimal;
