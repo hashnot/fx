@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Rafał Krupiński
@@ -17,11 +18,10 @@ import java.util.Map;
 public class CachingTradeService extends AbstractTradeService {
     final private static Logger log = LoggerFactory.getLogger(CachingTradeService.class);
 
-    final private Map<String, LimitOrder> openOrders;
+    final private Map<String, LimitOrder> openOrders = new ConcurrentHashMap<>();
 
-    public CachingTradeService(Supplier<ITradeService> backend, Map<String, LimitOrder> openOrders) {
+    public CachingTradeService(Supplier<ITradeService> backend) {
         super(backend);
-        this.openOrders = openOrders;
     }
 
     @Override

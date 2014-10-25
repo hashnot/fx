@@ -112,7 +112,7 @@ class Dealer implements IOrderBookListener, ITradeListener {
             throw new IllegalStateException("No " + order.getType() + " orders found");
 
         if (edit.get()) {
-            BigDecimal price = Orders.betterPrice(orders.get(0).getLimitPrice(), x.getLimitPriceUnit(order.getCurrencyPair()), order.getType());
+            BigDecimal price = Orders.betterPrice(orders.get(0).getLimitPrice(), x.getMarketMetadata(order.getCurrencyPair()).getPriceStep(), order.getType());
 
             try {
                 PollingTradeService tradeService = x.getPollingTradeService();

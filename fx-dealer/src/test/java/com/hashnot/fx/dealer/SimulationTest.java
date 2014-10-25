@@ -1,6 +1,5 @@
 package com.hashnot.fx.dealer;
 
-import com.hashnot.fx.ext.impl.StaticFeeService;
 import com.hashnot.fx.framework.Simulation;
 import com.hashnot.fx.spi.ext.IExchange;
 import com.hashnot.fx.spi.ext.SimpleExchange;
@@ -97,11 +96,11 @@ public class SimulationTest {
         if (fee.length == 0) fee = new BigDecimal[]{ZERO};
 
         IExecutorStrategyFactory executorStrategyFactory = new SchedulerExecutorFactory(Executors.newSingleThreadScheduledExecutor(), 100);
-        e1 = new SimpleExchange(new MockExchange(), new StaticFeeService(fee[0]), executorStrategyFactory, null, null, 5, 8);
+        e1 = new SimpleExchange(new MockExchange(), executorStrategyFactory);
         e1.getWallet().put(EUR, TEN);
         e1.getWallet().put(BTC, TEN);
 
-        e2 = new SimpleExchange(new MockExchange(), new StaticFeeService(fee[Math.min(1, fee.length - 1)]), executorStrategyFactory, null, null, 5, 8);
+        e2 = new SimpleExchange(new MockExchange(), executorStrategyFactory);
         e2.getWallet().put(EUR, TEN);
         e2.getWallet().put(BTC, TEN);
 

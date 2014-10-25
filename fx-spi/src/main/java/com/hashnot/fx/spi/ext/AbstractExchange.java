@@ -11,7 +11,8 @@ import com.hashnot.fx.util.exec.IExecutorStrategyFactory;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.account.AccountInfo;
-import com.xeiam.xchange.dto.trade.LimitOrder;
+import com.xeiam.xchange.dto.marketdata.MarketMetadata;
+import com.xeiam.xchange.service.polling.MarketMetadataService;
 import com.xeiam.xchange.service.polling.PollingAccountService;
 import com.xeiam.xchange.service.polling.PollingMarketDataService;
 import com.xeiam.xchange.service.streaming.ExchangeStreamingConfiguration;
@@ -21,13 +22,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static com.hashnot.fx.util.Numbers.BigDecimal.isZero;
-import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 
 /**
@@ -38,13 +36,7 @@ public abstract class AbstractExchange implements IExchange {
     static private final BigDecimal TWO = new BigDecimal(2);
     final public Map<String, BigDecimal> wallet = new HashMap<>();
 
-    protected final BigDecimal limitPriceUnit;
-    protected final IFeeService feeService;
-    protected final int scale;
-    protected final Map<String, BigDecimal> walletUnit;
-    protected final Map<String, BigDecimal> minimumOrder;
-    protected final BigDecimal tradeAmountUnit;
-    protected final Map<String, LimitOrder> openOrders = new ConcurrentHashMap<>();
+    protected final Map<CurrencyPair, MarketMetadata> metadata = new HashMap<>();
 
     final protected IOrderBookMonitor orderBookMonitor;
     final protected ITradesMonitor userTradesMonitor;
@@ -54,57 +46,39 @@ public abstract class AbstractExchange implements IExchange {
     final protected RoundRobinRunnable runnableScheduler = new RoundRobinRunnable();
     private final IExecutorStrategy executor;
 
-    public AbstractExchange(IFeeService feeService, IExecutorStrategyFactory executorStrategyFactory, Map<String, BigDecimal> walletUnit, Map<String, BigDecimal> minimumOrder, int limitPriceScale, int tradeAmountScale) {
-        this.feeService = feeService;
-        this.walletUnit = walletUnit;
-        this.minimumOrder = minimumOrder != null ? minimumOrder : Collections.emptyMap();
-        this.scale = limitPriceScale;
-
+    public AbstractExchange(IExecutorStrategyFactory executorStrategyFactory) {
         executor = executorStrategyFactory.create(runnableScheduler);
 
-        limitPriceUnit = ONE.movePointLeft(this.scale);
-        tradeAmountUnit = ONE.movePointLeft(tradeAmountScale);
         orderBookMonitor = new OrderBookMonitor(this, runnableScheduler);
         userTradesMonitor = new UserTradesMonitor(this, runnableScheduler);
         trackingUserTradesMonitor = new TrackingTradesMonitor(userTradesMonitor);
 
         //lazy evaluation
-        tradeService = new CachingTradeService(Suppliers.memoize(() -> new NotifyingTradeService(getExchange().getPollingTradeService())), openOrders);
+        tradeService = new CachingTradeService(Suppliers.memoize(() -> new NotifyingTradeService(getExchange().getPollingTradeService())));
 
         //OrderBookTradeMonitor orderBookMonitor = new OrderBookTradeMonitor(getPollingTradeService());
         //addOrderBookListener(pair, BigDecimal.ONE, BigDecimal.ONE, orderBookMonitor);
     }
 
-    @Override
-    public int getScale(CurrencyPair pair) {
-        return scale;
-    }
+    public MarketMetadata getMarketMetadata(CurrencyPair pair) {
 
-    @Override
-    public BigDecimal getLimitPriceUnit(CurrencyPair pair) {
-        return limitPriceUnit;
-    }
-
-    @Override
-    public BigDecimal getTradeAmountUnit(CurrencyPair pair) {
-        return tradeAmountUnit;
+        return metadata.computeIfAbsent(pair, (p) -> {
+            try {
+                return getMarketMetadataService().getMarketMetadata(p);
+            } catch (IOException e) {
+                throw new IllegalStateException(e);
+            }
+        });
     }
 
     @Override
     public BigDecimal getWalletUnit(String currency) {
+        throw new UnsupportedOperationException();
+/*
         BigDecimal result = walletUnit.get(currency);
         if (result == null) throw new IllegalArgumentException("No wallet unit for " + currency + " @" + toString());
         return result;
-    }
-
-    @Override
-    public BigDecimal getMinimumTrade(String currency) {
-        return minimumOrder.getOrDefault(currency, ZERO);
-    }
-
-    @Override
-    public BigDecimal getFeePercent(CurrencyPair pair) {
-        return feeService.getFeePercent(pair);
+*/
     }
 
     @Override
@@ -147,6 +121,10 @@ public abstract class AbstractExchange implements IExchange {
     @Override
     public PollingMarketDataService getPollingMarketDataService() {
         return getExchange().getPollingMarketDataService();
+    }
+
+    public MarketMetadataService getMarketMetadataService() {
+        return getExchange().getMarketMetadataService();
     }
 
     @Override

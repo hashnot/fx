@@ -32,10 +32,10 @@ public class Simulation {
         String closeOutCur = incomingCurrency(worst);
 
         BigDecimal openOutGross = worstExchange.getWallet(openOutgoingCur);
-        BigDecimal openOutNet = getNetPrice(openOutGross, Order.OrderType.ASK, worstExchange.getFeePercent(worst.getCurrencyPair()));
+        BigDecimal openOutNet = getNetPrice(openOutGross, Order.OrderType.ASK, worstExchange.getMarketMetadata(worst.getCurrencyPair()).getOrderFeeFactor());
 
         BigDecimal closeOutGross = bestExchange.getWallet(closeOutCur);
-        BigDecimal closeOutNet = getNetPrice(closeOutGross, Order.OrderType.ASK, bestExchange.getFeePercent(worst.getCurrencyPair()));
+        BigDecimal closeOutNet = getNetPrice(closeOutGross, Order.OrderType.ASK, bestExchange.getMarketMetadata(worst.getCurrencyPair()).getOrderFeeFactor());
 
         log.debug("type: {}, best {}, worst {}", worst.getType(), bestExchange, worstExchange);
         log.debug("open  {} {} -> {}", openOutgoingCur, openOutGross, openOutNet);
@@ -77,19 +77,20 @@ public class Simulation {
 
     protected boolean checkMinima(LimitOrder worst, BigDecimal openAmountActual, IExchange worstExchange) {
         return !(openAmountActual.compareTo(LOW_LIMIT) < 0
-                || openAmountActual.compareTo(worstExchange.getTradeAmountUnit(worst.getCurrencyPair())) < 0
-                || openAmountActual.compareTo(worstExchange.getMinimumTrade(worst.getCurrencyPair().baseSymbol)) < 0
+                || openAmountActual.compareTo(worstExchange.getMarketMetadata(worst.getCurrencyPair()).getAmountMinimum()) < 0
         );
     }
 
     private static int getScale(IExchange e1, IExchange e2, CurrencyPair pair) {
-        int s1 = e1.getScale(pair);
-        int s2 = e2.getScale(pair);
+        int s1 = e1.getMarketMetadata(pair).getPriceScale();
+        int s2 = e2.getMarketMetadata(pair).getPriceScale();
         return Math.min(s1, s2);
     }
 
     private OrderUpdateEvent apply(LimitOrder worst, IExchange worstExchange, List<LimitOrder> closeOrders, IExchange bestExchange, BigDecimal openAmount) {
-        LimitOrder openOrder = new LimitOrder(worst.getType(), openAmount, worst.getCurrencyPair(), null, null, worst.getLimitPrice());
+        //TODO BigDecimal price = betterPrice(worst.getLimitPrice(), worstExchange.getPriceStep(worst.getCurrencyPair()), worst.getType());
+        BigDecimal price = worst.getLimitPrice();
+        LimitOrder openOrder = new LimitOrder(worst.getType(), openAmount, worst.getCurrencyPair(), null, null, price);
         List<LimitOrder> myCloseOrders = new LinkedList<>();
 
         BigDecimal total = ZERO;
@@ -114,12 +115,12 @@ public class Simulation {
         return new OrderUpdateEvent(worstExchange, bestExchange, openOrder, myCloseOrders);
     }
 
-    static BigDecimal totalAmountByAmount(List<LimitOrder> orders, BigDecimal amountLimit, BigDecimal netPriceLimit, IExchange feeService) {
+    static BigDecimal totalAmountByAmount(List<LimitOrder> orders, BigDecimal amountLimit, BigDecimal netPriceLimit, IExchange x) {
         BigDecimal totalValue = ZERO;
         BigDecimal totalAmount = ZERO;
         Order.OrderType type = revert(orders.get(0).getType());
         for (LimitOrder order : orders) {
-            BigDecimal netPrice = Orders.getNetPrice(order.getLimitPrice(), type, feeService.getFeePercent(order.getCurrencyPair()));
+            BigDecimal netPrice = Orders.getNetPrice(order.getLimitPrice(), type, x.getMarketMetadata(order.getCurrencyPair()).getOrderFeeFactor());
 
             if (netPrice.compareTo(netPriceLimit) * factor(order.getType()) > 0)
                 break;
@@ -144,12 +145,12 @@ public class Simulation {
         return totalAmount;
     }
 
-    static BigDecimal totalAmountByValue(List<LimitOrder> orders, BigDecimal valueLimit, BigDecimal netPriceLimit, IExchange feeService) {
+    static BigDecimal totalAmountByValue(List<LimitOrder> orders, BigDecimal valueLimit, BigDecimal netPriceLimit, IExchange x) {
         BigDecimal totalValue = ZERO;
         BigDecimal totalAmount = ZERO;
         Order.OrderType type = revert(orders.get(0).getType());
         for (LimitOrder order : orders) {
-            BigDecimal netPrice = Orders.getNetPrice(order.getLimitPrice(), type, feeService.getFeePercent(order.getCurrencyPair()));
+            BigDecimal netPrice = Orders.getNetPrice(order.getLimitPrice(), type, x.getMarketMetadata(order.getCurrencyPair()).getOrderFeeFactor());
             if (netPrice.compareTo(netPriceLimit) * factor(order.getType()) > 0)
                 break;
             log.debug("order {}", order);

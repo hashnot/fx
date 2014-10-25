@@ -54,12 +54,12 @@ public class Orders {
 
     public static LimitOrder closing(LimitOrder order, IExchange feeService) {
         LimitOrder result = closing(order);
-        updateLimitPrice(result, feeService);
+        updateNetPrice(result, feeService);
         return result;
     }
 
-    public static void updateLimitPrice(LimitOrder order, IExchange x) {
-        order.setNetPrice(getNetPrice(order, x.getFeePercent(order.getCurrencyPair())));
+    public static void updateNetPrice(LimitOrder order, IExchange x) {
+        order.setNetPrice(getNetPrice(order, x.getMarketMetadata(order.getCurrencyPair()).getOrderFeeFactor()));
     }
 
     public static BigDecimal getNetPrice(LimitOrder order, BigDecimal feePercent) {

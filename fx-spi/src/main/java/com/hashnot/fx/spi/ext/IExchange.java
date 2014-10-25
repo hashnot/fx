@@ -3,6 +3,8 @@ package com.hashnot.fx.spi.ext;
 import com.hashnot.fx.ext.IOrderBookMonitor;
 import com.hashnot.fx.ext.ITradesMonitor;
 import com.xeiam.xchange.currency.CurrencyPair;
+import com.xeiam.xchange.dto.marketdata.MarketMetadata;
+import com.xeiam.xchange.service.polling.MarketMetadataService;
 import com.xeiam.xchange.service.polling.PollingAccountService;
 import com.xeiam.xchange.service.polling.PollingMarketDataService;
 import com.xeiam.xchange.service.streaming.ExchangeStreamingConfiguration;
@@ -16,29 +18,18 @@ import java.util.Map;
  * @author Rafał Krupiński
  */
 public interface IExchange {
-    /**
-     * @return scale (number of )
-     */
-    int getScale(CurrencyPair pair);
-
-    /**
-     * @return 10^{@link #getScale(com.xeiam.xchange.currency.CurrencyPair)}
-     */
-    BigDecimal getLimitPriceUnit(CurrencyPair pair);
 
     BigDecimal getWalletUnit(String currency);
 
-    BigDecimal getMinimumTrade(String currency);
-
-    BigDecimal getTradeAmountUnit(CurrencyPair pair);
-
-    BigDecimal getFeePercent(CurrencyPair pair);
+    MarketMetadata getMarketMetadata(CurrencyPair pair);
 
     BigDecimal getWallet(String currency);
 
     Map<String, BigDecimal> getWallet();
 
     PollingMarketDataService getPollingMarketDataService();
+
+    MarketMetadataService getMarketMetadataService();
 
     StreamingExchangeService getStreamingExchangeService(ExchangeStreamingConfiguration configuration);
 

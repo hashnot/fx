@@ -25,7 +25,6 @@ import static com.hashnot.fx.util.Orders.*;
  * @author Rafał Krupiński
  */
 public class Dealer implements IOrderBookListener {
-    private static final BigDecimal LOW_LIMIT = new BigDecimal(".01");
     private final Collection<IExchange> context;
 
     private final IOrderUpdater orderUpdater;
@@ -44,7 +43,7 @@ public class Dealer implements IOrderBookListener {
 
     @Override
     public synchronized void changed(OrderBookUpdateEvent evt) {
-        OrderBooks.updateNetPrices(evt.after, evt.source.getFeePercent(evt.pair));
+        OrderBooks.updateNetPrices(evt.after, evt.source.getMarketMetadata(evt.pair).getOrderFeeFactor());
         orderBooks.put(new OrderBookKey(evt.source, evt.pair), evt.after);
         try {
             process(Arrays.asList(evt.pair));
@@ -97,7 +96,7 @@ public class Dealer implements IOrderBookListener {
         else
             baseAmount = outAmount.divide(order.getLimitPrice(), c);
 
-        return !lt(baseAmount, x.getMinimumTrade(order.getCurrencyPair().baseSymbol));
+        return !lt(baseAmount, x.getMarketMetadata(order.getCurrencyPair()).getAmountMinimum());
     }
 
     private void clearOrders(CurrencyPair pair) {
@@ -149,36 +148,21 @@ public class Dealer implements IOrderBookListener {
         }
 
         LimitOrder worstOrder = worst.getKey();
-        LimitOrder openOrder = createOpenOrder(worstOrder, bestOrders.get(worstOrder));
+        updateNetPrice(worstOrder, bestOrders.get(worstOrder));
 
         IExchange worstExchange = worst.getValue();
         IExchange bestExchange = best.getValue();
 
         LimitOrder closingBest = closing(best.getKey(), bestExchange);
-        if (!isProfitable(openOrder, closingBest)) {
+        if (!isProfitable(worstOrder, closingBest)) {
             orderUpdater.update(new OrderUpdateEvent(type));
             return;
         }
 
         List<LimitOrder> closeOrders = orderBooks.get(new OrderBookKey(bestExchange, pair)).getOrders(type);
-        OrderUpdateEvent event = simulation.deal(openOrder, worstExchange, closeOrders, bestExchange);
+        OrderUpdateEvent event = simulation.deal(worstOrder, worstExchange, closeOrders, bestExchange);
         if (event != null)
             orderUpdater.update(event);
-    }
-
-    private LimitOrder createOpenOrder(LimitOrder worst, IExchange x) {
-        BigDecimal amount;
-        BigDecimal worstAmount = worst.getTradableAmount();
-        if (worstAmount.compareTo(LOW_LIMIT) > 0) {
-            BigDecimal delta = x.getLimitPriceUnit(worst.getCurrencyPair());
-            if (worst.getType() == Order.OrderType.BID)
-                delta = delta.negate();
-            amount = worstAmount.add(delta);
-        } else
-            amount = worstAmount;
-        LimitOrder result = withAmount(worst, amount);
-        updateLimitPrice(result, x);
-        return result;
     }
 
     private static final Logger log = LoggerFactory.getLogger(Dealer.class);
