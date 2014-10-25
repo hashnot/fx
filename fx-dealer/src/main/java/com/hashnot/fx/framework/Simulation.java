@@ -32,12 +32,12 @@ public class Simulation {
         String closeOutCur = incomingCurrency(worst);
 
         BigDecimal openOutGross = worstExchange.getWallet(openOutgoingCur);
-        BigDecimal openOutNet = getNetPrice(openOutGross, Order.OrderType.ASK, worstExchange.getMarketMetadata(worst.getCurrencyPair()).getOrderFeeFactor());
+        BigDecimal openOutNet = applyFee(openOutGross, worstExchange.getMarketMetadata(worst.getCurrencyPair()).getOrderFeeFactor());
 
         BigDecimal closeOutGross = bestExchange.getWallet(closeOutCur);
-        BigDecimal closeOutNet = getNetPrice(closeOutGross, Order.OrderType.ASK, bestExchange.getMarketMetadata(worst.getCurrencyPair()).getOrderFeeFactor());
+        BigDecimal closeOutNet = applyFee(closeOutGross, bestExchange.getMarketMetadata(worst.getCurrencyPair()).getOrderFeeFactor());
 
-        log.debug("type: {}, best {}, worst {}", worst.getType(), bestExchange, worstExchange);
+        log.debug("type: {}, worst {}, best {}", worst.getType(), worstExchange, bestExchange);
         log.debug("open  {} {} -> {}", openOutgoingCur, openOutGross, openOutNet);
         log.debug("close {} {} -> {}", closeOutCur, closeOutGross, closeOutNet);
 
@@ -68,8 +68,10 @@ public class Simulation {
 
         BigDecimal openAmountActual = Numbers.min(openAmount, closeAmount).setScale(getScale(worstExchange, bestExchange, worst.getCurrencyPair()), RoundingMode.FLOOR);
 
-        if (!checkMinima(worst, openAmountActual, worstExchange))
+        if (!checkMinima(worst, openAmountActual, worstExchange)) {
+            log.debug("Amount {} less than minimum", openAmountActual);
             return null;
+        }
         log.info("open for {}", openAmountActual);
 
         return apply(worst, worstExchange, closeOrders, bestExchange, openAmountActual);

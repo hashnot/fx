@@ -11,8 +11,10 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 
-import static com.hashnot.fx.util.Numbers.BigDecimal._ONE;
 import static com.hashnot.fx.util.Numbers.isEqual;
+import static com.xeiam.xchange.dto.Order.OrderType.ASK;
+import static com.xeiam.xchange.dto.Order.OrderType.BID;
+import static java.math.BigDecimal.ONE;
 
 /**
  * @author Rafał Krupiński
@@ -26,26 +28,16 @@ public class Orders {
                 && isEqual(o1.getLimitPrice(), o2.getLimitPrice()) && isEqual(o1.getTradableAmount(), o2.getTradableAmount());
     }
 
-    public static boolean equalsOrLess(LimitOrder o1, LimitOrder o2) {
-        return o1.getCurrencyPair().equals(o2.getCurrencyPair()) && o1.getType() == o2.getType()
-                && isEqual(o1.getLimitPrice(), o2.getLimitPrice())
-                && o1.getTradableAmount().compareTo(o2.getTradableAmount()) <= 0;
-    }
-
     public static CurrencyPair revert(CurrencyPair cp) {
         return new CurrencyPair(cp.counterSymbol, cp.baseSymbol);
     }
 
     public static int factor(Order.OrderType type) {
-        return type == Order.OrderType.ASK ? 1 : -1;
-    }
-
-    public static BigDecimal bigFactor(Order.OrderType type) {
-        return type == Order.OrderType.ASK ? BigDecimal.ONE : _ONE;
+        return type == ASK ? 1 : -1;
     }
 
     public static Order.OrderType revert(Order.OrderType type) {
-        return type == Order.OrderType.ASK ? Order.OrderType.BID : Order.OrderType.ASK;
+        return type == ASK ? BID : ASK;
     }
 
     public static LimitOrder closing(LimitOrder order) {
@@ -67,13 +59,17 @@ public class Orders {
     }
 
     public static BigDecimal getNetPrice(BigDecimal limitPrice, Order.OrderType type, BigDecimal feePercent) {
-        BigDecimal myFeePercent = (type == Order.OrderType.BID) ? feePercent : feePercent.negate();
-        return limitPrice.multiply(BigDecimal.ONE.add(myFeePercent));
+        BigDecimal feeFactor = (type == BID) ? feePercent : feePercent.negate();
+        return applyFee(limitPrice, feeFactor);
+    }
+
+    public static BigDecimal applyFee(BigDecimal amount, BigDecimal feeFactor){
+        return amount.multiply(ONE.add(feeFactor));
     }
 
     public static String incomingCurrency(Order order) {
         CurrencyPair pair = order.getCurrencyPair();
-        return order.getType() == Order.OrderType.ASK ? pair.counterSymbol : pair.baseSymbol;
+        return order.getType() == ASK ? pair.counterSymbol : pair.baseSymbol;
     }
 
     public static String outgoingCurrency(Order order) {
@@ -85,12 +81,12 @@ public class Orders {
      */
     public static String outgoingCurrency(Order order, Order.OrderType type) {
         CurrencyPair pair = order.getCurrencyPair();
-        return type == Order.OrderType.ASK ? pair.baseSymbol : pair.counterSymbol;
+        return type == ASK ? pair.baseSymbol : pair.counterSymbol;
     }
 
     // TODO take fee policy into account
     public static BigDecimal incomingAmount(LimitOrder order) {
-        if (order.getType() == Order.OrderType.ASK) {
+        if (order.getType() == ASK) {
             BigDecimal result = order.getTradableAmount().multiply(order.getNetPrice(), c).stripTrailingZeros();
             if (result.scale() > c.getPrecision())
                 return result.setScale(c.getPrecision(), c.getRoundingMode());
@@ -101,7 +97,7 @@ public class Orders {
     }
 
     public static BigDecimal outgoingAmount(LimitOrder order) {
-        if (order.getType() == Order.OrderType.ASK) {
+        if (order.getType() == ASK) {
             return order.getTradableAmount();
         } else {
             BigDecimal result = order.getTradableAmount().multiply(order.getLimitPrice(), c).stripTrailingZeros();
@@ -161,11 +157,11 @@ public class Orders {
     }
 
     public static BigDecimal betterPrice(BigDecimal price, BigDecimal delta, Order.OrderType type) {
-        BigDecimal myDelta = type == Order.OrderType.ASK ? delta : delta.negate();
+        BigDecimal myDelta = type == ASK ? delta : delta.negate();
         return price.add(myDelta);
     }
 
     public static BigDecimal worsePrice(BigDecimal price, BigDecimal delta, Order.OrderType type) {
-        return betterPrice(price, delta, type == Order.OrderType.ASK ? Order.OrderType.BID : Order.OrderType.ASK);
+        return betterPrice(price, delta, type == ASK ? BID : ASK);
     }
 }

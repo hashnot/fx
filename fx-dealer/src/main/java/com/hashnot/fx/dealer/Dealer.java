@@ -163,6 +163,8 @@ public class Dealer implements IOrderBookListener {
         OrderUpdateEvent event = simulation.deal(worstOrder, worstExchange, closeOrders, bestExchange);
         if (event != null)
             orderUpdater.update(event);
+        else
+            orderUpdater.update(new OrderUpdateEvent(type));
     }
 
     private static final Logger log = LoggerFactory.getLogger(Dealer.class);

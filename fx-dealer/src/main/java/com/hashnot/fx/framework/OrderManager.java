@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.hashnot.fx.util.Numbers.isEqual;
 import static com.xeiam.xchange.dto.Order.OrderType;
 import static java.math.BigDecimal.ZERO;
 
@@ -44,14 +45,30 @@ public class OrderManager implements IOrderUpdater, ITradeListener {
 
             if (self == null) {
                 open(key, evt);
-            } else if (!evt.openExchange.equals(self.openExchange)) {
+            } else if (!isIgnoreUpdate(self, evt)) {
                 updateOrder(self, evt, key);
-            } else if (!Orders.equalsOrLess(evt.openedOrder, self.openedOrder)) {
-                updateOrder(self, evt, key);
+            } else {
+                log.debug("Update order ignored");
             }
         } catch (IOException e) {
             throw new ConnectionException(e);
         }
+    }
+
+    /**
+     * Can the update order be safely ignored
+     */
+    private boolean isIgnoreUpdate(OrderUpdateEvent existing, OrderUpdateEvent incoming) {
+        if (!existing.openExchange.equals(incoming.openExchange))
+            return false;
+
+        LimitOrder o1 = existing.openedOrder;
+        LimitOrder o2 = incoming.openedOrder;
+
+        return o1.getCurrencyPair().equals(o2.getCurrencyPair()) && o1.getType() == o2.getType()
+                && isEqual(o1.getLimitPrice(), o2.getLimitPrice())
+                && o1.getTradableAmount().compareTo(o2.getTradableAmount()) <= 0;
+
     }
 
     protected void open(OrderType type, OrderUpdateEvent update) throws IOException {
@@ -68,12 +85,11 @@ public class OrderManager implements IOrderUpdater, ITradeListener {
         self.openExchange.getPollingTradeService().cancelOrder(self.openOrderId);
         self.openOrderId = null;
         openOrders.remove(key);
-
     }
 
     protected void updateOrder(OrderUpdateEvent self, OrderUpdateEvent event, OrderType type) throws ConnectionException, IOException {
         cancel(type, self);
-        open(type, event);
+        //open(type, event);
     }
 
     @Override
