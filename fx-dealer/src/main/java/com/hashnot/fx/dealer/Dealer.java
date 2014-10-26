@@ -42,7 +42,7 @@ public class Dealer implements IOrderBookListener {
     final private Collection<IExchange> dirtyExchanges = new HashSet<>();
 
     @Override
-    public synchronized void changed(OrderBookUpdateEvent evt) {
+    public synchronized void orderBookChanged(OrderBookUpdateEvent evt) {
         OrderBooks.updateNetPrices(evt.after, evt.source.getMarketMetadata(evt.pair).getOrderFeeFactor());
         orderBooks.put(new OrderBookKey(evt.source, evt.pair), evt.after);
         try {

@@ -10,6 +10,7 @@ import com.xeiam.xchange.BaseExchange;
 import com.xeiam.xchange.ExchangeSpecification;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
+import com.xeiam.xchange.dto.marketdata.BaseMarketMetadata;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import org.junit.Test;
 
@@ -96,11 +97,11 @@ public class SimulationTest {
         if (fee.length == 0) fee = new BigDecimal[]{ZERO};
 
         IExecutorStrategyFactory executorStrategyFactory = new SchedulerExecutorFactory(Executors.newSingleThreadScheduledExecutor(), 100);
-        e1 = new SimpleExchange(new MockExchange(), executorStrategyFactory);
+        e1 = new SimpleExchange(new MockExchange(fee[0]), executorStrategyFactory);
         e1.getWallet().put(EUR, TEN);
         e1.getWallet().put(BTC, TEN);
 
-        e2 = new SimpleExchange(new MockExchange(), executorStrategyFactory);
+        e2 = new SimpleExchange(new MockExchange(fee[Math.min(1, fee.length-1)]), executorStrategyFactory);
         e2.getWallet().put(EUR, TEN);
         e2.getWallet().put(BTC, TEN);
 
@@ -111,9 +112,10 @@ public class SimulationTest {
     private static class MockExchange extends BaseExchange {
         static int cnt;
 
-        {
+        public MockExchange(final BigDecimal fee){
             exchangeSpecification = new ExchangeSpecification((String) null);
             exchangeSpecification.setExchangeName("stub-" + cnt++);
+            marketMetadataService = pair -> new BaseMarketMetadata(BigDecimal.ONE.setScale(8).movePointLeft(2), 8, fee);
         }
 
         @Override

@@ -1,5 +1,6 @@
 package com.hashnot.fx;
 
+import com.hashnot.fx.ext.Market;
 import com.hashnot.fx.framework.Main;
 import com.hashnot.fx.ext.IOrderBookListener;
 import com.hashnot.fx.ext.ITradeListener;
@@ -69,7 +70,7 @@ public class Order {
 
         Dealer dealer = new Dealer(x, new LimitOrder(type, amount, pair, null, null, null), value);
 
-        x.getOrderBookMonitor().addOrderBookListener(pair, dealer);
+        x.getOrderBookMonitor().addOrderBookListener(dealer, new Market(x, pair));
         x.getTrackingUserTradesMonitor().addTradeListener(dealer);
 
         return dealer.get();
@@ -105,7 +106,7 @@ class Dealer implements IOrderBookListener, ITradeListener {
     }
 
     @Override
-    public void changed(OrderBookUpdateEvent event) {
+    public void orderBookChanged(OrderBookUpdateEvent event) {
         List<LimitOrder> orders = event.after.getOrders(order.getType());
         log.info("changed {}", orders);
         if (orders.isEmpty())
@@ -132,7 +133,7 @@ class Dealer implements IOrderBookListener, ITradeListener {
     @Override
     public synchronized void trade(LimitOrder monitored, Trade trade, LimitOrder current) {
         if (current == null) {
-            x.getOrderBookMonitor().removeOrderBookListener(order.getCurrencyPair(), this);
+            x.getOrderBookMonitor().removeOrderBookListener(this, new Market(x, monitored.getCurrencyPair()));
             done = true;
             notify();
         } else

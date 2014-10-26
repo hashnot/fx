@@ -5,6 +5,7 @@ import com.google.common.collect.Multimaps;
 import com.hashnot.fx.OrderBookUpdateEvent;
 import com.hashnot.fx.ext.IOrderBookListener;
 import com.hashnot.fx.ext.IOrderBookMonitor;
+import com.hashnot.fx.ext.Market;
 import com.hashnot.fx.spi.ext.IExchange;
 import com.hashnot.fx.spi.ext.RunnableScheduler;
 import com.hashnot.fx.util.OrderBooks;
@@ -48,7 +49,7 @@ public class OrderBookMonitor extends AbstractPollingMonitor implements Runnable
                 if (changed) {
                     OrderBookUpdateEvent evt = new OrderBookUpdateEvent(parent, pair, before, orderBook);
                     for (IOrderBookListener listener : e.getValue()) {
-                        listener.changed(evt);
+                        listener.orderBookChanged(evt);
                     }
                 }
             } catch (IOException e1) {
@@ -58,16 +59,22 @@ public class OrderBookMonitor extends AbstractPollingMonitor implements Runnable
     }
 
     @Override
-    public void addOrderBookListener(CurrencyPair pair, IOrderBookListener orderBookListener) {
+    public void addOrderBookListener(IOrderBookListener orderBookListener, Market market) {
+        if (market.exchange != parent)
+            throw new IllegalArgumentException("Mismatched exchange");
+
         synchronized (orderBookListeners) {
-            orderBookListeners.put(pair, orderBookListener);
+            orderBookListeners.put(market.listing, orderBookListener);
             enable();
         }
     }
 
-    public void removeOrderBookListener(CurrencyPair pair, IOrderBookListener orderBookListener) {
+    public void removeOrderBookListener(IOrderBookListener orderBookListener, Market market) {
+        if (market.exchange != parent)
+            throw new IllegalArgumentException("Mismatched exchange");
+
         synchronized (orderBookListeners) {
-            orderBookListeners.get(pair).remove(orderBookListener);
+            orderBookListeners.get(market.listing).remove(orderBookListener);
             if (orderBookListeners.isEmpty())
                 disable();
         }

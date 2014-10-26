@@ -76,7 +76,7 @@ public class OrderBookTradeMonitor implements IOrderBookListener, ILimitOrderPla
     }
 
     @Override
-    public void changed(OrderBookUpdateEvent orderBookUpdateEvent) {
+    public void orderBookChanged(OrderBookUpdateEvent orderBookUpdateEvent) {
         // noting to compare with
         if (orderBookUpdateEvent.before == null)
             return;

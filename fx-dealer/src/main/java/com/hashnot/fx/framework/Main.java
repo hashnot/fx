@@ -1,6 +1,7 @@
 package com.hashnot.fx.framework;
 
 import com.hashnot.fx.dealer.Dealer;
+import com.hashnot.fx.ext.Market;
 import com.hashnot.fx.spi.ext.IExchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import groovy.lang.GroovyShell;
@@ -37,7 +38,7 @@ public class Main {
 
         for (IExchange exchange : exchanges) {
 
-            exchange.getOrderBookMonitor().addOrderBookListener(pair, dealer);
+            exchange.getOrderBookMonitor().addOrderBookListener(dealer, new Market(exchange, pair));
             exchange.getTrackingUserTradesMonitor().addTradeListener(orderManager);
         }
 
