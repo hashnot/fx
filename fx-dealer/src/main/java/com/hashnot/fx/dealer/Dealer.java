@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 import java.util.*;
 
-import static com.hashnot.fx.util.Numbers.isEqual;
+import static com.hashnot.fx.util.Numbers.eq;
 import static com.hashnot.fx.util.Numbers.lt;
 import static com.hashnot.fx.util.Orders.*;
 import static com.hashnot.fx.util.Orders.Price.gt;
@@ -70,7 +70,7 @@ public class Dealer implements IOrderBookListener, IBestOfferListener {
         BigDecimal newPrice = evt.price;
 
         // don't update the order if the new 3rd party order is not better
-        if (oldPrice != null && isEqual(newPrice, oldPrice)) {
+        if (oldPrice != null && eq(newPrice, oldPrice)) {
             log.warn("Price didn't change");
             return;
         }
@@ -83,7 +83,7 @@ public class Dealer implements IOrderBookListener, IBestOfferListener {
             if (gt(newPrice, bestMarketPrice, evt.type)) {
                 updateBestMarket(bestMarket, market, oKey);
             }
-        } else if (!isEqual(newPrice, Price.forNull(evt.type))) {
+        } else if (!eq(newPrice, Price.forNull(evt.type))) {
             updateBestMarket(null, market, oKey);
         }
 

@@ -16,7 +16,7 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.hashnot.fx.util.Numbers.isEqual;
+import static com.hashnot.fx.util.Numbers.eq;
 
 /**
  * Lifecycle of a monitored order
@@ -167,7 +167,7 @@ public class OrderBookTradeMonitor implements IOrderBookListener, ILimitOrderPla
     private LimitOrder find(Iterator<LimitOrder> iter, BigDecimal price) {
         while (iter.hasNext()) {
             LimitOrder next = iter.next();
-            if (isEqual(next.getLimitPrice(), price))
+            if (eq(next.getLimitPrice(), price))
                 return next;
         }
         return null;

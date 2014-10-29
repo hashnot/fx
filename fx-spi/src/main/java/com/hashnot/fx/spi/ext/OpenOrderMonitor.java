@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.hashnot.fx.util.Numbers.isEqual;
+import static com.hashnot.fx.util.Numbers.eq;
 
 /**
  * @author Rafał Krupiński
@@ -52,7 +52,7 @@ public class OpenOrderMonitor implements Runnable {
             for (Map.Entry<String, LimitOrder> e : openOrders.entrySet()) {
                 LimitOrder currentOrder = currentOrdersMap.get(e.getKey());
                 LimitOrder storedOrder = e.getValue();
-                if (currentOrder != null && isEqual(currentOrder.getTradableAmount(), storedOrder.getTradableAmount()))
+                if (currentOrder != null && eq(currentOrder.getTradableAmount(), storedOrder.getTradableAmount()))
                     continue;
 
                 for (ITradeListener tradeListener : tradeListeners.get(storedOrder.getCurrencyPair())) {

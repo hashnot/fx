@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.hashnot.fx.util.Numbers.isEqual;
+import static com.hashnot.fx.util.Numbers.eq;
 import static com.xeiam.xchange.dto.Order.OrderType;
 import static java.math.BigDecimal.ZERO;
 
@@ -66,7 +66,7 @@ public class OrderManager implements IOrderUpdater, ITradeListener {
         LimitOrder o2 = incoming.openedOrder;
 
         return o1.getCurrencyPair().equals(o2.getCurrencyPair()) && o1.getType() == o2.getType()
-                && isEqual(o1.getLimitPrice(), o2.getLimitPrice())
+                && eq(o1.getLimitPrice(), o2.getLimitPrice())
                 && o1.getTradableAmount().compareTo(o2.getTradableAmount()) <= 0;
 
     }

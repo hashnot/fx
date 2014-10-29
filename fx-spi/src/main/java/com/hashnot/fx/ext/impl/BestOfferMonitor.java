@@ -18,7 +18,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import static com.hashnot.fx.util.Numbers.isEqual;
+import static com.hashnot.fx.util.Numbers.eq;
 import static com.hashnot.fx.util.Orders.Price.forNull;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
 import static com.xeiam.xchange.dto.Order.OrderType.BID;
@@ -62,7 +62,7 @@ public class BestOfferMonitor implements IBestOfferMonitor, IOrderBookListener, 
         MarketSide key = new MarketSide(market.exchange, market.listing, side);
         BigDecimal cached = cache.getOrDefault(key, forNull(side));
 
-        if (isEqual(price, cached))
+        if (eq(price, cached))
             return;
 
         BestOfferEvent evt = new BestOfferEvent(price, side, market);
@@ -90,7 +90,7 @@ public class BestOfferMonitor implements IBestOfferMonitor, IOrderBookListener, 
 
         MarketSide key = new MarketSide(evt.source.exchange, evt.source.listing, side);
         BigDecimal cached = cache.getOrDefault(key, forNull(side));
-        if (isEqual(curPrice, cached))
+        if (eq(curPrice, cached))
             return;
 
         cache.put(key, curPrice);

@@ -7,14 +7,13 @@ import com.hashnot.fx.ext.ITickerMonitor;
 import com.hashnot.fx.ext.Market;
 import com.hashnot.fx.spi.ext.IExchange;
 import com.hashnot.fx.spi.ext.RunnableScheduler;
+import com.hashnot.fx.util.Numbers;
 import com.xeiam.xchange.dto.marketdata.Ticker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
-
-import static com.hashnot.fx.util.Numbers.isEqual;
 
 /**
  * @author Rafał Krupiński
@@ -72,6 +71,6 @@ public class TickerMonitor extends AbstractPollingMonitor implements ITickerMoni
 
     private static boolean eq(Ticker t1, Ticker t2) {
         assert t1.getCurrencyPair().equals(t2.getCurrencyPair());
-        return isEqual(t1.getAsk(), t2.getAsk()) && isEqual(t1.getBid(), t2.getBid());
+        return Numbers.eq(t1.getAsk(), t2.getAsk()) && Numbers.eq(t1.getBid(), t2.getBid());
     }
 }

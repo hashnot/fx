@@ -18,7 +18,7 @@ public final class Numbers {
     /**
      * Allows parameters to be null
      */
-    public static <T extends Comparable<T>> boolean isEqual(T o1, T o2) {
+    public static <T extends Comparable<T>> boolean eq(T o1, T o2) {
         return o1 == o2 || o1 != null && o1.compareTo(o2) == 0;
     }
 
@@ -30,7 +30,7 @@ public final class Numbers {
         public static final java.math.BigDecimal _ONE = ONE.negate();
 
         public static boolean isZero(java.math.BigDecimal number) {
-            return isEqual(number, ZERO);
+            return eq(number, ZERO);
         }
 
         private BigDecimal() {

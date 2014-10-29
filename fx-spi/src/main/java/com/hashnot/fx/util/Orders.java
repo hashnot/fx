@@ -12,7 +12,7 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 
-import static com.hashnot.fx.util.Numbers.isEqual;
+import static com.hashnot.fx.util.Numbers.eq;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
 import static com.xeiam.xchange.dto.Order.OrderType.BID;
 import static java.math.BigDecimal.ONE;
@@ -29,7 +29,7 @@ public class Orders {
 
     public static boolean equals(LimitOrder o1, LimitOrder o2) {
         return o1.getCurrencyPair().equals(o2.getCurrencyPair()) && o1.getType() == o2.getType()
-                && isEqual(o1.getLimitPrice(), o2.getLimitPrice()) && isEqual(o1.getTradableAmount(), o2.getTradableAmount());
+                && eq(o1.getLimitPrice(), o2.getLimitPrice()) && eq(o1.getTradableAmount(), o2.getTradableAmount());
     }
 
     public static CurrencyPair revert(CurrencyPair cp) {
@@ -190,11 +190,11 @@ public class Orders {
             return compareTo(n1, n2, side) < 0;
         }
 
-        private Price() {
-        }
-
         public static BigDecimal forNull(Order.OrderType type) {
             return type == ASK ? MAX : MIN;
+        }
+
+        private Price() {
         }
     }
 }
