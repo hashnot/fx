@@ -2,9 +2,8 @@ package com.hashnot.fx;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import com.hashnot.fx.spi.ext.IExchange;
+import com.hashnot.fx.ext.Market;
 import com.hashnot.fx.util.Orders;
-import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.marketdata.OrderBook;
 import com.xeiam.xchange.dto.trade.LimitOrder;
@@ -20,18 +19,15 @@ import static com.hashnot.fx.util.Numbers.BigDecimal.isZero;
  * @author Rafał Krupiński
  */
 public class OrderBookUpdateEvent {
-    public final IExchange source;
+    public final Market source;
 
     private final Supplier<OrderBook> changes = Suppliers.memoize(this::diff);
-
-    public final CurrencyPair pair;
 
     public final OrderBook before;
     public final OrderBook after;
 
-    public OrderBookUpdateEvent(IExchange source, CurrencyPair pair, OrderBook before, OrderBook after) {
+    public OrderBookUpdateEvent(Market source, OrderBook before, OrderBook after) {
         this.source = source;
-        this.pair = pair;
         this.before = before;
         this.after = after;
     }

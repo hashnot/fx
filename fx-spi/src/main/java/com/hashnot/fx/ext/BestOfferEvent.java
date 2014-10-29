@@ -41,4 +41,9 @@ public class BestOfferEvent extends Event<Market> {
         result = 31 * result + type.hashCode();
         return result;
     }
+
+    @Override
+    public String toString() {
+        return type + " " + price + " @" + source;
+    }
 }

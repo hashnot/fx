@@ -2,6 +2,7 @@ package com.hashnot.fx.framework;
 
 import com.hashnot.fx.dealer.Dealer;
 import com.hashnot.fx.ext.Market;
+import com.hashnot.fx.ext.impl.BestOfferMonitor;
 import com.hashnot.fx.spi.ext.IExchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import groovy.lang.GroovyShell;
@@ -28,19 +29,17 @@ public class Main {
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> exchanges.parallelStream().forEach(IExchange::stop), "Clear"));
 
-        exchanges.parallelStream().forEach(IExchange::start);
-
-        report(exchanges);
-
         Simulation simulation = new Simulation();
         OrderManager orderManager = new OrderManager();
-        Dealer dealer = new Dealer(exchanges, simulation, orderManager);
+        BestOfferMonitor bestOfferMonitor = new BestOfferMonitor();
+        Dealer dealer = new Dealer(simulation, orderManager, bestOfferMonitor);
 
         for (IExchange exchange : exchanges) {
-
-            exchange.getOrderBookMonitor().addOrderBookListener(dealer, new Market(exchange, pair));
+            exchange.start();
+            bestOfferMonitor.addBestOfferListener(dealer, new Market(exchange, pair));
             exchange.getTrackingUserTradesMonitor().addTradeListener(orderManager);
         }
+        report(exchanges);
 
 
 

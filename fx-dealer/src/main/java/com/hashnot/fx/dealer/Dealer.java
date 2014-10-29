@@ -1,7 +1,7 @@
 package com.hashnot.fx.dealer;
 
 import com.hashnot.fx.OrderBookUpdateEvent;
-import com.hashnot.fx.ext.IOrderBookListener;
+import com.hashnot.fx.ext.*;
 import com.hashnot.fx.framework.IOrderUpdater;
 import com.hashnot.fx.framework.OrderUpdateEvent;
 import com.hashnot.fx.framework.Simulation;
@@ -9,7 +9,6 @@ import com.hashnot.fx.spi.ext.IExchange;
 import com.hashnot.fx.util.OrderBooks;
 import com.hashnot.fx.util.Orders;
 import com.xeiam.xchange.currency.CurrencyPair;
-import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.marketdata.OrderBook;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import org.slf4j.Logger;
@@ -18,92 +17,144 @@ import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 import java.util.*;
 
+import static com.hashnot.fx.util.Numbers.isEqual;
 import static com.hashnot.fx.util.Numbers.lt;
 import static com.hashnot.fx.util.Orders.*;
+import static com.hashnot.fx.util.Orders.Price.gt;
+import static com.xeiam.xchange.dto.Order.OrderType;
+import static com.xeiam.xchange.dto.Order.OrderType.ASK;
+import static com.xeiam.xchange.dto.Order.OrderType.BID;
 
 /**
  * @author Rafał Krupiński
  */
-public class Dealer implements IOrderBookListener {
-    private final Collection<IExchange> context;
-
+public class Dealer implements IOrderBookListener, IBestOfferListener {
     private final IOrderUpdater orderUpdater;
+    private final IOrderBookMonitor orderBookMonitor;
 
     public Simulation simulation;
 
-    private final Map<OrderBookKey, OrderBook> orderBooks = new HashMap<>();
+    private final Map<Market, OrderBook> orderBooks = new HashMap<>();
 
-    public Dealer(Collection<IExchange> context, Simulation simulation, IOrderUpdater orderUpdater) {
-        this.context = context;
+    // side -> map(market -> best offer price)
+    final private Map<OrderType, Map<Market, BigDecimal>> bestOffers = new HashMap<>();
+
+    {
+        bestOffers.put(ASK, new HashMap<>());
+        bestOffers.put(BID, new HashMap<>());
+    }
+
+    final private Map<ListingSide, Market> bestMarkets = new HashMap<>();
+
+    public Dealer(Simulation simulation, IOrderUpdater orderUpdater, IOrderBookMonitor orderBookMonitor) {
         this.simulation = simulation;
         this.orderUpdater = orderUpdater;
+        this.orderBookMonitor = orderBookMonitor;
     }
 
-    final private Collection<IExchange> dirtyExchanges = new HashSet<>();
+    /**
+     * If the new price is the best, update internal state and change order book monitor to monitor new best market
+     */
+    @Override
+    public void updateBestOffer(BestOfferEvent evt) {
+        log.info("Best offer {}", evt);
 
+        if (!hasMinimumMoney(evt.source, evt.type, evt.price)) {
+            log.debug("Ignore exchange without {} enough money for {}", evt.source, evt.type);
+            return;
+        }
+
+        Map<Market, BigDecimal> sideBestPrices = bestOffers.get(evt.type);
+        Market market = evt.source;
+        BigDecimal oldPrice = sideBestPrices.get(market);
+        BigDecimal newPrice = evt.price;
+
+        // don't update the order if the new 3rd party order is not better
+        if (oldPrice != null && isEqual(newPrice, oldPrice)) {
+            log.warn("Price didn't change");
+            return;
+        }
+
+        ListingSide oKey = new ListingSide(evt.source.listing, evt.type);
+        Market bestMarket = bestMarkets.get(oKey);
+        if (bestMarket != null) {
+            BigDecimal bestMarketPrice = sideBestPrices.get(bestMarket);
+
+            if (gt(newPrice, bestMarketPrice, evt.type)) {
+                updateBestMarket(bestMarket, market, oKey);
+            }
+        } else if (!isEqual(newPrice, Price.forNull(evt.type))) {
+            updateBestMarket(null, market, oKey);
+        }
+
+        sideBestPrices.put(market, newPrice);
+
+        //TODO if best or worst market changes, cancel order
+    }
+
+    private void updateBestMarket(Market oldBest, Market best, ListingSide key) {
+        if (oldBest == best) {
+            log.warn("Updating the best market with the same market");
+            return;
+        }
+
+        bestMarkets.put(key, best);
+        orderBookMonitor.addOrderBookListener(this, best);
+        if (oldBest != null)
+            orderBookMonitor.removeOrderBookListener(this, oldBest);
+    }
+
+    /**
+     * Called when order book changes on the best exchange
+     */
     @Override
     public synchronized void orderBookChanged(OrderBookUpdateEvent evt) {
-        OrderBooks.updateNetPrices(evt.after, evt.source.getMarketMetadata(evt.pair).getOrderFeeFactor());
-        orderBooks.put(new OrderBookKey(evt.source, evt.pair), evt.after);
-        try {
-            process(Arrays.asList(evt.pair));
-        } catch (RuntimeException | Error e) {
-            log.error("Error", e);
-            throw e;
-        } finally {
-            clear();
-        }
+        log.info("order book from {}", evt.source);
+        //TODO change may mean that we need to change the open order to smaller one
+
+        OrderBooks.updateNetPrices(evt.after, evt.source.exchange.getMarketMetadata(evt.source.listing).getOrderFeeFactor());
+        orderBooks.put(evt.source, evt.after);
+
+        updateLimitOrder(evt, ASK);
+        updateLimitOrder(evt, BID);
     }
 
-    protected void clear() {
-        dirtyExchanges.clear();
-    }
-
-    protected void process(Collection<CurrencyPair> dirtyPairs) {
-        for (IExchange e : context) {
-            for (CurrencyPair pair : dirtyPairs) {
-                if (orderBooks.containsKey(new OrderBookKey(e, pair))) {
-                    dirtyExchanges.add(e);
-                    break;
-                }
-            }
-        }
-        if (dirtyExchanges.size() < 2)
-            return;
-
-        for (CurrencyPair pair : dirtyPairs) {
-            updateLimitOrders(pair, dirtyExchanges, Order.OrderType.ASK);
-            updateLimitOrders(pair, dirtyExchanges, Order.OrderType.BID);
-        }
-    }
-
-    private NavigableMap<LimitOrder, IExchange> getBestOffers(CurrencyPair pair, Collection<IExchange> exchanges, Order.OrderType dir) {
+    private NavigableMap<LimitOrder, IExchange> getBestOffers(CurrencyPair pair, Collection<IExchange> exchanges, OrderType dir) {
         NavigableMap<LimitOrder, IExchange> result = new TreeMap<>((o1, o2) -> o1.getNetPrice().compareTo(o2.getNetPrice()) * factor(o1.getType()));
         for (IExchange x : exchanges) {
-            List<LimitOrder> orders = orderBooks.get(new OrderBookKey(x, pair)).getOrders(dir);
+            List<LimitOrder> orders = orderBooks.get(new Market(x, pair)).getOrders(dir);
             if (!orders.isEmpty())
                 result.put(orders.get(0), x);
         }
         return result;
     }
 
-    private boolean hasMinimumMoney(IExchange x, LimitOrder order, Order.OrderType dir) {
-        BigDecimal outAmount = x.getWallet(Orders.outgoingCurrency(order, dir));
+    private boolean hasMinimumMoney(IExchange x, LimitOrder order, OrderType dir) {
+        return hasMinimumMoney(new Market(x, order.getCurrencyPair()), dir, order.getLimitPrice());
+    }
+
+    private boolean hasMinimumMoney(Market market, OrderType dir, BigDecimal price) {
+        BigDecimal outAmount = market.exchange.getWallet(Orders.outgoingCurrency(dir, market.listing));
 
         BigDecimal baseAmount;
-        if (dir == Order.OrderType.ASK)
+        if (dir == ASK)
             baseAmount = outAmount;
-        else
-            baseAmount = outAmount.divide(order.getLimitPrice(), c);
+        else {
+            baseAmount = outAmount.divide(price, c);
+        }
 
-        return !lt(baseAmount, x.getMarketMetadata(order.getCurrencyPair()).getAmountMinimum());
+        return !lt(baseAmount, market.exchange.getMarketMetadata(market.listing).getAmountMinimum());
     }
 
     private void clearOrders(CurrencyPair pair) {
         log.debug("TODO clearOrders");
     }
 
-    private void updateLimitOrders(CurrencyPair pair, Collection<IExchange> exchanges, Order.OrderType type) {
+    private void updateLimitOrder(OrderBookUpdateEvent evt, OrderType side) {
+// open or update order
+    }
+
+    private void updateLimitOrders(CurrencyPair pair, Collection<IExchange> exchanges, OrderType type) {
         //podsumuj wszystkie oferty do
         // - limitu stanu konta
         // - limitu różnicy ceny
@@ -114,12 +165,10 @@ public class Dealer implements IOrderBookListener {
             return;
         }
 
-        Order.OrderType reverseType = revert(type);
-
         // find best - closing orders
         Map.Entry<LimitOrder, IExchange> best = null;
         for (Map.Entry<LimitOrder, IExchange> e : bestOrders.entrySet()) {
-            if (hasMinimumMoney(e.getValue(), e.getKey(), reverseType)) {
+            if (hasMinimumMoney(e.getValue(), e.getKey(), revert(type))) {
                 best = e;
                 break;
             }
@@ -159,7 +208,7 @@ public class Dealer implements IOrderBookListener {
             return;
         }
 
-        List<LimitOrder> closeOrders = orderBooks.get(new OrderBookKey(bestExchange, pair)).getOrders(type);
+        List<LimitOrder> closeOrders = orderBooks.get(new Market(bestExchange, pair)).getOrders(type);
         OrderUpdateEvent event = simulation.deal(worstOrder, worstExchange, closeOrders, bestExchange);
         if (event != null)
             orderUpdater.update(event);
@@ -168,32 +217,30 @@ public class Dealer implements IOrderBookListener {
     }
 
     private static final Logger log = LoggerFactory.getLogger(Dealer.class);
-}
 
-class OrderBookKey {
-    private final IExchange exchange;
-    private final CurrencyPair pair;
+    private static class ListingSide {
+        private final CurrencyPair listing;
+        private final OrderType side;
 
-    public OrderBookKey(IExchange exchange, CurrencyPair pair) {
-        this.exchange = exchange;
-        this.pair = pair;
-    }
+        public ListingSide(CurrencyPair listing, OrderType side) {
+            this.listing = listing;
+            this.side = side;
+        }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        @Override
+        public boolean equals(Object o) {
+            return this == o || o != null && o instanceof ListingSide && equals((ListingSide) o);
+        }
 
-        OrderBookKey that = (OrderBookKey) o;
+        private boolean equals(ListingSide listingSide) {
+            return listing.equals(listingSide.listing) && side == listingSide.side;
+        }
 
-        return exchange.equals(that.exchange) && pair.equals(that.pair);
-
-    }
-
-    @Override
-    public int hashCode() {
-        int result = exchange.hashCode();
-        result = 31 * result + pair.hashCode();
-        return result;
+        @Override
+        public int hashCode() {
+            int result = listing.hashCode();
+            result = 31 * result + side.hashCode();
+            return result;
+        }
     }
 }

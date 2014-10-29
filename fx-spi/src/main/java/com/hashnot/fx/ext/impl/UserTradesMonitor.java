@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author Rafał Krupiński
  */
-public class UserTradesMonitor extends AbstractPollingMonitor implements ITradesMonitor, Runnable {
+public class UserTradesMonitor extends AbstractPollingMonitor implements ITradesMonitor {
     final private Logger log = LoggerFactory.getLogger(UserTradesMonitor.class);
 
     private final IExchange parent;

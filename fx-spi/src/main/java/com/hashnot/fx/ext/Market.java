@@ -6,7 +6,7 @@ import com.xeiam.xchange.currency.CurrencyPair;
 /**
  * @author Rafał Krupiński
  */
-public final class Market {
+public class Market {
     public final IExchange exchange;
     public final CurrencyPair listing;
 
@@ -17,15 +17,11 @@ public final class Market {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        return this == o || o != null && o instanceof Market && equals((Market) o);
+    }
 
-        Market market = (Market) o;
-
-        if (!exchange.equals(market.exchange)) return false;
-        if (!listing.equals(market.listing)) return false;
-
-        return true;
+    protected boolean equals(Market market) {
+        return exchange.equals(market.exchange) && listing.equals(market.listing);
     }
 
     @Override
@@ -33,5 +29,10 @@ public final class Market {
         int result = exchange.hashCode();
         result = 31 * result + listing.hashCode();
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return listing + "@" + exchange;
     }
 }

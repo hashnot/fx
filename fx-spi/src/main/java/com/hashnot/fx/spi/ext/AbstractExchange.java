@@ -2,8 +2,10 @@ package com.hashnot.fx.spi.ext;
 
 import com.google.common.base.Suppliers;
 import com.hashnot.fx.ext.IOrderBookMonitor;
+import com.hashnot.fx.ext.ITickerMonitor;
 import com.hashnot.fx.ext.ITradesMonitor;
 import com.hashnot.fx.ext.impl.OrderBookMonitor;
+import com.hashnot.fx.ext.impl.TickerMonitor;
 import com.hashnot.fx.ext.impl.TrackingTradesMonitor;
 import com.hashnot.fx.ext.impl.UserTradesMonitor;
 import com.hashnot.fx.util.exec.IExecutorStrategy;
@@ -42,6 +44,7 @@ public abstract class AbstractExchange implements IExchange {
     final protected ITradesMonitor userTradesMonitor;
     final protected TrackingTradesMonitor trackingUserTradesMonitor;
     final protected CachingTradeService tradeService;
+    final protected ITickerMonitor tickerMonitor;
 
     final protected RoundRobinRunnable runnableScheduler = new RoundRobinRunnable();
     private final IExecutorStrategy executor;
@@ -52,6 +55,7 @@ public abstract class AbstractExchange implements IExchange {
         orderBookMonitor = new OrderBookMonitor(this, runnableScheduler);
         userTradesMonitor = new UserTradesMonitor(this, runnableScheduler);
         trackingUserTradesMonitor = new TrackingTradesMonitor(userTradesMonitor);
+        tickerMonitor = new TickerMonitor(this, runnableScheduler);
 
         //lazy evaluation
         tradeService = new CachingTradeService(Suppliers.memoize(() -> new NotifyingTradeService(getExchange().getPollingTradeService())));
@@ -135,6 +139,11 @@ public abstract class AbstractExchange implements IExchange {
     @Override
     public ITradeService getPollingTradeService() {
         return tradeService;
+    }
+
+    @Override
+    public ITickerMonitor getTickerMonitor() {
+        return tickerMonitor;
     }
 
     @Override

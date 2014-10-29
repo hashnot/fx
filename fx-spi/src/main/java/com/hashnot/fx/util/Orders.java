@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 
@@ -17,8 +18,11 @@ import static com.xeiam.xchange.dto.Order.OrderType.BID;
 import static java.math.BigDecimal.ONE;
 
 /**
+ * Util class for orders
+ *
  * @author Rafał Krupiński
  */
+@SuppressWarnings("unused")
 public class Orders {
     final private static Logger log = LoggerFactory.getLogger(Orders.class);
     public static MathContext c = new MathContext(16, RoundingMode.HALF_UP);
@@ -63,7 +67,7 @@ public class Orders {
         return applyFee(limitPrice, feeFactor);
     }
 
-    public static BigDecimal applyFee(BigDecimal amount, BigDecimal feeFactor){
+    public static BigDecimal applyFee(BigDecimal amount, BigDecimal feeFactor) {
         return amount.multiply(ONE.add(feeFactor));
     }
 
@@ -73,14 +77,13 @@ public class Orders {
     }
 
     public static String outgoingCurrency(Order order) {
-        return outgoingCurrency(order, order.getType());
+        return outgoingCurrency(order.getType(), order.getCurrencyPair());
     }
 
     /**
      * @param type override order type
      */
-    public static String outgoingCurrency(Order order, Order.OrderType type) {
-        CurrencyPair pair = order.getCurrencyPair();
+    public static String outgoingCurrency(Order.OrderType type, CurrencyPair pair) {
         return type == ASK ? pair.baseSymbol : pair.counterSymbol;
     }
 
@@ -163,5 +166,35 @@ public class Orders {
 
     public static BigDecimal worsePrice(BigDecimal price, BigDecimal delta, Order.OrderType type) {
         return betterPrice(price, delta, type == ASK ? BID : ASK);
+    }
+
+    public static class Price {
+        /**
+         * Conventional MAX_VALUE
+         */
+        final public static BigDecimal MAX = new BigDecimal(new BigInteger(new byte[]{1}), -Integer.MAX_VALUE);
+        /**
+         * Conventional MIN_VALUE
+         */
+        final public static BigDecimal MIN = new BigDecimal(new BigInteger(-1, new byte[]{1}), -Integer.MAX_VALUE);
+
+        public static <T extends Comparable<T>> int compareTo(T n1, T n2, Order.OrderType side) {
+            return n1.compareTo(n2) * factor(side);
+        }
+
+        public static <T extends Comparable<T>> boolean gt(T n1, T n2, Order.OrderType side) {
+            return compareTo(n1, n2, side) > 0;
+        }
+
+        public static <T extends Comparable<T>> boolean lt(T n1, T n2, Order.OrderType side) {
+            return compareTo(n1, n2, side) < 0;
+        }
+
+        private Price() {
+        }
+
+        public static BigDecimal forNull(Order.OrderType type) {
+            return type == ASK ? MAX : MIN;
+        }
     }
 }

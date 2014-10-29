@@ -1,5 +1,8 @@
 package com.hashnot.fx.util;
 
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.ZERO;
+
 /**
  * @author Rafał Krupiński
  */
@@ -12,8 +15,11 @@ public final class Numbers {
         return a.compareTo(b) <= 0 ? a : b;
     }
 
+    /**
+     * Allows parameters to be null
+     */
     public static <T extends Comparable<T>> boolean isEqual(T o1, T o2) {
-        return o1.compareTo(o2) == 0;
+        return o1 == o2 || o1 != null && o1.compareTo(o2) == 0;
     }
 
     public static <T extends Comparable<T>> boolean lt(T o1, T o2) {
@@ -21,10 +27,10 @@ public final class Numbers {
     }
 
     public static final class BigDecimal {
-        public static final java.math.BigDecimal _ONE = java.math.BigDecimal.ONE.negate();
+        public static final java.math.BigDecimal _ONE = ONE.negate();
 
-        public static boolean isZero(java.math.BigDecimal number){
-            return isEqual(number, java.math.BigDecimal.ZERO);
+        public static boolean isZero(java.math.BigDecimal number) {
+            return isEqual(number, ZERO);
         }
 
         private BigDecimal() {

@@ -1,5 +1,6 @@
 package com.hashnot.fx;
 
+import com.hashnot.fx.ext.Market;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.marketdata.OrderBook;
@@ -20,6 +21,7 @@ public class OrderBookUpdateEventTest {
 
     private static final BigDecimal TWO = new BigDecimal(2);
     private static final CurrencyPair P = CurrencyPair.BTC_EUR;
+    private static final Market m = new Market(null, P);
 
     @Test
     public void testSame() throws Exception {
@@ -27,7 +29,7 @@ public class OrderBookUpdateEventTest {
         OrderBook before = new OrderBook(null, asList(one), emptyList());
         OrderBook after = new OrderBook(null, asList(one), emptyList());
 
-        OrderBook changes = new OrderBookUpdateEvent(null, P, before, after).getChanges();
+        OrderBook changes = new OrderBookUpdateEvent(m, before, after).getChanges();
         assertTrue(changes.getAsks().isEmpty());
     }
 
@@ -39,7 +41,7 @@ public class OrderBookUpdateEventTest {
         OrderBook before = new OrderBook(null, asList(one), emptyList());
         OrderBook after = new OrderBook(null, asList(two), emptyList());
 
-        OrderBook changes = new OrderBookUpdateEvent(null, P, before, after).getChanges();
+        OrderBook changes = new OrderBookUpdateEvent(m, before, after).getChanges();
 
         assertEquals(asList(one), changes.getAsks());
     }
@@ -49,7 +51,7 @@ public class OrderBookUpdateEventTest {
         OrderBook before = new OrderBook(null, emptyList(), emptyList());
         OrderBook after = new OrderBook(null, emptyList(), emptyList());
 
-        OrderBook changes = new OrderBookUpdateEvent(null, P, before, after).getChanges();
+        OrderBook changes = new OrderBookUpdateEvent(m, before, after).getChanges();
 
         assertTrue(changes.getAsks().isEmpty());
     }
@@ -61,7 +63,7 @@ public class OrderBookUpdateEventTest {
         OrderBook before = new OrderBook(null, emptyList(), emptyList());
         OrderBook after = new OrderBook(null, asList(one), emptyList());
 
-        OrderBook changes = new OrderBookUpdateEvent(null, P, before, after).getChanges();
+        OrderBook changes = new OrderBookUpdateEvent(m, before, after).getChanges();
 
         assertEquals(asList(one), changes.getAsks());
     }
@@ -73,7 +75,7 @@ public class OrderBookUpdateEventTest {
         OrderBook before = new OrderBook(null, asList(one), emptyList());
         OrderBook after = new OrderBook(null, emptyList(), emptyList());
 
-        OrderBook changes = new OrderBookUpdateEvent(null, P, before, after).getChanges();
+        OrderBook changes = new OrderBookUpdateEvent(m, before, after).getChanges();
 
         assertEquals(asList(withAmount(one, _ONE)), changes.getAsks());
     }
@@ -86,7 +88,7 @@ public class OrderBookUpdateEventTest {
         OrderBook before = new OrderBook(null, asList(oneOne), emptyList());
         OrderBook after = new OrderBook(null, asList(oneTwo), emptyList());
 
-        OrderBook changes = new OrderBookUpdateEvent(null, P, before, after).getChanges();
+        OrderBook changes = new OrderBookUpdateEvent(m, before, after).getChanges();
 
         assertEquals(asList(withAmount(oneOne, _ONE), oneTwo), changes.getAsks());
     }
@@ -100,7 +102,7 @@ public class OrderBookUpdateEventTest {
         OrderBook before = new OrderBook(null, asList(oneOne, oneTwo), emptyList());
         OrderBook after = new OrderBook(null, asList(oneOne, twoTwo), emptyList());
 
-        OrderBook changes = new OrderBookUpdateEvent(null, P, before, after).getChanges();
+        OrderBook changes = new OrderBookUpdateEvent(m, before, after).getChanges();
 
         assertEquals(asList(oneTwo), changes.getAsks());
     }
@@ -115,7 +117,7 @@ public class OrderBookUpdateEventTest {
         OrderBook before = new OrderBook(null, asList(oneOne, twoTwo), emptyList());
         OrderBook after = new OrderBook(null, asList(oneOne, oneTwo), emptyList());
 
-        OrderBook changes = new OrderBookUpdateEvent(null, P, before, after).getChanges();
+        OrderBook changes = new OrderBookUpdateEvent(m, before, after).getChanges();
 
         assertEquals(asList(_oneTwo), changes.getAsks());
     }

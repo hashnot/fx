@@ -1,6 +1,7 @@
 package com.hashnot.fx.spi.ext;
 
 import com.hashnot.fx.ext.IOrderBookMonitor;
+import com.hashnot.fx.ext.ITickerMonitor;
 import com.hashnot.fx.ext.ITradesMonitor;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.marketdata.MarketMetadata;
@@ -34,6 +35,8 @@ public interface IExchange {
     StreamingExchangeService getStreamingExchangeService(ExchangeStreamingConfiguration configuration);
 
     ITradeService getPollingTradeService();
+
+    ITickerMonitor getTickerMonitor();
 
     PollingAccountService getPollingAccountService();
 
