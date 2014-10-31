@@ -13,6 +13,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static com.hashnot.fx.util.Numbers.BigDecimal.isZero;
+import static com.hashnot.fx.util.Orders.Price.compareTo;
 import static com.xeiam.xchange.dto.trade.LimitOrder.Builder.from;
 
 /**
@@ -65,7 +66,7 @@ public class OrderBookUpdateEvent {
             // simulate diff result if any or both orders are null
             int diff;
             if (after != null && before != null)
-                diff = after.getLimitPrice().compareTo(before.getLimitPrice());
+                diff = compareTo(after.getLimitPrice(), before.getLimitPrice(), type);
             else if (after != null)
                 diff = -1;
             else
