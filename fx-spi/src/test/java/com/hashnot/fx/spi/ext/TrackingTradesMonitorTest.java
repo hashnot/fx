@@ -32,7 +32,7 @@ public class TrackingTradesMonitorTest {
         LimitOrder order = new LimitOrder(ASK, ONE, BTC_EUR, id, null, ONE);
         trackingTradesMonitor.limitOrderPlaced(order, id);
 
-        Trade trade = new Trade(ASK, ONE, BTC_EUR, ONE, null, "id", id);
+        Trade trade = new Trade(ASK, ONE, BTC_EUR, ONE, null, "id");
         trackingTradesMonitor.trades(new Trades(asList(trade), 0l, Trades.TradeSortType.SortByID));
         verify(orderListener).trade(order, trade, null);
     }
@@ -49,11 +49,11 @@ public class TrackingTradesMonitorTest {
         LimitOrder order = new LimitOrder(ASK, TWO, BTC_EUR, id, null, ONE);
         trackingTradesMonitor.limitOrderPlaced(order, id);
 
-        Trade t1 = new Trade(ASK, ONE, BTC_EUR, ONE, null, "t1", id);
-        Trade t2 = new Trade(ASK, ONE, BTC_EUR, ONE, null, "t2", id);
+        Trade t1 = new Trade(ASK, ONE, BTC_EUR, ONE, null, "t1");
+        Trade t2 = new Trade(ASK, ONE, BTC_EUR, ONE, null, "t2");
 
         trackingTradesMonitor.trades(new Trades(asList(t1, t2), 0l, Trades.TradeSortType.SortByID));
-        verify(orderListener, times(1)).trade(order, new Trade(ASK, TWO, BTC_EUR, ONE, null, "t2", id), null);
+        verify(orderListener, times(1)).trade(order, new Trade(ASK, TWO, BTC_EUR, ONE, null, "t2"), null);
     }
 
     @Test
@@ -68,8 +68,8 @@ public class TrackingTradesMonitorTest {
         LimitOrder order = new LimitOrder(ASK, TWO, BTC_EUR, id, null, ONE);
         trackingTradesMonitor.limitOrderPlaced(order, id);
 
-        Trade t1 = new Trade(ASK, ONE, BTC_EUR, ONE, null, "t1", id);
-        Trade t2 = new Trade(ASK, ONE, BTC_EUR, ONE, null, "t2", id);
+        Trade t1 = new Trade(ASK, ONE, BTC_EUR, ONE, null, "t1");
+        Trade t2 = new Trade(ASK, ONE, BTC_EUR, ONE, null, "t2");
 
         LimitOrder one = new LimitOrder(ASK, ONE, BTC_EUR, id, null, ONE);
 
