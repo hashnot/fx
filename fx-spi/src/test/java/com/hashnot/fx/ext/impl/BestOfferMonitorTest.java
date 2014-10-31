@@ -4,6 +4,7 @@ import com.hashnot.fx.OrderBookUpdateEvent;
 import com.hashnot.fx.ext.*;
 import com.hashnot.fx.spi.ext.IExchange;
 import com.xeiam.xchange.currency.CurrencyPair;
+import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.marketdata.OrderBook;
 import com.xeiam.xchange.dto.marketdata.Ticker;
 import com.xeiam.xchange.dto.trade.LimitOrder;
@@ -32,8 +33,8 @@ public class BestOfferMonitorTest {
         return new Market(x, p);
     }
 
-    private static BestOfferEvent boe(Market m){
-        return new BestOfferEvent(ONE, ASK, m);
+    private static BestOfferEvent boe(Market m, Order.OrderType side){
+        return new BestOfferEvent(ONE, side, m);
     }
 
     private static OrderBookUpdateEvent obue(Market m){
@@ -79,7 +80,8 @@ public class BestOfferMonitorTest {
 
 
         mon.ticker(t, m.exchange);
-        verify(bol).updateBestOffer(eq(boe(m)));
+        verify(bol).updateBestOffer(eq(boe(m, ASK)));
+        verify(bol).updateBestOffer(eq(boe(m, BID)));
         verifyNoMoreInteractions(bol);
 
 
@@ -117,7 +119,8 @@ public class BestOfferMonitorTest {
 
 
         mon.orderBookChanged(obue(m));
-        verify(bol).updateBestOffer(eq(boe(m)));
+        verify(bol).updateBestOffer(eq(boe(m, ASK)));
+        verify(bol).updateBestOffer(eq(boe(m, BID)));
         verifyNoMoreInteractions(bol);
 
         // mon doesn't call obl
@@ -150,7 +153,8 @@ public class BestOfferMonitorTest {
 
 
         mon.orderBookChanged(obue(m));
-        verify(bol).updateBestOffer(eq(boe(m)));
+        verify(bol).updateBestOffer(eq(boe(m, ASK)));
+        verify(bol).updateBestOffer(eq(boe(m, BID)));
         verifyNoMoreInteractions(bol);
 
         // mon doesn't call obl
@@ -190,13 +194,15 @@ public class BestOfferMonitorTest {
 
 
         mon.ticker(t, m.exchange);
-        verify(bol).updateBestOffer(eq(boe(m)));
+        verify(bol).updateBestOffer(eq(boe(m, ASK)));
+        verify(bol).updateBestOffer(eq(boe(m, BID)));
         verifyNoMoreInteractions(bol);
         verifyZeroInteractions(obl);
 
 
         mon.orderBookChanged(obue(m));
-        verify(bol).updateBestOffer(eq(boe(m)));
+        verify(bol).updateBestOffer(eq(boe(m, ASK)));
+        verify(bol).updateBestOffer(eq(boe(m, BID)));
         verifyNoMoreInteractions(bol);
 
         // mon doesn't call obl

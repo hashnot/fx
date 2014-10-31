@@ -22,21 +22,16 @@ public class BestOfferEvent extends Event<Market> {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
+        return this == o || o != null && o instanceof BestOfferEvent && equals((BestOfferEvent) o);
+    }
 
-        BestOfferEvent that = (BestOfferEvent) o;
-
-        if (price != null ? !price.equals(that.price) : that.price != null) return false;
-        if (type != that.type) return false;
-
-        return true;
+    protected boolean equals(BestOfferEvent o) {
+        return (price == null ? o.price == null : price.equals(o.price)) && type == o.type;
     }
 
     @Override
     public int hashCode() {
-        int result = super.hashCode();
+        int result = source.hashCode();
         result = 31 * result + (price != null ? price.hashCode() : 0);
         result = 31 * result + type.hashCode();
         return result;
