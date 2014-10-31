@@ -1,12 +1,10 @@
 package com.hashnot.fx.spi.ext;
 
-import com.google.common.base.Suppliers;
 import com.hashnot.fx.ext.IOrderBookMonitor;
 import com.hashnot.fx.ext.ITickerMonitor;
 import com.hashnot.fx.ext.ITradesMonitor;
 import com.hashnot.fx.ext.impl.OrderBookMonitor;
 import com.hashnot.fx.ext.impl.TickerMonitor;
-import com.hashnot.fx.ext.impl.TrackingTradesMonitor;
 import com.hashnot.fx.ext.impl.UserTradesMonitor;
 import com.hashnot.fx.util.exec.IExecutorStrategy;
 import com.hashnot.fx.util.exec.IExecutorStrategyFactory;
@@ -17,6 +15,7 @@ import com.xeiam.xchange.dto.marketdata.MarketMetadata;
 import com.xeiam.xchange.service.polling.MarketMetadataService;
 import com.xeiam.xchange.service.polling.PollingAccountService;
 import com.xeiam.xchange.service.polling.PollingMarketDataService;
+import com.xeiam.xchange.service.polling.PollingTradeService;
 import com.xeiam.xchange.service.streaming.ExchangeStreamingConfiguration;
 import com.xeiam.xchange.service.streaming.StreamingExchangeService;
 import org.slf4j.Logger;
@@ -42,8 +41,7 @@ public abstract class AbstractExchange implements IExchange {
 
     final protected IOrderBookMonitor orderBookMonitor;
     final protected ITradesMonitor userTradesMonitor;
-    final protected TrackingTradesMonitor trackingUserTradesMonitor;
-    final protected CachingTradeService tradeService;
+    protected PollingTradeService tradeService;
     final protected ITickerMonitor tickerMonitor;
 
     final protected RoundRobinRunnable runnableScheduler = new RoundRobinRunnable();
@@ -54,11 +52,10 @@ public abstract class AbstractExchange implements IExchange {
 
         orderBookMonitor = new OrderBookMonitor(this, runnableScheduler);
         userTradesMonitor = new UserTradesMonitor(this, runnableScheduler);
-        trackingUserTradesMonitor = new TrackingTradesMonitor(userTradesMonitor);
         tickerMonitor = new TickerMonitor(this, runnableScheduler);
 
         //lazy evaluation
-        tradeService = new CachingTradeService(Suppliers.memoize(() -> new NotifyingTradeService(getExchange().getPollingTradeService())));
+        //tradeService = new CachingTradeService(Suppliers.memoize(() -> new NotifyingTradeService(getExchange().getPollingTradeService())));
 
         //OrderBookTradeMonitor orderBookMonitor = new OrderBookTradeMonitor(getPollingTradeService());
         //addOrderBookListener(pair, BigDecimal.ONE, BigDecimal.ONE, orderBookMonitor);
@@ -107,7 +104,9 @@ public abstract class AbstractExchange implements IExchange {
 
     @Override
     public void stop() {
+        /*
         tradeService.cancelAll();
+        */
     }
 
     @Override
@@ -137,8 +136,8 @@ public abstract class AbstractExchange implements IExchange {
     }
 
     @Override
-    public ITradeService getPollingTradeService() {
-        return tradeService;
+    public PollingTradeService getPollingTradeService() {
+        return tradeService != null ? tradeService : getExchange().getPollingTradeService();
     }
 
     @Override
@@ -162,11 +161,6 @@ public abstract class AbstractExchange implements IExchange {
     }
 
     @Override
-    public ITradeMonitor getTrackingUserTradesMonitor() {
-        return trackingUserTradesMonitor;
-    }
-
-    @Override
     public IOrderBookMonitor getOrderBookMonitor() {
         return orderBookMonitor;
     }
@@ -182,5 +176,10 @@ public abstract class AbstractExchange implements IExchange {
                 continue;
             wallet.put(currency, w.getBalance());
         }
+    }
+
+    @Override
+    public void setPollingTradeService(PollingTradeService tradeService) {
+        this.tradeService = tradeService;
     }
 }

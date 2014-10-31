@@ -9,19 +9,20 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>fx-spi</artifactId>
+    <artifactId>xchange-event</artifactId>
 
     <dependencies>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>xchange-event</artifactId>
-            <version>${project.version}</version>
-        </dependency>
         <dependency>
             <groupId>com.hashnot.xchange</groupId>
             <artifactId>xchange-core</artifactId>
             <version>${v.xchange}</version>
         </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>18.0</version>
+        </dependency>
+
 
         <dependency>
             <groupId>junit</groupId>
@@ -39,4 +40,6 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+
 </project>

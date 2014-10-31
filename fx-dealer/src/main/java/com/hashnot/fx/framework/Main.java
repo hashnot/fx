@@ -3,7 +3,10 @@ package com.hashnot.fx.framework;
 import com.hashnot.fx.dealer.Dealer;
 import com.hashnot.fx.ext.Market;
 import com.hashnot.fx.ext.impl.BestOfferMonitor;
+import com.hashnot.fx.ext.impl.TrackingTradesMonitor;
+import com.hashnot.fx.spi.ext.CachingTradeService;
 import com.hashnot.fx.spi.ext.IExchange;
+import com.hashnot.fx.spi.ext.NotifyingTradeService;
 import com.xeiam.xchange.currency.CurrencyPair;
 import groovy.lang.GroovyShell;
 
@@ -37,7 +40,9 @@ public class Main {
         for (IExchange exchange : exchanges) {
             exchange.start();
             bestOfferMonitor.addBestOfferListener(dealer, new Market(exchange, pair));
-            exchange.getTrackingUserTradesMonitor().addTradeListener(orderManager);
+            TrackingTradesMonitor trackingTradesMonitor = new TrackingTradesMonitor(exchange.getUserTradesMonitor());
+            exchange.setPollingTradeService(new CachingTradeService(() -> new NotifyingTradeService(exchange.getPollingTradeService())));
+            trackingTradesMonitor.addTradeListener(orderManager);
         }
         report(exchanges);
 

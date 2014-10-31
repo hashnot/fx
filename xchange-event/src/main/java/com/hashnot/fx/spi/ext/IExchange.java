@@ -8,6 +8,7 @@ import com.xeiam.xchange.dto.marketdata.MarketMetadata;
 import com.xeiam.xchange.service.polling.MarketMetadataService;
 import com.xeiam.xchange.service.polling.PollingAccountService;
 import com.xeiam.xchange.service.polling.PollingMarketDataService;
+import com.xeiam.xchange.service.polling.PollingTradeService;
 import com.xeiam.xchange.service.streaming.ExchangeStreamingConfiguration;
 import com.xeiam.xchange.service.streaming.StreamingExchangeService;
 
@@ -34,7 +35,7 @@ public interface IExchange {
 
     StreamingExchangeService getStreamingExchangeService(ExchangeStreamingConfiguration configuration);
 
-    ITradeService getPollingTradeService();
+    PollingTradeService getPollingTradeService();
 
     ITickerMonitor getTickerMonitor();
 
@@ -48,9 +49,9 @@ public interface IExchange {
 
     ITradesMonitor getUserTradesMonitor();
 
-    ITradeMonitor getTrackingUserTradesMonitor();
-
     IOrderBookMonitor getOrderBookMonitor();
 
     void updateWallet() throws IOException;
+
+    void setPollingTradeService(PollingTradeService tradeService);
 }

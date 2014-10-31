@@ -23,11 +23,12 @@
     <modules>
         <module>fx-spi</module>
         <module>fx-dealer</module>
-<!--
+        <module>xchange-event</module>
+        <!--
         <module>fx-currencyfair</module>
         <module>fx-kokos</module>
         <module>fx-walutomat</module>
--->
+        -->
     </modules>
 
     <dependencies>

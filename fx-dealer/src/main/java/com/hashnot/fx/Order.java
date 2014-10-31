@@ -1,6 +1,7 @@
 package com.hashnot.fx;
 
 import com.hashnot.fx.ext.Market;
+import com.hashnot.fx.ext.impl.TrackingTradesMonitor;
 import com.hashnot.fx.framework.Main;
 import com.hashnot.fx.ext.IOrderBookListener;
 import com.hashnot.fx.ext.ITradeListener;
@@ -72,7 +73,7 @@ public class Order {
         Dealer dealer = new Dealer(x, new LimitOrder(type, amount, pair, null, null, null), value);
 
         x.getOrderBookMonitor().addOrderBookListener(dealer, new Market(x, pair));
-        x.getTrackingUserTradesMonitor().addTradeListener(dealer);
+        new TrackingTradesMonitor(x.getUserTradesMonitor()).addTradeListener(dealer);
 
         return dealer.get();
     }
