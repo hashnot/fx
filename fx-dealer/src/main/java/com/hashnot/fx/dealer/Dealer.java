@@ -1,6 +1,5 @@
 package com.hashnot.fx.dealer;
 
-import com.hashnot.fx.OrderBookUpdateEvent;
 import com.hashnot.fx.ext.*;
 import com.hashnot.fx.framework.IOrderUpdater;
 import com.hashnot.fx.framework.OrderUpdateEvent;

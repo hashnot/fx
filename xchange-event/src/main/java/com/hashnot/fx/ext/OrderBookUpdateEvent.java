@@ -1,8 +1,7 @@
-package com.hashnot.fx;
+package com.hashnot.fx.ext;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import com.hashnot.fx.ext.Market;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.marketdata.OrderBook;
 import com.xeiam.xchange.dto.trade.LimitOrder;
@@ -19,16 +18,14 @@ import static com.xeiam.xchange.dto.trade.LimitOrder.Builder.from;
 /**
  * @author Rafał Krupiński
  */
-public class OrderBookUpdateEvent {
-    public final Market source;
-
+public class OrderBookUpdateEvent extends Event<Market> {
     private final Supplier<OrderBook> changes = Suppliers.memoize(this::diff);
 
     public final OrderBook before;
     public final OrderBook after;
 
     public OrderBookUpdateEvent(Market source, OrderBook before, OrderBook after) {
-        this.source = source;
+        super(source);
         this.before = before;
         this.after = after;
     }

@@ -2,7 +2,7 @@ package com.hashnot.fx.ext.impl;
 
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
-import com.hashnot.fx.OrderBookUpdateEvent;
+import com.hashnot.fx.ext.OrderBookUpdateEvent;
 import com.hashnot.fx.ext.IOrderBookListener;
 import com.hashnot.fx.ext.IOrderBookMonitor;
 import com.hashnot.fx.ext.Market;

@@ -1,6 +1,6 @@
 package com.hashnot.fx.spi.ext;
 
-import com.hashnot.fx.OrderBookUpdateEvent;
+import com.hashnot.fx.ext.OrderBookUpdateEvent;
 import com.hashnot.fx.ext.ITradeListener;
 import com.hashnot.fx.ext.Market;
 import com.xeiam.xchange.currency.CurrencyPair;

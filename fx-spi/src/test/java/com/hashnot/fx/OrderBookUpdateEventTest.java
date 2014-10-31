@@ -1,6 +1,7 @@
 package com.hashnot.fx;
 
 import com.hashnot.fx.ext.Market;
+import com.hashnot.fx.ext.OrderBookUpdateEvent;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.marketdata.OrderBook;

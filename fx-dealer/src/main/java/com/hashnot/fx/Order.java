@@ -1,6 +1,7 @@
 package com.hashnot.fx;
 
 import com.hashnot.fx.ext.Market;
+import com.hashnot.fx.ext.OrderBookUpdateEvent;
 import com.hashnot.fx.ext.impl.TrackingTradesMonitor;
 import com.hashnot.fx.framework.Main;
 import com.hashnot.fx.ext.IOrderBookListener;
