@@ -11,6 +11,8 @@ import java.math.BigDecimal;
 
 import static com.hashnot.fx.util.Numbers.BigDecimal._ONE;
 import static com.hashnot.fx.util.Orders.withAmount;
+import static com.xeiam.xchange.dto.Order.OrderType.ASK;
+import static com.xeiam.xchange.dto.Order.OrderType.BID;
 import static java.math.BigDecimal.ONE;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -25,16 +27,18 @@ public class OrderBookUpdateEventTest {
 
     @Test
     public void testSame() throws Exception {
-        LimitOrder one = new LimitOrder(Order.OrderType.ASK, ONE, P, null, null, ONE);
-        OrderBook before = new OrderBook(null, asList(one), emptyList());
-        OrderBook after = new OrderBook(null, asList(one), emptyList());
+        LimitOrder ask = new LimitOrder(ASK, ONE, P, null, null, ONE);
+        LimitOrder bid = new LimitOrder(BID, ONE, P, null, null, ONE);
+        OrderBook before = new OrderBook(null, asList(ask), asList(bid));
+        OrderBook after = new OrderBook(null, asList(ask), asList(bid));
 
         OrderBook changes = new OrderBookUpdateEvent(m, before, after).getChanges();
-        assertTrue(changes.getAsks().isEmpty());
+        assertTrue(changes.getOrders(ASK).isEmpty());
+        assertTrue(changes.getOrders(BID).isEmpty());
     }
 
     @Test
-    public void testSamePrice() throws Exception {
+    public void testSamePriceAsk() throws Exception {
         LimitOrder one = new LimitOrder(Order.OrderType.ASK, ONE, P, null, null, ONE);
         LimitOrder two = new LimitOrder(Order.OrderType.ASK, TWO, P, null, null, ONE);
 
@@ -47,17 +51,31 @@ public class OrderBookUpdateEventTest {
     }
 
     @Test
+    public void testSamePriceBid() throws Exception {
+        LimitOrder one = new LimitOrder(BID, ONE, P, null, null, ONE);
+        LimitOrder two = new LimitOrder(BID, TWO, P, null, null, ONE);
+
+        OrderBook before = new OrderBook(null, emptyList(), asList(one));
+        OrderBook after = new OrderBook(null, emptyList(), asList(two));
+
+        OrderBook changes = new OrderBookUpdateEvent(m, before, after).getChanges();
+
+        assertEquals(asList(one), changes.getOrders(BID));
+    }
+
+    @Test
     public void testEmpty() throws Exception {
         OrderBook before = new OrderBook(null, emptyList(), emptyList());
         OrderBook after = new OrderBook(null, emptyList(), emptyList());
 
         OrderBook changes = new OrderBookUpdateEvent(m, before, after).getChanges();
 
-        assertTrue(changes.getAsks().isEmpty());
+        assertTrue(changes.getOrders(ASK).isEmpty());
+        assertTrue(changes.getOrders(BID).isEmpty());
     }
 
     @Test
-    public void testEmptyBefore() throws Exception {
+    public void testEmptyBeforeAsk() throws Exception {
         LimitOrder one = new LimitOrder(Order.OrderType.ASK, ONE, P, null, null, ONE);
 
         OrderBook before = new OrderBook(null, emptyList(), emptyList());
@@ -69,7 +87,19 @@ public class OrderBookUpdateEventTest {
     }
 
     @Test
-    public void testEmptyAfter() throws Exception {
+    public void testEmptyBeforeBid() throws Exception {
+        LimitOrder one = new LimitOrder(BID, ONE, P, null, null, ONE);
+
+        OrderBook before = new OrderBook(null, emptyList(), emptyList());
+        OrderBook after = new OrderBook(null, emptyList(), asList(one));
+
+        OrderBook changes = new OrderBookUpdateEvent(m, before, after).getChanges();
+
+        assertEquals(asList(one), changes.getOrders(BID));
+    }
+
+    @Test
+    public void testEmptyAfterAsk() throws Exception {
         LimitOrder one = new LimitOrder(Order.OrderType.ASK, ONE, P, null, null, ONE);
 
         OrderBook before = new OrderBook(null, asList(one), emptyList());
@@ -81,7 +111,19 @@ public class OrderBookUpdateEventTest {
     }
 
     @Test
-    public void testDiffPrice() throws Exception {
+    public void testEmptyAfterBid() throws Exception {
+        LimitOrder one = new LimitOrder(BID, ONE, P, null, null, ONE);
+
+        OrderBook before = new OrderBook(null, emptyList(), asList(one));
+        OrderBook after = new OrderBook(null, emptyList(), emptyList());
+
+        OrderBook changes = new OrderBookUpdateEvent(m, before, after).getChanges();
+
+        assertEquals(asList(withAmount(one, _ONE)), changes.getOrders(BID));
+    }
+
+    @Test
+    public void testDiffPriceAsk() throws Exception {
         LimitOrder oneOne = new LimitOrder(Order.OrderType.ASK, ONE, P, null, null, ONE);
         LimitOrder oneTwo = new LimitOrder(Order.OrderType.ASK, ONE, P, null, null, TWO);
 
@@ -94,7 +136,21 @@ public class OrderBookUpdateEventTest {
     }
 
     @Test
-    public void testAddition() throws Exception {
+    public void testDiffPriceBid() throws Exception {
+        LimitOrder oneOne = new LimitOrder(BID, ONE, P, null, null, ONE);
+        LimitOrder oneTwo = new LimitOrder(BID, ONE, P, null, null, TWO);
+        LimitOrder one_one = new LimitOrder(BID, _ONE, P, null, null, ONE);
+
+        OrderBook before = new OrderBook(null, emptyList(), asList(oneOne));
+        OrderBook after = new OrderBook(null, emptyList(), asList(oneTwo));
+
+        OrderBook changes = new OrderBookUpdateEvent(m, before, after).getChanges();
+
+        assertEquals(asList(oneTwo, one_one), changes.getOrders(BID));
+    }
+
+    @Test
+    public void testAdditionAsk() throws Exception {
         LimitOrder oneOne = new LimitOrder(Order.OrderType.ASK, ONE, P, null, null, ONE);
         LimitOrder twoTwo = new LimitOrder(Order.OrderType.ASK, TWO, P, null, null, TWO);
         LimitOrder oneTwo = new LimitOrder(Order.OrderType.ASK, ONE, P, null, null, TWO);
@@ -108,7 +164,21 @@ public class OrderBookUpdateEventTest {
     }
 
     @Test
-    public void testSubtraction() throws Exception {
+    public void testAdditionBid() throws Exception {
+        LimitOrder oneOne = new LimitOrder(BID, ONE, P, null, null, ONE);
+        LimitOrder twoTwo = new LimitOrder(BID, TWO, P, null, null, TWO);
+        LimitOrder oneTwo = new LimitOrder(BID, ONE, P, null, null, TWO);
+
+        OrderBook before = new OrderBook(null, emptyList(), asList(oneOne, oneTwo));
+        OrderBook after = new OrderBook(null, emptyList(), asList(oneOne, twoTwo));
+
+        OrderBook changes = new OrderBookUpdateEvent(m, before, after).getChanges();
+
+        assertEquals(asList(oneTwo), changes.getOrders(BID));
+    }
+
+    @Test
+    public void testSubtractionAsk() throws Exception {
         LimitOrder oneOne = new LimitOrder(Order.OrderType.ASK, ONE, P, null, null, ONE);
         LimitOrder twoTwo = new LimitOrder(Order.OrderType.ASK, TWO, P, null, null, TWO);
         LimitOrder oneTwo = new LimitOrder(Order.OrderType.ASK, ONE, P, null, null, TWO);
@@ -120,6 +190,21 @@ public class OrderBookUpdateEventTest {
         OrderBook changes = new OrderBookUpdateEvent(m, before, after).getChanges();
 
         assertEquals(asList(_oneTwo), changes.getAsks());
+    }
+
+    @Test
+    public void testSubtraction() throws Exception {
+        LimitOrder oneOne = new LimitOrder(BID, ONE, P, null, null, ONE);
+        LimitOrder twoTwo = new LimitOrder(BID, TWO, P, null, null, TWO);
+        LimitOrder oneTwo = new LimitOrder(BID, ONE, P, null, null, TWO);
+        LimitOrder _oneTwo = new LimitOrder(BID, _ONE, P, null, null, TWO);
+
+        OrderBook before = new OrderBook(null, emptyList(), asList(oneOne, twoTwo));
+        OrderBook after = new OrderBook(null, emptyList(), asList(oneOne, oneTwo));
+
+        OrderBook changes = new OrderBookUpdateEvent(m, before, after).getChanges();
+
+        assertEquals(asList(_oneTwo), changes.getOrders(BID));
     }
 
 }
