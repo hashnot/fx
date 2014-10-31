@@ -4,7 +4,6 @@ import com.hashnot.fx.OrderBookUpdateEvent;
 import com.hashnot.fx.ext.*;
 import com.hashnot.fx.spi.ext.IExchange;
 import com.xeiam.xchange.currency.CurrencyPair;
-import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.marketdata.OrderBook;
 import com.xeiam.xchange.dto.marketdata.Ticker;
 import com.xeiam.xchange.dto.trade.LimitOrder;
@@ -13,13 +12,14 @@ import org.junit.Test;
 import java.util.Arrays;
 
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
+import static com.xeiam.xchange.dto.Order.OrderType.BID;
 import static java.math.BigDecimal.ONE;
 import static org.mockito.Mockito.*;
 
 public class BestOfferMonitorTest {
 
     private final static CurrencyPair p = CurrencyPair.BTC_EUR;
-    Ticker t = new Ticker.TickerBuilder().withCurrencyPair(p).withAsk(ONE).withBid(ONE).build();
+    Ticker t = new Ticker.Builder().currencyPair(p).ask(ONE).bid(ONE).build();
 
     private static Market m(IOrderBookMonitor obm, ITickerMonitor tm) {
         IExchange x = mock(IExchange.class);
@@ -39,8 +39,8 @@ public class BestOfferMonitorTest {
     private static OrderBookUpdateEvent obue(Market m){
         return new OrderBookUpdateEvent(m, null, new OrderBook(
                     null,
-                    Arrays.asList(new LimitOrder.Builder(ASK, p).setLimitPrice(ONE).build()),
-                    Arrays.asList(new LimitOrder.Builder(Order.OrderType.BID, p).setLimitPrice(ONE).build())
+                    Arrays.asList(new LimitOrder.Builder(ASK, p).limitPrice(ONE).build()),
+                    Arrays.asList(new LimitOrder.Builder(BID, p).limitPrice(ONE).build())
             ));
     }
 
