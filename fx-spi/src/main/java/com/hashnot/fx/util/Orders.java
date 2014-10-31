@@ -170,12 +170,12 @@ public class Orders {
             return n1.compareTo(n2) * factor(side);
         }
 
-        public static <T extends Comparable<T>> boolean gt(T n1, T n2, Order.OrderType side) {
-            return compareTo(n1, n2, side) > 0;
+        public static <T extends Comparable<T>> boolean isBetter(T better, T worse, Order.OrderType side) {
+            return compareTo(better, worse, side) > 0;
         }
 
-        public static <T extends Comparable<T>> boolean lt(T n1, T n2, Order.OrderType side) {
-            return compareTo(n1, n2, side) < 0;
+        public static <T extends Comparable<T>> boolean isWorse(T worse, T better, Order.OrderType side) {
+            return compareTo(worse, better, side) < 0;
         }
 
         public static BigDecimal forNull(Order.OrderType type) {

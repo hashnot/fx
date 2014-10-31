@@ -14,7 +14,7 @@ import java.math.RoundingMode;
 import java.util.LinkedList;
 import java.util.List;
 
-import static com.hashnot.fx.util.Orders.Price.gt;
+import static com.hashnot.fx.util.Orders.Price.isBetter;
 import static com.hashnot.fx.util.Orders.*;
 import static java.math.BigDecimal.ZERO;
 
@@ -125,7 +125,7 @@ public class Simulation {
         for (LimitOrder order : orders) {
             BigDecimal netPrice = Orders.getNetPrice(order.getLimitPrice(), type, x.getMarketMetadata(order.getCurrencyPair()).getOrderFeeFactor());
 
-            if (gt(netPrice, netPriceLimit, order.getType()))
+            if (isBetter(netPrice, netPriceLimit, order.getType()))
                 break;
             log.debug("order {}", order);
             BigDecimal newAmount = totalAmount.add(order.getTradableAmount());

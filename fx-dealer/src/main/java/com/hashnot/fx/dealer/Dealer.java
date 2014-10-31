@@ -20,7 +20,7 @@ import java.util.*;
 import static com.hashnot.fx.util.Numbers.eq;
 import static com.hashnot.fx.util.Numbers.lt;
 import static com.hashnot.fx.util.Orders.*;
-import static com.hashnot.fx.util.Orders.Price.gt;
+import static com.hashnot.fx.util.Orders.Price.isBetter;
 import static com.xeiam.xchange.dto.Order.OrderType;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
 import static com.xeiam.xchange.dto.Order.OrderType.BID;
@@ -80,7 +80,7 @@ public class Dealer implements IOrderBookListener, IBestOfferListener {
         if (bestMarket != null) {
             BigDecimal bestMarketPrice = sideBestPrices.get(bestMarket);
 
-            if (gt(newPrice, bestMarketPrice, evt.type)) {
+            if (isBetter(newPrice, bestMarketPrice, evt.type)) {
                 updateBestMarket(bestMarket, market, oKey);
             }
         } else if (!eq(newPrice, Price.forNull(evt.type))) {
