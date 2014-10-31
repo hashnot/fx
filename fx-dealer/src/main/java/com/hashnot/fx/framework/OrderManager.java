@@ -2,7 +2,6 @@ package com.hashnot.fx.framework;
 
 import com.hashnot.fx.ext.ITradeListener;
 import com.hashnot.fx.spi.ConnectionException;
-import com.hashnot.fx.util.Orders;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.marketdata.Trade;
 import com.xeiam.xchange.dto.trade.LimitOrder;
@@ -18,6 +17,7 @@ import java.util.Map;
 
 import static com.hashnot.fx.util.Numbers.eq;
 import static com.xeiam.xchange.dto.Order.OrderType;
+import static com.xeiam.xchange.dto.trade.LimitOrder.Builder.from;
 import static java.math.BigDecimal.ZERO;
 
 /**
@@ -120,7 +120,7 @@ public class OrderManager implements IOrderUpdater, ITradeListener {
                     totalAmount = newAmount;
                 } else {
                     BigDecimal amount = amountLimit.subtract(totalAmount);
-                    placeLimitOrder(Orders.withAmount(order, amount), tradeService);
+                    placeLimitOrder(from(order).tradableAmount(amount).build(), tradeService);
                     break;
                 }
             }

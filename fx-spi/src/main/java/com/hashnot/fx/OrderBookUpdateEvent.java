@@ -3,7 +3,6 @@ package com.hashnot.fx;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.hashnot.fx.ext.Market;
-import com.hashnot.fx.util.Orders;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.marketdata.OrderBook;
 import com.xeiam.xchange.dto.trade.LimitOrder;
@@ -14,6 +13,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static com.hashnot.fx.util.Numbers.BigDecimal.isZero;
+import static com.xeiam.xchange.dto.trade.LimitOrder.Builder.from;
 
 /**
  * @author Rafał Krupiński
@@ -75,7 +75,7 @@ public class OrderBookUpdateEvent {
                 BigDecimal amountDiff = after.getTradableAmount().subtract(before.getTradableAmount());
 
                 if (!isZero(amountDiff))
-                    result.add(Orders.withAmount(before, amountDiff));
+                    result.add(from(before).tradableAmount(amountDiff).build());
 
                 before = next(beforeIter);
                 after = next(afterIter);
@@ -84,7 +84,7 @@ public class OrderBookUpdateEvent {
                 after = next(afterIter);
             } else {
                 assert before != null;
-                result.add(Orders.withAmount(before, before.getLimitPrice().negate()));
+                result.add(from(before).tradableAmount(before.getLimitPrice().negate()).build());
                 before = next(beforeIter);
             }
         }

@@ -127,10 +127,6 @@ public class Orders {
         return order.getTradableAmount().multiply(netPrice, c).stripTrailingZeros();
     }
 
-    public static int compareToLimitPrice(LimitOrder order, BigDecimal limitPrice) {
-        return order.getLimitPrice().compareTo(limitPrice) * factor(order.getType());
-    }
-
     public static int compareToNetPrice(LimitOrder order, BigDecimal limitPrice) {
         return order.getNetPrice().compareTo(limitPrice) * factor(order.getType());
     }
@@ -149,14 +145,6 @@ public class Orders {
         if (o1.getType() != o2.getType() || o1.getLimitPrice().compareTo(o2.getLimitPrice()) != 0)
             throw new IllegalArgumentException("Incompatible LimitOrders");
         return new LimitOrder(o1.getType(), o1.getTradableAmount().add(o2.getTradableAmount()), o1.getCurrencyPair(), null, null, o1.getLimitPrice());
-    }
-
-    public static LimitOrder withAmount(LimitOrder o, BigDecimal tradableAmount) {
-        return new LimitOrder(o.getType(), tradableAmount, o.getCurrencyPair(), o.getId(), o.getTimestamp(), o.getLimitPrice());
-    }
-
-    public static LimitOrder withPrice(LimitOrder o, BigDecimal limitPrice) {
-        return new LimitOrder(o.getType(), o.getTradableAmount(), o.getCurrencyPair(), o.getId(), o.getTimestamp(), limitPrice);
     }
 
     public static BigDecimal betterPrice(BigDecimal price, BigDecimal delta, Order.OrderType type) {

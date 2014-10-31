@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static com.xeiam.xchange.dto.Order.OrderType;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
 import static com.xeiam.xchange.dto.Order.OrderType.BID;
+import static com.xeiam.xchange.dto.trade.LimitOrder.Builder.from;
 
 /**
  * @author Rafał Krupiński
@@ -117,7 +118,7 @@ class Dealer implements IOrderBookListener, ITradeListener {
 
             try {
                 PollingTradeService tradeService = x.getPollingTradeService();
-                LimitOrder order = Orders.withPrice(this.order, price);
+                LimitOrder order = from(this.order).limitPrice(price).build();
                 if (false) {
                     if (orderId != null)
                         tradeService.cancelOrder(orderId);

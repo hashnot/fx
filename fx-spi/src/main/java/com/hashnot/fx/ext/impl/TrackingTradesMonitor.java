@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.hashnot.fx.util.Orders.withAmount;
+import static com.xeiam.xchange.dto.trade.LimitOrder.Builder.from;
 import static java.math.BigDecimal.ZERO;
 
 /**
@@ -60,7 +60,7 @@ public class TrackingTradesMonitor implements ITradesListener, ILimitOrderPlacem
                     if (amountCmp < 0)
                         log.warn("Calculated Order has negative amount {}", id);
                 } else if (amountCmp > 0) {
-                    pair.current = withAmount(pair.current, currentAmount);
+                    pair.current = from(pair.current).tradableAmount(currentAmount).build();
                 }
 
                 changed.put(pair, trade);
