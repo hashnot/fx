@@ -29,7 +29,7 @@ public class OrderBookMonitor extends AbstractPollingMonitor implements Runnable
     final private IExchange parent;
 
     final private Map<CurrencyPair, OrderBook> orderBooks = new ConcurrentHashMap<>();
-    final private Multimap<Market, IOrderBookListener> orderBookListeners = Multimaps.newMultimap(new ConcurrentHashMap<>(), () -> Collections.newSetFromMap(new ConcurrentHashMap<>()));
+    final private Multimap<CurrencyPair, IOrderBookListener> orderBookListeners = Multimaps.newMultimap(new ConcurrentHashMap<>(), () -> Collections.newSetFromMap(new ConcurrentHashMap<>()));
 
     public OrderBookMonitor(IExchange parent, RunnableScheduler runnableScheduler) {
         super(runnableScheduler);
@@ -40,15 +40,15 @@ public class OrderBookMonitor extends AbstractPollingMonitor implements Runnable
         // Remove not monitored order books.
         orderBooks.keySet().stream().filter(pair -> !orderBookListeners.containsKey(pair)).forEach(orderBooks::remove);
 
-        for (Map.Entry<Market, Collection<IOrderBookListener>> e : orderBookListeners.asMap().entrySet()) {
+        for (Map.Entry<CurrencyPair, Collection<IOrderBookListener>> e : orderBookListeners.asMap().entrySet()) {
             try {
-                Market market = e.getKey();
-                CurrencyPair pair = market.listing;
+
+                CurrencyPair pair = e.getKey();
                 OrderBook before = orderBooks.get(pair);
                 OrderBook orderBook = parent.getPollingMarketDataService().getOrderBook(pair);
                 boolean changed = updateOrderBook(pair, orderBook);
                 if (changed) {
-                    OrderBookUpdateEvent evt = new OrderBookUpdateEvent(market, before, orderBook);
+                    OrderBookUpdateEvent evt = new OrderBookUpdateEvent(new Market(parent, pair), before, orderBook);
                     for (IOrderBookListener listener : e.getValue()) {
                         listener.orderBookChanged(evt);
                     }
@@ -65,7 +65,7 @@ public class OrderBookMonitor extends AbstractPollingMonitor implements Runnable
             throw new IllegalArgumentException("Mismatched exchange");
 
         synchronized (orderBookListeners) {
-            orderBookListeners.put(market, orderBookListener);
+            orderBookListeners.put(market.listing, orderBookListener);
             enable();
         }
     }
@@ -75,7 +75,7 @@ public class OrderBookMonitor extends AbstractPollingMonitor implements Runnable
             throw new IllegalArgumentException("Mismatched exchange");
 
         synchronized (orderBookListeners) {
-            orderBookListeners.get(market).remove(orderBookListener);
+            orderBookListeners.get(market.listing).remove(orderBookListener);
             if (orderBookListeners.isEmpty())
                 disable();
         }
