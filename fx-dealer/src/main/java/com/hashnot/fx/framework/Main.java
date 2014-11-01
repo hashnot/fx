@@ -33,8 +33,6 @@ public class Main {
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(10, tf);
         Collection<IExchange> exchanges = load(args[0], scheduler);
 
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> exchanges.parallelStream().forEach(IExchange::stop), "Clear"));
-
         Simulation simulation = new Simulation();
         OrderManager orderManager = new OrderManager();
         BestOfferMonitor bestOfferMonitor = new BestOfferMonitor();
@@ -47,20 +45,13 @@ public class Main {
             bestOfferMonitor.addBestOfferListener(dealer, new MarketSide(market, Order.OrderType.ASK));
             bestOfferMonitor.addBestOfferListener(dealer, new MarketSide(market, Order.OrderType.BID));
             TrackingTradesMonitor trackingTradesMonitor = new TrackingTradesMonitor(exchange.getUserTradesMonitor());
-            exchange.setPollingTradeService(new CachingTradeService(() -> new NotifyingTradeService(exchange.getPollingTradeService())));
+            CachingTradeService tradeService = new CachingTradeService(() -> new NotifyingTradeService(exchange.getPollingTradeService()));
+            exchange.setPollingTradeService(tradeService);
             trackingTradesMonitor.addTradeListener(orderManager);
+
+            Runtime.getRuntime().addShutdownHook(new Thread(tradeService::cancelAll, exchange.toString() + "-cancel"));
         }
         report(exchanges);
-
-
-
-/*
-        Thread.sleep(60000);
-        scheduler.shutdown();
-        scheduler.awaitTermination(2, TimeUnit.SECONDS);
-        scheduler.shutdownNow();
-        report(exchanges);
-*/
     }
 
     public static Collection<IExchange> load(String path, ScheduledExecutorService scheduler) {
