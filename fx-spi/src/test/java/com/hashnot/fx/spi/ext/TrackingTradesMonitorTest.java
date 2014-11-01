@@ -3,6 +3,8 @@ package com.hashnot.fx.spi.ext;
 import com.hashnot.fx.ext.ITradeListener;
 import com.hashnot.fx.ext.ITradesMonitor;
 import com.hashnot.fx.ext.impl.TrackingTradesMonitor;
+import com.xeiam.xchange.currency.CurrencyPair;
+import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.marketdata.Trade;
 import com.xeiam.xchange.dto.marketdata.Trades;
 import com.xeiam.xchange.dto.trade.LimitOrder;
@@ -32,7 +34,7 @@ public class TrackingTradesMonitorTest {
         LimitOrder order = new LimitOrder(ASK, ONE, BTC_EUR, id, null, ONE);
         trackingTradesMonitor.limitOrderPlaced(order, id);
 
-        Trade trade = new Trade(ASK, ONE, BTC_EUR, ONE, null, "id");
+        Trade trade = trade(ASK, ONE, BTC_EUR, ONE, "id", id);
         trackingTradesMonitor.trades(new Trades(asList(trade), 0l, Trades.TradeSortType.SortByID));
         verify(orderListener).trade(order, trade, null);
     }
@@ -49,8 +51,8 @@ public class TrackingTradesMonitorTest {
         LimitOrder order = new LimitOrder(ASK, TWO, BTC_EUR, id, null, ONE);
         trackingTradesMonitor.limitOrderPlaced(order, id);
 
-        Trade t1 = new Trade(ASK, ONE, BTC_EUR, ONE, null, "t1");
-        Trade t2 = new Trade(ASK, ONE, BTC_EUR, ONE, null, "t2");
+        Trade t1 = trade(ASK, ONE, BTC_EUR, ONE, "t1", id);
+        Trade t2 = trade(ASK, ONE, BTC_EUR, ONE, "t2", id);
 
         trackingTradesMonitor.trades(new Trades(asList(t1, t2), 0l, Trades.TradeSortType.SortByID));
         verify(orderListener, times(1)).trade(order, new Trade(ASK, TWO, BTC_EUR, ONE, null, "t2"), null);
@@ -68,8 +70,8 @@ public class TrackingTradesMonitorTest {
         LimitOrder order = new LimitOrder(ASK, TWO, BTC_EUR, id, null, ONE);
         trackingTradesMonitor.limitOrderPlaced(order, id);
 
-        Trade t1 = new Trade(ASK, ONE, BTC_EUR, ONE, null, "t1");
-        Trade t2 = new Trade(ASK, ONE, BTC_EUR, ONE, null, "t2");
+        Trade t1 = trade(ASK, ONE, BTC_EUR, ONE, "t1", id);
+        Trade t2 = trade(ASK, ONE, BTC_EUR, ONE, "t2", id);
 
         LimitOrder one = new LimitOrder(ASK, ONE, BTC_EUR, id, null, ONE);
 
@@ -78,5 +80,9 @@ public class TrackingTradesMonitorTest {
 
         trackingTradesMonitor.trades(new Trades(asList(t2), 0l, Trades.TradeSortType.SortByID));
         verify(orderListener).trade(order, t2, null);
+    }
+
+    private static Trade trade(Order.OrderType side, BigDecimal amount, CurrencyPair pair, BigDecimal price, String tradeId, String orderId) {
+        return new Trade(side, amount, pair, price, null, tradeId, orderId, null, null);
     }
 }
