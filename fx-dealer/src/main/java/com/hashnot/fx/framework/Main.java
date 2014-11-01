@@ -2,12 +2,15 @@ package com.hashnot.fx.framework;
 
 import com.hashnot.fx.dealer.Dealer;
 import com.hashnot.fx.ext.Market;
+import com.hashnot.fx.ext.MarketSide;
 import com.hashnot.fx.ext.impl.BestOfferMonitor;
+import com.hashnot.fx.ext.impl.OrderBookSideMonitor;
 import com.hashnot.fx.ext.impl.TrackingTradesMonitor;
 import com.hashnot.fx.spi.ext.CachingTradeService;
 import com.hashnot.fx.spi.ext.IExchange;
 import com.hashnot.fx.spi.ext.NotifyingTradeService;
 import com.xeiam.xchange.currency.CurrencyPair;
+import com.xeiam.xchange.dto.Order;
 import groovy.lang.GroovyShell;
 
 import java.io.File;
@@ -26,7 +29,7 @@ public class Main {
     private static final CurrencyPair pair = CurrencyPair.BTC_EUR;
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        ThreadFactory tf = new ConfigurableThreadFactory("p-%d-t-%d");
+        ThreadFactory tf = new ConfigurableThreadFactory("%d/%d");
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(10, tf);
         Collection<IExchange> exchanges = load(args[0], scheduler);
 
@@ -35,11 +38,14 @@ public class Main {
         Simulation simulation = new Simulation();
         OrderManager orderManager = new OrderManager();
         BestOfferMonitor bestOfferMonitor = new BestOfferMonitor();
-        Dealer dealer = new Dealer(simulation, orderManager, bestOfferMonitor);
+        OrderBookSideMonitor orderBookSideMonitor = new OrderBookSideMonitor();
+        Dealer dealer = new Dealer(simulation, orderManager, orderBookSideMonitor);
 
         for (IExchange exchange : exchanges) {
             exchange.start();
-            bestOfferMonitor.addBestOfferListener(dealer, new Market(exchange, pair));
+            final Market market = new Market(exchange, pair);
+            bestOfferMonitor.addBestOfferListener(dealer, new MarketSide(market, Order.OrderType.ASK));
+            bestOfferMonitor.addBestOfferListener(dealer, new MarketSide(market, Order.OrderType.BID));
             TrackingTradesMonitor trackingTradesMonitor = new TrackingTradesMonitor(exchange.getUserTradesMonitor());
             exchange.setPollingTradeService(new CachingTradeService(() -> new NotifyingTradeService(exchange.getPollingTradeService())));
             trackingTradesMonitor.addTradeListener(orderManager);

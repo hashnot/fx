@@ -1,10 +1,8 @@
 package com.hashnot.fx.ext.impl;
 
-import com.hashnot.fx.ext.OrderBookUpdateEvent;
 import com.hashnot.fx.ext.*;
 import com.hashnot.fx.spi.ext.IExchange;
 import com.xeiam.xchange.currency.CurrencyPair;
-import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.marketdata.OrderBook;
 import com.xeiam.xchange.dto.marketdata.Ticker;
 import com.xeiam.xchange.dto.trade.LimitOrder;
@@ -33,36 +31,43 @@ public class BestOfferMonitorTest {
         return new Market(x, p);
     }
 
-    private static BestOfferEvent boe(Market m, Order.OrderType side){
-        return new BestOfferEvent(ONE, side, m);
+    private static BestOfferEvent boe(MarketSide ms) {
+        return new BestOfferEvent(ONE, ms);
     }
 
-    private static OrderBookUpdateEvent obue(Market m){
-        return new OrderBookUpdateEvent(m, null, new OrderBook(
-                    null,
-                    Arrays.asList(new LimitOrder.Builder(ASK, p).limitPrice(ONE).build()),
-                    Arrays.asList(new LimitOrder.Builder(BID, p).limitPrice(ONE).build())
-            ));
+    private static OrderBookUpdateEvent obue(Market m) {
+        return new OrderBookUpdateEvent(m, new OrderBook(
+                null,
+                Arrays.asList(new LimitOrder.Builder(ASK, p).limitPrice(ONE).timestamp(null).build()),
+                Arrays.asList(new LimitOrder.Builder(BID, p).limitPrice(ONE).timestamp(null).build())
+        ));
+    }
+
+    private static OrderBookSideUpdateEvent obsue(MarketSide ms) {
+        return new OrderBookSideUpdateEvent(ms,
+                null,
+                Arrays.asList(new LimitOrder.Builder(ASK, p).limitPrice(ONE).timestamp(null).build())
+        );
     }
 
     @Test
     public void testAddOrderBookListener() {
         IOrderBookMonitor obm = mock(IOrderBookMonitor.class);
         ITickerMonitor tm = mock(ITickerMonitor.class);
-        IOrderBookListener obl = mock(IOrderBookListener.class);
-        Market m = m(obm, tm);
+        IOrderBookSideListener obl = mock(IOrderBookSideListener.class);
+        MarketSide ms = new MarketSide(m(obm, tm), ASK);
         BestOfferMonitor mon = new BestOfferMonitor();
 
 
-        mon.addOrderBookListener(obl, m);
-        verify(obm).addOrderBookListener(obl, m);
+        mon.addOrderBookSideListener(obl, ms);
+        verify(obm).addOrderBookListener(mon, p);
 
 
-        mon.ticker(t, m.exchange);
+        mon.ticker(t, m(obm, tm).exchange);
         verifyZeroInteractions(obl);
 
 
-        mon.orderBookChanged(obue(m));
+        mon.orderBookChanged(obue(m(obm, tm)));
         verifyZeroInteractions(obl);
     }
 
@@ -72,16 +77,17 @@ public class BestOfferMonitorTest {
         ITickerMonitor tm = mock(ITickerMonitor.class);
         IBestOfferListener bol = mock(IBestOfferListener.class);
         Market m = m(obm, tm);
+        MarketSide ms = new MarketSide(m, ASK);
         BestOfferMonitor mon = new BestOfferMonitor();
 
 
-        mon.addBestOfferListener(bol, m);
+        mon.addBestOfferListener(bol, ms);
         verify(tm).addTickerListener(mon, m);
 
 
         mon.ticker(t, m.exchange);
-        verify(bol).updateBestOffer(eq(boe(m, ASK)));
-        verify(bol).updateBestOffer(eq(boe(m, BID)));
+        verify(bol).updateBestOffer(eq(boe(ms)));
+        //verify(bol).updateBestOffer(eq(boe(m, BID)));
         verifyNoMoreInteractions(bol);
 
 
@@ -94,22 +100,23 @@ public class BestOfferMonitorTest {
         IOrderBookMonitor obm = mock(IOrderBookMonitor.class);
         ITickerMonitor tm = mock(ITickerMonitor.class);
         IBestOfferListener bol = mock(IBestOfferListener.class);
-        IOrderBookListener obl = mock(IOrderBookListener.class);
+        IOrderBookSideListener obl = mock(IOrderBookSideListener.class);
         Market m = m(obm, tm);
+        MarketSide ms = new MarketSide(m, ASK);
         BestOfferMonitor mon = new BestOfferMonitor();
 
 
-        mon.addBestOfferListener(bol, m);
+        mon.addBestOfferListener(bol, ms);
         verify(tm).addTickerListener(mon, m);
         verifyNoMoreInteractions(tm);
         verifyZeroInteractions(obm);
 
 
-        mon.addOrderBookListener(obl, m);
+        mon.addOrderBookSideListener(obl, ms);
         verify(tm).removeTickerListener(mon, m);
         verifyNoMoreInteractions(tm);
-        verify(obm).addOrderBookListener(mon, m);
-        verify(obm).addOrderBookListener(obl, m);
+        verify(obm).addOrderBookListener(mon, p);
+        //verify(obm).addOrderBookListener(mon, p);
         verifyNoMoreInteractions(obm);
 
 
@@ -119,11 +126,10 @@ public class BestOfferMonitorTest {
 
 
         mon.orderBookChanged(obue(m));
-        verify(bol).updateBestOffer(eq(boe(m, ASK)));
-        verify(bol).updateBestOffer(eq(boe(m, BID)));
+        verify(bol).updateBestOffer(eq(boe(ms)));
         verifyNoMoreInteractions(bol);
 
-        // mon doesn't call obl
+        verify(obl).orderBookSideChanged(eq(obsue(ms)));
         verifyZeroInteractions(obl);
     }
 
@@ -131,34 +137,36 @@ public class BestOfferMonitorTest {
     public void testAddOblAndBol() {
         IOrderBookMonitor obm = mock(IOrderBookMonitor.class);
         ITickerMonitor tm = mock(ITickerMonitor.class);
-        IOrderBookListener obl = mock(IOrderBookListener.class);
+        IOrderBookSideListener obsl = mock(IOrderBookSideListener.class);
         IBestOfferListener bol = mock(IBestOfferListener.class);
         Market m = m(obm, tm);
+        MarketSide ms = new MarketSide(m, ASK);
         BestOfferMonitor mon = new BestOfferMonitor();
 
 
-        mon.addOrderBookListener(obl, m);
-        verify(obm).addOrderBookListener(obl, m);
+        mon.addOrderBookSideListener(obsl, ms);
+        verify(obm).addOrderBookListener(mon, p);
 
 
-        mon.addBestOfferListener(bol, m);
-        verify(obm).addOrderBookListener(mon, m);
+        mon.addBestOfferListener(bol, ms);
+        verify(obm).addOrderBookListener(mon, p);
         verifyNoMoreInteractions(obm);
         verifyZeroInteractions(tm);
 
 
         mon.ticker(t, m.exchange);
-        verifyZeroInteractions(obl);
+        verifyZeroInteractions(obsl);
         verifyZeroInteractions(bol);
 
 
         mon.orderBookChanged(obue(m));
-        verify(bol).updateBestOffer(eq(boe(m, ASK)));
-        verify(bol).updateBestOffer(eq(boe(m, BID)));
+        verify(obsl).orderBookSideChanged(obsue(ms));
+        verifyNoMoreInteractions(obsl);
+
+        verify(bol).updateBestOffer(eq(boe(ms)));
         verifyNoMoreInteractions(bol);
 
-        // mon doesn't call obl
-        verifyZeroInteractions(obl);
+        // mon doesn't call obsl
     }
 
     @Test
@@ -166,43 +174,42 @@ public class BestOfferMonitorTest {
         IOrderBookMonitor obm = mock(IOrderBookMonitor.class);
         ITickerMonitor tm = mock(ITickerMonitor.class);
         IBestOfferListener bol = mock(IBestOfferListener.class);
-        IOrderBookListener obl = mock(IOrderBookListener.class);
+        IOrderBookSideListener obl = mock(IOrderBookSideListener.class);
         Market m = m(obm, tm);
+        MarketSide ms = new MarketSide(m, ASK);
         BestOfferMonitor mon = new BestOfferMonitor();
 
 
-        mon.addBestOfferListener(bol, m);
+        mon.addBestOfferListener(bol, ms);
         verify(tm).addTickerListener(mon, m);
         verifyNoMoreInteractions(tm);
         verifyZeroInteractions(obm);
 
 
-        mon.addOrderBookListener(obl, m);
+        mon.addOrderBookSideListener(obl, ms);
         verify(tm).removeTickerListener(mon, m);
-        verify(obm).addOrderBookListener(mon, m);
-        verify(obm).addOrderBookListener(obl, m);
+        verify(obm).addOrderBookListener(mon, p);
+        //verify(obm).addOrderBookListener(mon, p);
         verifyNoMoreInteractions(tm);
         verifyNoMoreInteractions(obm);
 
 
-        mon.removeOrderBookListener(obl, m);
-        verify(obm).removeOrderBookListener(obl, m);
-        verify(obm).removeOrderBookListener(mon, m);
+        mon.removeOrderBookSideListener(obl, ms);
+        verify(obm).removeOrderBookListener(mon, p);
+        //verify(obm).removeOrderBookListener(mon, p);
         verify(tm, times(2)).addTickerListener(mon, m);
         verifyNoMoreInteractions(tm);
         verifyNoMoreInteractions(obm);
 
 
         mon.ticker(t, m.exchange);
-        verify(bol).updateBestOffer(eq(boe(m, ASK)));
-        verify(bol).updateBestOffer(eq(boe(m, BID)));
+        verify(bol).updateBestOffer(eq(boe(ms)));
         verifyNoMoreInteractions(bol);
         verifyZeroInteractions(obl);
 
 
         mon.orderBookChanged(obue(m));
-        verify(bol).updateBestOffer(eq(boe(m, ASK)));
-        verify(bol).updateBestOffer(eq(boe(m, BID)));
+        verify(bol).updateBestOffer(eq(boe(ms)));
         verifyNoMoreInteractions(bol);
 
         // mon doesn't call obl

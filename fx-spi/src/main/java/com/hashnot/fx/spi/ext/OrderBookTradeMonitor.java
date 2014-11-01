@@ -1,11 +1,9 @@
 package com.hashnot.fx.spi.ext;
 
-import com.hashnot.fx.ext.OrderBookUpdateEvent;
-import com.hashnot.fx.spi.ILimitOrderPlacementListener;
-import com.hashnot.fx.ext.IOrderBookListener;
+import com.hashnot.fx.ext.IOrderBookSideListener;
 import com.hashnot.fx.ext.ITradeListener;
-import com.xeiam.xchange.dto.Order;
-import com.xeiam.xchange.dto.marketdata.OrderBook;
+import com.hashnot.fx.ext.OrderBookSideUpdateEvent;
+import com.hashnot.fx.spi.ILimitOrderPlacementListener;
 import com.xeiam.xchange.dto.marketdata.Trade;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.service.polling.PollingTradeService;
@@ -20,27 +18,27 @@ import static com.hashnot.fx.util.Numbers.eq;
 
 /**
  * Lifecycle of a monitored order
- * <p/>
+ * <p>
  * 1 opened by us -> openOrders
  * 2 received from exchange
- * <p/>
+ * <p>
  * 3 amount matches - monitored -> monitoredOrder, monitoredCurrent, monitoredRemaining
  * 4 received change
  * 5 if less than previous value - decrease current value
  * 6 if fully executed - remove
- * <p/>
+ * <p>
  * OR
- * <p/>
+ * <p>
  * 3 amount doesn't match - enable open order monitor
- * <p/>
- * <p/>
+ * <p>
+ * <p>
  * In theory we could want to keep two orders at single price, but in different directions.
  * This should be considered an error, because these transactions would be redundant,
  * and lossy because of the fees
  *
  * @author Rafał Krupiński
  */
-public class OrderBookTradeMonitor implements IOrderBookListener, ILimitOrderPlacementListener, ITradeMonitor {
+public class OrderBookTradeMonitor implements IOrderBookSideListener, ILimitOrderPlacementListener, ITradeMonitor {
     final private static Logger log = LoggerFactory.getLogger(OrderBookTradeMonitor.class);
 
     /**
@@ -76,43 +74,23 @@ public class OrderBookTradeMonitor implements IOrderBookListener, ILimitOrderPla
     }
 
     @Override
-    public void orderBookChanged(OrderBookUpdateEvent orderBookUpdateEvent) {
-        // noting to compare with
-        if (orderBookUpdateEvent.before == null)
-            return;
-
-        OrderBook changes = orderBookUpdateEvent.getChanges();
-
-        List<LimitOrder> asks = changes.getAsks();
-        List<LimitOrder> bids = changes.getBids();
-
-        if (asks.isEmpty() && bids.isEmpty()) {
-            log.warn("No changes!");
+    public void orderBookSideChanged(OrderBookSideUpdateEvent evt) {
+        if (evt.newOrders.isEmpty()) {
             return;
         }
 
-        if (!asks.isEmpty())
-            changed(orderBookUpdateEvent, Order.OrderType.ASK);
+        Iterator<LimitOrder> afterIter = evt.getChanges().iterator();
 
-        if (!bids.isEmpty())
-            changed(orderBookUpdateEvent, Order.OrderType.BID);
-    }
-
-    private void changed(OrderBookUpdateEvent event, Order.OrderType type) {
-        Iterator<LimitOrder> beforeIter = event.before.getOrders(type).iterator();
-        Iterator<LimitOrder> afterIter = event.after.getOrders(type).iterator();
-
-        for (LimitOrder change : event.getChanges().getOrders(type)) {
+        for (LimitOrder change : evt.newOrders) {
             BigDecimal price = change.getLimitPrice();
 
-            LimitOrder beforeOrder = find(beforeIter, price);
             LimitOrder afterOrder = find(afterIter, price);
 
-            changed(beforeOrder, afterOrder, change, price);
+            changed(afterOrder, price);
         }
     }
 
-    private void changed(LimitOrder beforeOrder, LimitOrder afterOrder, LimitOrder change, BigDecimal price) {
+    private void changed(LimitOrder afterOrder, BigDecimal price) {
         LimitOrder monitored = monitoredOrder.get(price);
 
         if (monitored != null) {

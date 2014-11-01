@@ -1,8 +1,6 @@
 package com.hashnot.fx.spi.ext;
 
-import com.hashnot.fx.ext.OrderBookUpdateEvent;
-import com.hashnot.fx.ext.ITradeListener;
-import com.hashnot.fx.ext.Market;
+import com.hashnot.fx.ext.*;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.marketdata.OrderBook;
@@ -24,6 +22,7 @@ public class OrderBookTrackingTradesMonitorTest {
     private static final BigDecimal TWO = new BigDecimal(2);
     protected static final CurrencyPair P = CurrencyPair.BTC_EUR;
     final private static Market m = new Market(null, P);
+    final private static MarketSide ms = new MarketSide(m, Order.OrderType.ASK);
 
     @Test
     public void testBasicChange() {
@@ -39,14 +38,12 @@ public class OrderBookTrackingTradesMonitorTest {
         LimitOrder one = new LimitOrder(Order.OrderType.ASK, ONE, m.listing, null, null, ONE);
         mon.limitOrderPlaced(one, "id");
 
-        List<LimitOrder> asksAfter = asList(one);
+        List<LimitOrder> stage0 = emptyList();
+        List<LimitOrder> stage1 = asList(one);
 
-        OrderBook stage0 = new OrderBook(null, emptyList(), emptyList());
-        OrderBook stage1 = new OrderBook(null, asksAfter, emptyList());
+        mon.orderBookSideChanged(new OrderBookSideUpdateEvent(ms, stage0, stage1));
 
-        mon.orderBookChanged(new OrderBookUpdateEvent(m, stage0, stage1));
-
-        mon.orderBookChanged(new OrderBookUpdateEvent(m, stage1, stage0));
+        mon.orderBookSideChanged(new OrderBookSideUpdateEvent(ms, stage1, stage0));
 
         verify(orderListener, times(1)).trade(one, null, null);
 
@@ -62,19 +59,19 @@ public class OrderBookTrackingTradesMonitorTest {
         mon.addTradeListener(orderListener);
 
 
-        OrderBook stage0 = new OrderBook(null, emptyList(), emptyList());
 
         LimitOrder one = new LimitOrder(Order.OrderType.ASK, ONE, P, "o1", null, ONE);
         mon.limitOrderPlaced(one, "id");
 
-        OrderBook stage1 = new OrderBook(null, asList(one), emptyList());
-        mon.orderBookChanged(new OrderBookUpdateEvent(m, stage0, stage1));
+        List<LimitOrder> stage0 = emptyList();
+        List<LimitOrder> stage1 = asList(one);
+        mon.orderBookSideChanged(new OrderBookSideUpdateEvent(ms, stage0, stage1));
 
         LimitOrder two = new LimitOrder(Order.OrderType.ASK, TWO, P, "o2", null, ONE);
-        OrderBook stage2 = new OrderBook(null, asList(two), emptyList());
-        mon.orderBookChanged(new OrderBookUpdateEvent(m, stage1, stage2));
+        List<LimitOrder> stage2 = asList(two);
+        mon.orderBookSideChanged(new OrderBookSideUpdateEvent(ms, stage1, stage2));
 
-        mon.orderBookChanged(new OrderBookUpdateEvent(m, stage2, stage1));
+        mon.orderBookSideChanged(new OrderBookSideUpdateEvent(ms, stage2, stage1));
 
         verify(orderListener, times(1)).trade(one, null, one);
     }
@@ -88,20 +85,20 @@ public class OrderBookTrackingTradesMonitorTest {
         mon.addTradeListener(orderListener);
 
 
-        OrderBook stage0 = new OrderBook(null, emptyList(), emptyList());
+        List<LimitOrder> stage0 = emptyList();
 
         LimitOrder one = new LimitOrder(Order.OrderType.ASK, ONE, P, null, null, ONE);
         LimitOrder two = new LimitOrder(Order.OrderType.ASK, TWO, P, null, null, ONE);
         mon.limitOrderPlaced(two, "id");
 
-        OrderBook stage1 = new OrderBook(null, asList(two), emptyList());
-        mon.orderBookChanged(new OrderBookUpdateEvent(m, stage0, stage1));
+        List<LimitOrder> stage1 = asList(two);
+        mon.orderBookSideChanged(new OrderBookSideUpdateEvent(ms, stage0, stage1));
 
-        OrderBook stage2 = new OrderBook(null, asList(one), emptyList());
-        mon.orderBookChanged(new OrderBookUpdateEvent(m, stage1, stage2));
+        List<LimitOrder> stage2 = asList(one);
+        mon.orderBookSideChanged(new OrderBookSideUpdateEvent(ms, stage1, stage2));
         verify(orderListener).trade(two, null, one);
 
-        mon.orderBookChanged(new OrderBookUpdateEvent(m, stage2, stage0));
+        mon.orderBookSideChanged(new OrderBookSideUpdateEvent(ms, stage2, stage0));
         verify(orderListener).trade(two, null, null);
     }
 }

@@ -5,10 +5,8 @@ import com.hashnot.fx.framework.IOrderUpdater;
 import com.hashnot.fx.framework.OrderUpdateEvent;
 import com.hashnot.fx.framework.Simulation;
 import com.hashnot.fx.spi.ext.IExchange;
-import com.hashnot.fx.util.OrderBooks;
 import com.hashnot.fx.util.Orders;
 import com.xeiam.xchange.currency.CurrencyPair;
-import com.xeiam.xchange.dto.marketdata.OrderBook;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,33 +20,25 @@ import static com.hashnot.fx.util.Orders.*;
 import static com.hashnot.fx.util.Orders.Price.isBetter;
 import static com.xeiam.xchange.dto.Order.OrderType;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
-import static com.xeiam.xchange.dto.Order.OrderType.BID;
 
 /**
  * @author Rafał Krupiński
  */
-public class Dealer implements IOrderBookListener, IBestOfferListener {
+public class Dealer implements IOrderBookSideListener, IBestOfferListener {
     private final IOrderUpdater orderUpdater;
-    private final IOrderBookMonitor orderBookMonitor;
+    final private IOrderBookSideMonitor orderBookSideMonitor;
 
     public Simulation simulation;
 
-    private final Map<Market, OrderBook> orderBooks = new HashMap<>();
-
     // side -> map(market -> best offer price)
-    final private Map<OrderType, Map<Market, BigDecimal>> bestOffers = new HashMap<>();
-
-    {
-        bestOffers.put(ASK, new HashMap<>());
-        bestOffers.put(BID, new HashMap<>());
-    }
+    final private Map<MarketSide, BigDecimal> bestOffers = new HashMap<>();
 
     final private Map<ListingSide, Market> bestMarkets = new HashMap<>();
 
-    public Dealer(Simulation simulation, IOrderUpdater orderUpdater, IOrderBookMonitor orderBookMonitor) {
+    public Dealer(Simulation simulation, IOrderUpdater orderUpdater, IOrderBookSideMonitor orderBookSideMonitor) {
         this.simulation = simulation;
         this.orderUpdater = orderUpdater;
-        this.orderBookMonitor = orderBookMonitor;
+        this.orderBookSideMonitor = orderBookSideMonitor;
     }
 
     /**
@@ -58,14 +48,15 @@ public class Dealer implements IOrderBookListener, IBestOfferListener {
     public void updateBestOffer(BestOfferEvent evt) {
         log.info("Best offer {}", evt);
 
-        if (!hasMinimumMoney(evt.source, evt.type, evt.price)) {
-            log.debug("Ignore exchange without {} enough money for {}", evt.source, evt.type);
+        Market market = evt.source.market;
+        OrderType side = evt.source.side;
+        if (!hasMinimumMoney(market, side, evt.price)) {
+            log.debug("Ignore exchange without {} enough money for {}", evt.source, side);
             return;
         }
 
-        Map<Market, BigDecimal> sideBestPrices = bestOffers.get(evt.type);
-        Market market = evt.source;
-        BigDecimal oldPrice = sideBestPrices.get(market);
+        MarketSide mSide = new MarketSide(market, side);
+        BigDecimal oldPrice = bestOffers.get(mSide);
         BigDecimal newPrice = evt.price;
 
         // don't update the order if the new 3rd party order is not better
@@ -74,19 +65,19 @@ public class Dealer implements IOrderBookListener, IBestOfferListener {
             return;
         }
 
-        ListingSide oKey = new ListingSide(evt.source.listing, evt.type);
+        ListingSide oKey = new ListingSide(market.listing, side);
         Market bestMarket = bestMarkets.get(oKey);
         if (bestMarket != null) {
-            BigDecimal bestMarketPrice = sideBestPrices.get(bestMarket);
+            BigDecimal bestMarketPrice = bestOffers.get(new MarketSide(bestMarket, side));
 
-            if (isBetter(newPrice, bestMarketPrice, evt.type)) {
+            if (isBetter(newPrice, bestMarketPrice, side)) {
                 updateBestMarket(bestMarket, market, oKey);
             }
-        } else if (!eq(newPrice, Price.forNull(evt.type))) {
+        } else if (!eq(newPrice, Price.forNull(side))) {
             updateBestMarket(null, market, oKey);
         }
 
-        sideBestPrices.put(market, newPrice);
+        bestOffers.put(mSide, newPrice);
 
         //TODO if best or worst market changes, cancel order
     }
@@ -98,34 +89,20 @@ public class Dealer implements IOrderBookListener, IBestOfferListener {
         }
 
         bestMarkets.put(key, best);
-        orderBookMonitor.addOrderBookListener(this, best);
+        orderBookSideMonitor.addOrderBookSideListener(this, new MarketSide(best, key.side));
         if (oldBest != null)
-            orderBookMonitor.removeOrderBookListener(this, oldBest);
+            orderBookSideMonitor.removeOrderBookSideListener(this, new MarketSide(oldBest, key.side));
     }
 
     /**
      * Called when order book changes on the best exchange
      */
     @Override
-    public synchronized void orderBookChanged(OrderBookUpdateEvent evt) {
+    public void orderBookSideChanged(OrderBookSideUpdateEvent evt) {
         log.info("order book from {}", evt.source);
         //TODO change may mean that we need to change the open order to smaller one
 
-        OrderBooks.updateNetPrices(evt.after, evt.source.exchange.getMarketMetadata(evt.source.listing).getOrderFeeFactor());
-        orderBooks.put(evt.source, evt.after);
-
-        updateLimitOrder(evt, ASK);
-        updateLimitOrder(evt, BID);
-    }
-
-    private NavigableMap<LimitOrder, IExchange> getBestOffers(CurrencyPair pair, Collection<IExchange> exchanges, OrderType dir) {
-        NavigableMap<LimitOrder, IExchange> result = new TreeMap<>((o1, o2) -> o1.getNetPrice().compareTo(o2.getNetPrice()) * factor(o1.getType()));
-        for (IExchange x : exchanges) {
-            List<LimitOrder> orders = orderBooks.get(new Market(x, pair)).getOrders(dir);
-            if (!orders.isEmpty())
-                result.put(orders.get(0), x);
-        }
-        return result;
+        // open or update order
     }
 
     private boolean hasMinimumMoney(IExchange x, LimitOrder order, OrderType dir) {
@@ -149,16 +126,12 @@ public class Dealer implements IOrderBookListener, IBestOfferListener {
         log.debug("TODO clearOrders");
     }
 
-    private void updateLimitOrder(OrderBookUpdateEvent evt, OrderType side) {
-// open or update order
-    }
-
     private void updateLimitOrders(CurrencyPair pair, Collection<IExchange> exchanges, OrderType type) {
         //podsumuj wszystkie oferty do
         // - limitu stanu konta
         // - limitu różnicy ceny
 
-        NavigableMap<LimitOrder, IExchange> bestOrders = getBestOffers(pair, exchanges, type);
+        NavigableMap<LimitOrder, IExchange> bestOrders = null;//getBestOffers(pair, exchanges, type);
         if (bestOrders.size() < 2) {
             clearOrders(pair);
             return;
@@ -207,7 +180,7 @@ public class Dealer implements IOrderBookListener, IBestOfferListener {
             return;
         }
 
-        List<LimitOrder> closeOrders = orderBooks.get(new Market(bestExchange, pair)).getOrders(type);
+        List<LimitOrder> closeOrders = null;//orderBooks.get(new Market(bestExchange, pair)).getOrders(type);
         OrderUpdateEvent event = simulation.deal(worstOrder, worstExchange, closeOrders, bestExchange);
         if (event != null)
             orderUpdater.update(event);

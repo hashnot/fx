@@ -1,11 +1,10 @@
 package com.hashnot.fx;
 
-import com.hashnot.fx.ext.Market;
+import com.hashnot.fx.ext.IOrderBookListener;
+import com.hashnot.fx.ext.ITradeListener;
 import com.hashnot.fx.ext.OrderBookUpdateEvent;
 import com.hashnot.fx.ext.impl.TrackingTradesMonitor;
 import com.hashnot.fx.framework.Main;
-import com.hashnot.fx.ext.IOrderBookListener;
-import com.hashnot.fx.ext.ITradeListener;
 import com.hashnot.fx.spi.ext.IExchange;
 import com.hashnot.fx.util.Orders;
 import com.xeiam.xchange.currency.CurrencyPair;
@@ -73,7 +72,7 @@ public class Order {
 
         Dealer dealer = new Dealer(x, new LimitOrder(type, amount, pair, null, null, null), value);
 
-        x.getOrderBookMonitor().addOrderBookListener(dealer, new Market(x, pair));
+        x.getOrderBookMonitor().addOrderBookListener(dealer, pair);
         new TrackingTradesMonitor(x.getUserTradesMonitor()).addTradeListener(dealer);
 
         return dealer.get();
@@ -110,7 +109,7 @@ class Dealer implements IOrderBookListener, ITradeListener {
 
     @Override
     public void orderBookChanged(OrderBookUpdateEvent event) {
-        List<LimitOrder> orders = event.after.getOrders(order.getType());
+        List<LimitOrder> orders = event.orderBook.getOrders(order.getType());
         log.info("changed {}", orders);
         if (orders.isEmpty())
             throw new IllegalStateException("No " + order.getType() + " orders found");
@@ -136,7 +135,7 @@ class Dealer implements IOrderBookListener, ITradeListener {
     @Override
     public synchronized void trade(LimitOrder monitored, Trade trade, LimitOrder current) {
         if (current == null) {
-            x.getOrderBookMonitor().removeOrderBookListener(this, new Market(x, monitored.getCurrencyPair()));
+            x.getOrderBookMonitor().removeOrderBookListener(this, monitored.getCurrencyPair());
             done = true;
             notify();
         } else
