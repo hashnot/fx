@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.util.List;
 
 import static com.hashnot.fx.util.Numbers.eq;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
@@ -45,7 +46,7 @@ public class Orders {
     }
 
     public static LimitOrder closing(LimitOrder order) {
-        return new LimitOrder(revert(order.getType()), order.getTradableAmount(), order.getCurrencyPair(), null, null, order.getLimitPrice());
+        return LimitOrder.Builder.from(order).orderType(revert(order.getType())).build();
     }
 
     public static LimitOrder closing(LimitOrder order, IExchange feeService) {
@@ -110,9 +111,9 @@ public class Orders {
         }
     }
 
-    public static boolean isProfitable(LimitOrder o1, LimitOrder o2) {
-        boolean result = o1.getNetPrice().compareTo(o2.getNetPrice()) * factor(o1.getType()) >= 0;
-        log.debug("{} {} {} <=> {} {} {} {}profitable", o1.getType(), o1.getLimitPrice(), o1.getNetPrice(), o2.getNetPrice(), o2.getLimitPrice(), o2.getType(), result ? "" : "not ");
+    public static boolean isProfitable(LimitOrder worst, LimitOrder best) {
+        boolean result = !Price.isWorse(worst.getNetPrice(), best.getNetPrice(), worst.getType());
+        log.debug("{} {} {} <=> {} {} {} {}profitable", worst.getType(), worst.getLimitPrice(), worst.getNetPrice(), best.getNetPrice(), best.getLimitPrice(), best.getType(), result ? "" : "not ");
         return result;
     }
 
@@ -141,10 +142,10 @@ public class Orders {
             throw new IllegalArgumentException("Orders in different direction");
     }
 
-    public static LimitOrder add(LimitOrder o1, LimitOrder o2) {
-        if (o1.getType() != o2.getType() || o1.getLimitPrice().compareTo(o2.getLimitPrice()) != 0)
-            throw new IllegalArgumentException("Incompatible LimitOrders");
-        return new LimitOrder(o1.getType(), o1.getTradableAmount().add(o2.getTradableAmount()), o1.getCurrencyPair(), null, null, o1.getLimitPrice());
+    public static void updateNetPrices(List<LimitOrder> orders, BigDecimal fee) {
+        for (LimitOrder order : orders) {
+            order.setNetPrice(getNetPrice(order, fee));
+        }
     }
 
     public static BigDecimal betterPrice(BigDecimal price, BigDecimal delta, Order.OrderType type) {

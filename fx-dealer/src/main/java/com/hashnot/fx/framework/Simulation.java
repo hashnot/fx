@@ -14,8 +14,10 @@ import java.math.RoundingMode;
 import java.util.LinkedList;
 import java.util.List;
 
+import static com.hashnot.fx.util.Numbers.lt;
 import static com.hashnot.fx.util.Orders.Price.isBetter;
 import static com.hashnot.fx.util.Orders.*;
+import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 
 /**
@@ -33,10 +35,11 @@ public class Simulation {
         String closeOutCur = incomingCurrency(worst);
 
         BigDecimal openOutGross = worstExchange.getWallet(openOutgoingCur);
-        BigDecimal openOutNet = applyFee(openOutGross, worstExchange.getMarketMetadata(worst.getCurrencyPair()).getOrderFeeFactor());
+        CurrencyPair pair = worst.getCurrencyPair();
+        BigDecimal openOutNet = applyFeeToWallet(worstExchange, openOutGross, pair);
 
         BigDecimal closeOutGross = bestExchange.getWallet(closeOutCur);
-        BigDecimal closeOutNet = applyFee(closeOutGross, bestExchange.getMarketMetadata(worst.getCurrencyPair()).getOrderFeeFactor());
+        BigDecimal closeOutNet = applyFeeToWallet(bestExchange, closeOutGross, pair);
 
         log.debug("type: {}, worst {}, best {}", worst.getType(), worstExchange, bestExchange);
         log.debug("open  {} {} -> {}", openOutgoingCur, openOutGross, openOutNet);
@@ -67,9 +70,9 @@ public class Simulation {
         log.debug("open: {}", openAmount);
         log.debug("close: {}", closeAmount);
 
-        BigDecimal openAmountActual = Numbers.min(openAmount, closeAmount).setScale(getScale(worstExchange, bestExchange, worst.getCurrencyPair()), RoundingMode.FLOOR);
+        BigDecimal openAmountActual = Numbers.min(openAmount, closeAmount).setScale(getScale(worstExchange, bestExchange, pair), RoundingMode.FLOOR);
 
-        if (!checkMinima(worst, openAmountActual, worstExchange)) {
+        if (!checkMinima(openAmountActual, worstExchange, pair)) {
             log.debug("Amount {} less than minimum", openAmountActual);
             return null;
         }
@@ -78,9 +81,14 @@ public class Simulation {
         return apply(worst, worstExchange, closeOrders, bestExchange, openAmountActual);
     }
 
-    protected boolean checkMinima(LimitOrder worst, BigDecimal openAmountActual, IExchange worstExchange) {
-        return !(openAmountActual.compareTo(LOW_LIMIT) < 0
-                || openAmountActual.compareTo(worstExchange.getMarketMetadata(worst.getCurrencyPair()).getAmountMinimum()) < 0
+    protected BigDecimal applyFeeToWallet(IExchange worstExchange, BigDecimal openOutGross, CurrencyPair pair) {
+        BigDecimal feeFactor = worstExchange.getMarketMetadata(pair).getOrderFeeFactor();
+        return openOutGross.multiply(ONE.subtract(feeFactor));
+    }
+
+    protected boolean checkMinima(BigDecimal openAmountActual, IExchange worstExchange, CurrencyPair listing) {
+        return !(lt(openAmountActual, LOW_LIMIT)
+                || lt(openAmountActual, worstExchange.getMarketMetadata(listing).getAmountMinimum())
         );
     }
 
@@ -92,8 +100,7 @@ public class Simulation {
 
     private OrderUpdateEvent apply(LimitOrder worst, IExchange worstExchange, List<LimitOrder> closeOrders, IExchange bestExchange, BigDecimal openAmount) {
         //TODO BigDecimal price = betterPrice(worst.getLimitPrice(), worstExchange.getPriceStep(worst.getCurrencyPair()), worst.getType());
-        BigDecimal price = worst.getLimitPrice();
-        LimitOrder openOrder = new LimitOrder(worst.getType(), openAmount, worst.getCurrencyPair(), null, null, price);
+        LimitOrder openOrder = LimitOrder.Builder.from(worst).tradableAmount(openAmount).build();
         List<LimitOrder> myCloseOrders = new LinkedList<>();
 
         BigDecimal total = ZERO;
@@ -154,7 +161,7 @@ public class Simulation {
         Order.OrderType type = revert(orders.get(0).getType());
         for (LimitOrder order : orders) {
             BigDecimal netPrice = Orders.getNetPrice(order.getLimitPrice(), type, x.getMarketMetadata(order.getCurrencyPair()).getOrderFeeFactor());
-            if (netPrice.compareTo(netPriceLimit) * factor(order.getType()) > 0)
+            if (Price.isBetter(netPrice, netPriceLimit, order.getType()))
                 break;
             log.debug("order {}", order);
             BigDecimal curAmount = order.getTradableAmount();

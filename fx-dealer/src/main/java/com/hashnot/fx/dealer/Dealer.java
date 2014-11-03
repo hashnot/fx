@@ -5,6 +5,7 @@ import com.hashnot.fx.framework.IOrderUpdater;
 import com.hashnot.fx.framework.OrderUpdateEvent;
 import com.hashnot.fx.framework.Simulation;
 import com.hashnot.fx.spi.ext.IExchange;
+import com.hashnot.fx.util.OrderBooks;
 import com.hashnot.fx.util.Orders;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.trade.LimitOrder;
@@ -18,6 +19,8 @@ import static com.hashnot.fx.util.Numbers.eq;
 import static com.hashnot.fx.util.Numbers.lt;
 import static com.hashnot.fx.util.Orders.*;
 import static com.hashnot.fx.util.Orders.Price.isBetter;
+import static com.hashnot.fx.util.Orders.Price.forNull;
+import static com.hashnot.fx.util.Orders.Price.isWorse;
 import static com.xeiam.xchange.dto.Order.OrderType;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
 
@@ -34,6 +37,8 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener {
     final private Map<MarketSide, BigDecimal> bestOffers = new HashMap<>();
 
     final private Map<ListingSide, Market> bestMarkets = new HashMap<>();
+
+    final private Map<ListingSide, Market> worstMarkets = new HashMap<>();
 
     public Dealer(Simulation simulation, IOrderUpdater orderUpdater, IOrderBookSideMonitor orderBookSideMonitor) {
         this.simulation = simulation;
@@ -67,31 +72,54 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener {
 
         ListingSide oKey = new ListingSide(market.listing, side);
         Market bestMarket = bestMarkets.get(oKey);
+        boolean dirty = false;
         if (bestMarket != null) {
-            BigDecimal bestMarketPrice = bestOffers.get(new MarketSide(bestMarket, side));
+            if (!bestMarket.equals(market)) {
+                BigDecimal bestMarketPrice = bestOffers.get(new MarketSide(bestMarket, side));
 
-            if (isBetter(newPrice, bestMarketPrice, side)) {
-                updateBestMarket(bestMarket, market, oKey);
+                // worse is better, because we buy cheaper
+                if (isWorse(newPrice, bestMarketPrice, side)) {
+                    dirty = updateBestMarket(bestMarket, market, oKey);
+                }
             }
         } else if (!eq(newPrice, Price.forNull(side))) {
-            updateBestMarket(null, market, oKey);
+            dirty = updateBestMarket(null, market, oKey);
         }
 
         bestOffers.put(mSide, newPrice);
 
-        //TODO if best or worst market changes, cancel order
+        Market oldWorst = worstMarkets.get(oKey);
+        if (oldWorst == null) {
+            worstMarkets.put(oKey, market);
+            dirty = true;
+        } else {
+            BigDecimal oldWorstPrice = bestOffers.getOrDefault(new MarketSide(oldWorst, side), forNull(side));
+            if (isBetter(newPrice, oldWorstPrice, side)) {
+                worstMarkets.put(oKey, market);
+                dirty = true;
+            }
+        }
+
+        if (dirty)
+            orderUpdater.update(new OrderUpdateEvent(side));
     }
 
-    private void updateBestMarket(Market oldBest, Market best, ListingSide key) {
-        if (oldBest == best) {
+    private boolean updateBestMarket(Market oldBest, Market best, ListingSide key) {
+        if (best.equals(oldBest)) {
             log.warn("Updating the best market with the same market");
-            return;
+            return false;
         }
 
         bestMarkets.put(key, best);
-        orderBookSideMonitor.addOrderBookSideListener(this, new MarketSide(best, key.side));
-        if (oldBest != null)
-            orderBookSideMonitor.removeOrderBookSideListener(this, new MarketSide(oldBest, key.side));
+        MarketSide bestSide = new MarketSide(best, key.side);
+        log.debug("Add OBL to {}", bestSide);
+        orderBookSideMonitor.addOrderBookSideListener(this, bestSide);
+        if (oldBest != null) {
+            MarketSide oldBestSide = new MarketSide(oldBest, key.side);
+            log.debug("Remove OBL from {}", oldBestSide);
+            orderBookSideMonitor.removeOrderBookSideListener(this, oldBestSide);
+        }
+        return true;
     }
 
     /**
@@ -99,10 +127,51 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener {
      */
     @Override
     public void orderBookSideChanged(OrderBookSideUpdateEvent evt) {
-        log.info("order book from {}", evt.source);
+        MarketSide source = evt.source;
+        log.info("order book from {}", source);
+
+        CurrencyPair listing = source.market.listing;
+        OrderType side = source.side;
+        ListingSide listingSide = new ListingSide(listing, side);
+        Market bestMarket = bestMarkets.get(listingSide);
+
+        if (!bestMarket.equals(source.market)) {
+            log.warn("Unexpected OrderBook update from {}", source);
+            return;
+        }
+
+        Market worstMarket = worstMarkets.get(listingSide);
+        if (bestMarket.equals(worstMarket)) {
+            log.warn("Didn't find 2 exchanges with sufficient funds ({})", side);
+            return;
+        }
+
         //TODO change may mean that we need to change the open order to smaller one
 
         // open or update order
+        IExchange exchange = source.market.exchange;
+        List<LimitOrder> limited = OrderBooks.removeOverLimit(evt.newOrders, exchange.getLimit(listing.baseSymbol), exchange.getLimit(listing.counterSymbol));
+
+        // TODO remove net prices
+        Orders.updateNetPrices(limited, exchange.getMarketMetadata(source.market.listing).getOrderFeeFactor());
+
+        MarketSide worstKey = new MarketSide(worstMarket, side);
+        LimitOrder worstOrder = new LimitOrder.Builder(side, listing).limitPrice(bestOffers.get(worstKey)).build();
+        Orders.updateNetPrice(worstOrder, worstMarket.exchange);
+
+        LimitOrder bestOrder = Orders.closing(evt.newOrders.get(0), exchange);
+
+        if (!isProfitable(worstOrder, bestOrder)) {
+            orderUpdater.update(new OrderUpdateEvent(side));
+            return;
+        }
+
+        OrderUpdateEvent event = simulation.deal(worstOrder, worstMarket.exchange, limited, exchange);
+        if (event != null) {
+            log.info("Place {}", event.openedOrder);
+            orderUpdater.update(event);
+        } else
+            orderUpdater.update(new OrderUpdateEvent(side));
     }
 
     private boolean hasMinimumMoney(IExchange x, LimitOrder order, OrderType dir) {
@@ -213,6 +282,11 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener {
             int result = listing.hashCode();
             result = 31 * result + side.hashCode();
             return result;
+        }
+
+        @Override
+        public String toString() {
+            return side + "@" + listing;
         }
     }
 }

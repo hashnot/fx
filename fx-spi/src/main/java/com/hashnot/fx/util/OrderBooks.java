@@ -19,10 +19,8 @@ import static com.xeiam.xchange.dto.trade.LimitOrder.Builder.from;
  */
 public class OrderBooks {
 
-    public static OrderBook removeOverLimit(OrderBook orderBook, BigDecimal baseLimit, BigDecimal counterLimit) {
-        List<LimitOrder> asks = removeOverIndex(orderBook.getAsks(), amountIndex(orderBook.getAsks(), baseLimit, counterLimit));
-        List<LimitOrder> bids = removeOverIndex(orderBook.getBids(), amountIndex(orderBook.getBids(), baseLimit, counterLimit));
-        return new OrderBook(orderBook.getTimeStamp(), asks, bids);
+    public static List<LimitOrder> removeOverLimit(List<LimitOrder> orders, BigDecimal baseLimit, BigDecimal counterLimit) {
+        return removeOverIndex(orders, amountIndex(orders, baseLimit, counterLimit));
     }
 
     private static List<LimitOrder> removeOverIndex(List<LimitOrder> orders, int limitIndex) {
@@ -61,18 +59,6 @@ public class OrderBooks {
         return i;
     }
 
-    public static void updateNetPrices(OrderBook orderBook, BigDecimal fee) {
-        updateNetPrices(orderBook, fee, Order.OrderType.ASK);
-        updateNetPrices(orderBook, fee, Order.OrderType.BID);
-    }
-
-    private static void updateNetPrices(OrderBook orderBook, BigDecimal fee, Order.OrderType type) {
-        List<LimitOrder> orders = orderBook.getOrders(type);
-        for (LimitOrder order : orders) {
-            order.setNetPrice(Orders.getNetPrice(order, fee));
-        }
-    }
-
     public static OrderBook diff(OrderBook before, OrderBook after) {
         if (before == null)
             return after;
@@ -90,6 +76,9 @@ public class OrderBooks {
     }
 
     public static List<LimitOrder> diff(List<LimitOrder> oldOrders, List<LimitOrder> newOrders, Order.OrderType type) {
+        if (oldOrders == null)
+            return newOrders;
+
         List<LimitOrder> result = new LinkedList<>();
 
         Iterator<LimitOrder> beforeIter = oldOrders.iterator();

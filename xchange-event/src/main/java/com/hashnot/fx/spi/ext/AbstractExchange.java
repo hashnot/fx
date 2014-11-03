@@ -53,12 +53,6 @@ public abstract class AbstractExchange implements IExchange {
         orderBookMonitor = new OrderBookMonitor(this, runnableScheduler);
         userTradesMonitor = new UserTradesMonitor(this, runnableScheduler);
         tickerMonitor = new TickerMonitor(this, runnableScheduler);
-
-        //lazy evaluation
-        //tradeService = new CachingTradeService(Suppliers.memoize(() -> new NotifyingTradeService(getExchange().getPollingTradeService())));
-
-        //OrderBookTradeMonitor orderBookMonitor = new OrderBookTradeMonitor(getPollingTradeService());
-        //addOrderBookListener(pair, BigDecimal.ONE, BigDecimal.ONE, orderBookMonitor);
     }
 
     public MarketMetadata getMarketMetadata(CurrencyPair pair) {
