@@ -1,11 +1,11 @@
 package com.hashnot.fx.dealer;
 
 import com.hashnot.fx.framework.Simulation;
-import com.hashnot.fx.spi.ext.IExchange;
-import com.hashnot.fx.spi.ext.SimpleExchange;
 import com.hashnot.fx.util.Exchanges;
-import com.hashnot.fx.util.exec.IExecutorStrategyFactory;
-import com.hashnot.fx.util.exec.SchedulerExecutorFactory;
+import com.hashnot.xchange.event.impl.exec.IExecutorStrategyFactory;
+import com.hashnot.xchange.event.impl.exec.SchedulerExecutorFactory;
+import com.hashnot.xchange.ext.IExchange;
+import com.hashnot.xchange.ext.SimpleExchange;
 import com.xeiam.xchange.BaseExchange;
 import com.xeiam.xchange.ExchangeSpecification;
 import com.xeiam.xchange.currency.CurrencyPair;

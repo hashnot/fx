@@ -1,12 +1,10 @@
 package com.hashnot.fx.dealer;
 
-import com.hashnot.fx.ext.*;
-import com.hashnot.fx.framework.IOrderUpdater;
-import com.hashnot.fx.framework.OrderUpdateEvent;
-import com.hashnot.fx.framework.Simulation;
-import com.hashnot.fx.spi.ext.IExchange;
+import com.hashnot.fx.framework.*;
 import com.hashnot.fx.util.OrderBooks;
-import com.hashnot.fx.util.Orders;
+import com.hashnot.xchange.ext.IExchange;
+import com.hashnot.xchange.ext.Market;
+import com.hashnot.xchange.ext.util.Orders;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import org.slf4j.Logger;
@@ -15,12 +13,10 @@ import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 import java.util.*;
 
-import static com.hashnot.fx.util.Numbers.eq;
-import static com.hashnot.fx.util.Numbers.lt;
-import static com.hashnot.fx.util.Orders.*;
-import static com.hashnot.fx.util.Orders.Price.isBetter;
-import static com.hashnot.fx.util.Orders.Price.forNull;
-import static com.hashnot.fx.util.Orders.Price.isWorse;
+import static com.hashnot.xchange.ext.util.Numbers.Price.*;
+import static com.hashnot.xchange.ext.util.Numbers.eq;
+import static com.hashnot.xchange.ext.util.Numbers.lt;
+import static com.hashnot.xchange.ext.util.Orders.*;
 import static com.xeiam.xchange.dto.Order.OrderType;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
 
@@ -82,7 +78,7 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener {
                     dirty = updateBestMarket(bestMarket, market, oKey);
                 }
             }
-        } else if (!eq(newPrice, Price.forNull(side))) {
+        } else if (!eq(newPrice, forNull(side))) {
             dirty = updateBestMarket(null, market, oKey);
         }
 

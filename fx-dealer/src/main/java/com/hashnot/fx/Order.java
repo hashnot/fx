@@ -1,12 +1,12 @@
 package com.hashnot.fx;
 
-import com.hashnot.fx.ext.IOrderBookListener;
-import com.hashnot.fx.ext.ITradeListener;
-import com.hashnot.fx.ext.OrderBookUpdateEvent;
-import com.hashnot.fx.ext.impl.TrackingTradesMonitor;
 import com.hashnot.fx.framework.Main;
-import com.hashnot.fx.spi.ext.IExchange;
-import com.hashnot.fx.util.Orders;
+import com.hashnot.fx.framework.impl.TrackingTradesMonitor;
+import com.hashnot.xchange.event.IOrderBookListener;
+import com.hashnot.xchange.event.ITradeListener;
+import com.hashnot.xchange.event.OrderBookUpdateEvent;
+import com.hashnot.xchange.ext.IExchange;
+import com.hashnot.xchange.ext.util.Orders;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.marketdata.Trade;
 import com.xeiam.xchange.dto.trade.LimitOrder;

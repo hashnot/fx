@@ -1,8 +1,7 @@
 package com.hashnot.fx.framework;
 
-import com.hashnot.fx.spi.ext.IExchange;
-import com.hashnot.fx.util.Numbers;
-import com.hashnot.fx.util.Orders;
+import com.hashnot.xchange.ext.IExchange;
+import com.hashnot.xchange.ext.util.Orders;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.trade.LimitOrder;
@@ -14,9 +13,10 @@ import java.math.RoundingMode;
 import java.util.LinkedList;
 import java.util.List;
 
-import static com.hashnot.fx.util.Numbers.lt;
-import static com.hashnot.fx.util.Orders.Price.isBetter;
-import static com.hashnot.fx.util.Orders.*;
+import static com.hashnot.xchange.ext.util.Numbers.Price.isBetter;
+import static com.hashnot.xchange.ext.util.Numbers.lt;
+import static com.hashnot.xchange.ext.util.Numbers.min;
+import static com.hashnot.xchange.ext.util.Orders.*;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 
@@ -70,7 +70,7 @@ public class Simulation {
         log.debug("open: {}", openAmount);
         log.debug("close: {}", closeAmount);
 
-        BigDecimal openAmountActual = Numbers.min(openAmount, closeAmount).setScale(getScale(worstExchange, bestExchange, pair), RoundingMode.FLOOR);
+        BigDecimal openAmountActual = min(openAmount, closeAmount).setScale(getScale(worstExchange, bestExchange, pair), RoundingMode.FLOOR);
 
         if (!checkMinima(openAmountActual, worstExchange, pair)) {
             log.debug("Amount {} less than minimum", openAmountActual);
@@ -161,7 +161,7 @@ public class Simulation {
         Order.OrderType type = revert(orders.get(0).getType());
         for (LimitOrder order : orders) {
             BigDecimal netPrice = Orders.getNetPrice(order.getLimitPrice(), type, x.getMarketMetadata(order.getCurrencyPair()).getOrderFeeFactor());
-            if (Price.isBetter(netPrice, netPriceLimit, order.getType()))
+            if (isBetter(netPrice, netPriceLimit, order.getType()))
                 break;
             log.debug("order {}", order);
             BigDecimal curAmount = order.getTradableAmount();

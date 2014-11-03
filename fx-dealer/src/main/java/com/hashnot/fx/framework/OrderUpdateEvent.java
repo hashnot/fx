@@ -1,6 +1,6 @@
 package com.hashnot.fx.framework;
 
-import com.hashnot.fx.spi.ext.IExchange;
+import com.hashnot.xchange.ext.IExchange;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 

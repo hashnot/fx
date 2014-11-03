@@ -1,5 +1,6 @@
 package com.hashnot.fx.util;
 
+import com.hashnot.xchange.ext.util.Orders;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.marketdata.OrderBook;
 import com.xeiam.xchange.dto.trade.LimitOrder;
@@ -10,8 +11,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 
-import static com.hashnot.fx.util.Numbers.BigDecimal.isZero;
-import static com.hashnot.fx.util.Orders.Price.compareTo;
+import static com.hashnot.xchange.ext.util.Numbers.BigDecimal.isZero;
+import static com.hashnot.xchange.ext.util.Numbers.Price.compareTo;
 import static com.xeiam.xchange.dto.trade.LimitOrder.Builder.from;
 
 /**

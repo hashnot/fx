@@ -1,6 +1,6 @@
 package com.hashnot.fx.util;
 
-import com.hashnot.fx.spi.ext.IExchange;
+import com.hashnot.xchange.ext.IExchange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

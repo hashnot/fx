@@ -1,14 +1,9 @@
 package com.hashnot.fx.framework;
 
 import com.hashnot.fx.dealer.Dealer;
-import com.hashnot.fx.ext.Market;
-import com.hashnot.fx.ext.MarketSide;
-import com.hashnot.fx.ext.impl.BestOfferMonitor;
-import com.hashnot.fx.ext.impl.OrderBookSideMonitor;
-import com.hashnot.fx.ext.impl.TrackingTradesMonitor;
-import com.hashnot.fx.spi.ext.CachingTradeService;
-import com.hashnot.fx.spi.ext.IExchange;
-import com.hashnot.fx.spi.ext.NotifyingTradeService;
+import com.hashnot.fx.framework.impl.*;
+import com.hashnot.xchange.ext.IExchange;
+import com.hashnot.xchange.ext.Market;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
 import groovy.lang.GroovyShell;
@@ -35,7 +30,7 @@ public class Main {
 
         Simulation simulation = new Simulation();
         OrderManager orderManager = new OrderManager();
-        BestOfferMonitor bestOfferMonitor = new BestOfferMonitor();
+        IBestOfferMonitor bestOfferMonitor = new BestOfferMonitor();
         OrderBookSideMonitor orderBookSideMonitor = new OrderBookSideMonitor();
         Dealer dealer = new Dealer(simulation, orderManager, orderBookSideMonitor);
 

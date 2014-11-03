@@ -1,7 +1,6 @@
 package com.hashnot.fx.framework;
 
-import com.hashnot.fx.ext.ITradeListener;
-import com.hashnot.fx.spi.ConnectionException;
+import com.hashnot.xchange.event.ITradeListener;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.marketdata.Trade;
 import com.xeiam.xchange.dto.trade.LimitOrder;
@@ -15,7 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.hashnot.fx.util.Numbers.eq;
+import static com.hashnot.xchange.ext.util.Numbers.eq;
 import static com.xeiam.xchange.dto.Order.OrderType;
 import static com.xeiam.xchange.dto.trade.LimitOrder.Builder.from;
 import static java.math.BigDecimal.ZERO;

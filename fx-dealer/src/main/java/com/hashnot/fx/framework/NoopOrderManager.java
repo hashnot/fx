@@ -1,6 +1,5 @@
 package com.hashnot.fx.framework;
 
-import com.hashnot.fx.spi.ConnectionException;
 import com.xeiam.xchange.dto.marketdata.Trade;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.service.polling.PollingTradeService;
