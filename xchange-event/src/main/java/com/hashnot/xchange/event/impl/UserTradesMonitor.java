@@ -1,9 +1,9 @@
 package com.hashnot.xchange.event.impl;
 
-import com.hashnot.xchange.event.ITradesListener;
+import com.hashnot.xchange.event.IUserTradesListener;
 import com.hashnot.xchange.event.ITradesMonitor;
-import com.hashnot.xchange.ext.IExchange;
-import com.xeiam.xchange.dto.marketdata.Trades;
+import com.xeiam.xchange.Exchange;
+import com.xeiam.xchange.dto.trade.UserTrades;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,16 +18,16 @@ import java.util.concurrent.ConcurrentHashMap;
 public class UserTradesMonitor extends AbstractPollingMonitor implements ITradesMonitor {
     final private Logger log = LoggerFactory.getLogger(UserTradesMonitor.class);
 
-    private final IExchange parent;
+    private final Exchange parent;
 
-    private final Set<ITradesListener> listeners = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    private final Set<IUserTradesListener> listeners = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     @Override
     public void run() {
         try {
-            Trades trades = parent.getPollingTradeService().getTradeHistory();
+            UserTrades trades = parent.getPollingTradeService().getTradeHistory();
 
-            for (ITradesListener listener : this.listeners)
+            for (IUserTradesListener listener : this.listeners)
                 try {
                     listener.trades(trades);
                 } catch (RuntimeException e) {
@@ -38,13 +38,13 @@ public class UserTradesMonitor extends AbstractPollingMonitor implements ITrades
         }
     }
 
-    public UserTradesMonitor(IExchange parent, RunnableScheduler scheduler) {
+    public UserTradesMonitor(Exchange parent, RunnableScheduler scheduler) {
         super(scheduler);
         this.parent = parent;
     }
 
     @Override
-    public void addTradesListener(ITradesListener listener) {
+    public void addTradesListener(IUserTradesListener listener) {
         synchronized (listeners) {
             listeners.add(listener);
             enable();
@@ -52,7 +52,7 @@ public class UserTradesMonitor extends AbstractPollingMonitor implements ITrades
     }
 
     @Override
-    public void removeTradesListener(ITradesListener listener) {
+    public void removeTradesListener(IUserTradesListener listener) {
         synchronized (listeners) {
             listeners.remove(listener);
             if (listeners.isEmpty())

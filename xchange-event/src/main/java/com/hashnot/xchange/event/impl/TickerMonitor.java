@@ -4,9 +4,9 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.hashnot.xchange.event.ITickerListener;
 import com.hashnot.xchange.event.ITickerMonitor;
-import com.hashnot.xchange.ext.IExchange;
 import com.hashnot.xchange.ext.Market;
 import com.hashnot.xchange.ext.util.Numbers;
+import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.marketdata.Ticker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +23,7 @@ import java.util.Map;
 public class TickerMonitor extends AbstractPollingMonitor implements ITickerMonitor {
     final private Logger log = LoggerFactory.getLogger(TickerMonitor.class);
 
-    private final IExchange exchange;
+    private final Exchange exchange;
     private final Multimap<Market, ITickerListener> listeners = Multimaps.newSetMultimap(new HashMap<>(), HashSet::new);
     private final Map<Market, Ticker> previous = new HashMap<>();
 
@@ -70,7 +70,7 @@ public class TickerMonitor extends AbstractPollingMonitor implements ITickerMoni
         }
     }
 
-    public TickerMonitor(IExchange exchange, RunnableScheduler scheduler) {
+    public TickerMonitor(Exchange exchange, RunnableScheduler scheduler) {
         super(scheduler);
         this.exchange = exchange;
     }

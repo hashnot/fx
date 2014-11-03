@@ -1,6 +1,6 @@
 package com.hashnot.fx.framework;
 
-import com.hashnot.xchange.ext.IExchange;
+import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 
@@ -10,15 +10,15 @@ import java.util.List;
  * @author Rafał Krupiński
  */
 public class OrderUpdateEvent {
-    public final IExchange openExchange;
-    public final IExchange closeExchange;
+    public final Exchange openExchange;
+    public final Exchange closeExchange;
     public final LimitOrder openedOrder;
     public String openOrderId;
     public final List<LimitOrder> closingOrders;
 
     public final Order.OrderType clear;
 
-    public OrderUpdateEvent(IExchange openExchange, IExchange closeExchange, LimitOrder openedOrder, List<LimitOrder> closingOrders) {
+    public OrderUpdateEvent(Exchange openExchange, Exchange closeExchange, LimitOrder openedOrder, List<LimitOrder> closingOrders) {
         this.openExchange = openExchange;
         this.closeExchange = closeExchange;
         this.openedOrder = openedOrder;

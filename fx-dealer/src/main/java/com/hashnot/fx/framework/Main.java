@@ -1,9 +1,13 @@
 package com.hashnot.fx.framework;
 
 import com.hashnot.fx.dealer.Dealer;
-import com.hashnot.fx.framework.impl.*;
-import com.hashnot.xchange.ext.IExchange;
+import com.hashnot.fx.framework.impl.BestOfferMonitor;
+import com.hashnot.fx.framework.impl.CachingTradeService;
+import com.hashnot.fx.framework.impl.OrderBookSideMonitor;
+import com.hashnot.fx.framework.impl.TrackingUserTradesMonitor;
+import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.ext.Market;
+import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
 import groovy.lang.GroovyShell;
@@ -11,6 +15,8 @@ import groovy.lang.GroovyShell;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -26,34 +32,43 @@ public class Main {
     public static void main(String[] args) throws IOException, InterruptedException {
         ThreadFactory tf = new ConfigurableThreadFactory("%d/%d");
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(10, tf);
-        Collection<IExchange> exchanges = load(args[0], scheduler);
+        Collection<IExchangeMonitor> monitors = load(args[0], scheduler);
+        Map<Exchange, IExchangeMonitor> monitorMap = new HashMap<>();
 
-        Simulation simulation = new Simulation();
+        Simulation simulation = new Simulation(monitorMap);
         OrderManager orderManager = new OrderManager();
-        IBestOfferMonitor bestOfferMonitor = new BestOfferMonitor();
-        OrderBookSideMonitor orderBookSideMonitor = new OrderBookSideMonitor();
-        Dealer dealer = new Dealer(simulation, orderManager, orderBookSideMonitor);
+        IBestOfferMonitor bestOfferMonitor = new BestOfferMonitor(monitorMap);
+        OrderBookSideMonitor orderBookSideMonitor = new OrderBookSideMonitor(monitorMap);
 
-        for (IExchange exchange : exchanges) {
-            exchange.start();
-            final Market market = new Market(exchange, pair);
+        Dealer dealer = new Dealer(simulation, orderManager, orderBookSideMonitor, monitorMap);
+
+        for (IExchangeMonitor monitor : monitors) {
+            Exchange exchange = monitor.getExchange();
+            monitorMap.put(exchange, monitor);
+            monitor.start();
+        }
+        for (Map.Entry<Exchange, IExchangeMonitor> e : monitorMap.entrySet()) {
+            Exchange x = e.getKey();
+            IExchangeMonitor monitor = e.getValue();
+
+            final Market market = new Market(x, pair);
             bestOfferMonitor.addBestOfferListener(dealer, new MarketSide(market, Order.OrderType.ASK));
             bestOfferMonitor.addBestOfferListener(dealer, new MarketSide(market, Order.OrderType.BID));
-            TrackingTradesMonitor trackingTradesMonitor = new TrackingTradesMonitor(exchange.getUserTradesMonitor());
-            CachingTradeService tradeService = new CachingTradeService(new NotifyingTradeService(exchange.getPollingTradeService()));
-            exchange.setPollingTradeService(tradeService);
+            TrackingUserTradesMonitor trackingTradesMonitor = new TrackingUserTradesMonitor(monitor.getUserTradesMonitor());
+            CachingTradeService tradeService = new CachingTradeService(x.getPollingTradeService());
             trackingTradesMonitor.addTradeListener(orderManager);
 
-            Runtime.getRuntime().addShutdownHook(new Thread(tradeService::cancelAll, exchange.toString() + "-cancel"));
+            Runtime.getRuntime().addShutdownHook(new Thread(tradeService::cancelAll, monitor.toString() + "-cancel"));
         }
-        report(exchanges);
+        report(monitors);
     }
 
-    public static Collection<IExchange> load(String path, ScheduledExecutorService scheduler) {
+    @SuppressWarnings("unchecked")
+    public static Collection<IExchangeMonitor> load(String path, ScheduledExecutorService scheduler) {
         GroovyShell sh = new GroovyShell();
         sh.setVariable("executor", scheduler);
         try {
-            return (Collection<IExchange>) sh.evaluate(new File(path));
+            return (Collection<IExchangeMonitor>) sh.evaluate(new File(path));
         } catch (IOException e) {
             throw new IllegalArgumentException("Could not load setup script", e);
         }

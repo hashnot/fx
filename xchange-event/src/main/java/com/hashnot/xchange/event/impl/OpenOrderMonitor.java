@@ -3,10 +3,10 @@ package com.hashnot.xchange.event.impl;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
-import com.hashnot.xchange.event.ITradeListener;
+import com.hashnot.xchange.event.IUserTradeListener;
 import com.hashnot.xchange.event.impl.exec.IExecutorStrategy;
 import com.hashnot.xchange.event.impl.exec.IExecutorStrategyFactory;
-import com.hashnot.xchange.ext.IExchange;
+import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.trade.LimitOrder;
@@ -15,7 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -29,13 +29,13 @@ import static com.hashnot.xchange.ext.util.Numbers.eq;
 public class OpenOrderMonitor implements Runnable {
     final private static Logger log = LoggerFactory.getLogger(OpenOrderMonitor.class);
 
-    final private IExchange parent;
+    final private Exchange parent;
     final private IExecutorStrategy poll;
 
-    private final Multimap<CurrencyPair, ITradeListener> tradeListeners = Multimaps.newMultimap(new ConcurrentHashMap<>(), () -> Collections.newSetFromMap(new ConcurrentHashMap<>()));
+    private final Multimap<CurrencyPair, IUserTradeListener> tradeListeners = Multimaps.newSetMultimap(new ConcurrentHashMap<>(), HashSet::new);
     private final Map<String, LimitOrder> openOrders;
 
-    public OpenOrderMonitor(IExecutorStrategyFactory executorStrategyFactory, Map<String, LimitOrder> openOrders, IExchange parent) {
+    public OpenOrderMonitor(IExecutorStrategyFactory executorStrategyFactory, Map<String, LimitOrder> openOrders, Exchange parent) {
         this.openOrders = openOrders;
         this.parent = parent;
         poll = executorStrategyFactory.create(this);
@@ -56,7 +56,7 @@ public class OpenOrderMonitor implements Runnable {
                 if (currentOrder != null && eq(currentOrder.getTradableAmount(), storedOrder.getTradableAmount()))
                     continue;
 
-                for (ITradeListener tradeListener : tradeListeners.get(storedOrder.getCurrencyPair())) {
+                for (IUserTradeListener tradeListener : tradeListeners.get(storedOrder.getCurrencyPair())) {
                     tradeListener.trade(storedOrder, null, currentOrder);
                 }
                 if (currentOrder == null) {
@@ -71,7 +71,7 @@ public class OpenOrderMonitor implements Runnable {
         }
     }
 
-    public void addOrderListener(CurrencyPair pair, ITradeListener tradeListener) {
+    public void addOrderListener(CurrencyPair pair, IUserTradeListener tradeListener) {
         tradeListeners.put(pair, tradeListener);
         if (!poll.isStarted())
             poll.start();

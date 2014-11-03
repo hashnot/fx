@@ -1,21 +1,24 @@
 package com.hashnot.fx.dealer;
 
 import com.hashnot.fx.framework.Simulation;
-import com.hashnot.fx.util.Exchanges;
+import com.hashnot.xchange.event.impl.ExchangeMonitor;
 import com.hashnot.xchange.event.impl.exec.IExecutorStrategyFactory;
 import com.hashnot.xchange.event.impl.exec.SchedulerExecutorFactory;
-import com.hashnot.xchange.ext.IExchange;
-import com.hashnot.xchange.ext.SimpleExchange;
+import com.hashnot.xchange.event.IExchangeMonitor;
+import com.hashnot.fx.xchange.ext.SimpleExchange;
 import com.xeiam.xchange.BaseExchange;
+import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.ExchangeSpecification;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.marketdata.BaseMarketMetadata;
 import com.xeiam.xchange.dto.trade.LimitOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Executors;
 
@@ -25,6 +28,8 @@ import static com.xeiam.xchange.dto.Order.OrderType.ASK;
 import static com.xeiam.xchange.dto.Order.OrderType.BID;
 import static java.math.BigDecimal.*;
 
+// TODO asserts
+@Ignore
 public class SimulationTest {
 
     @Test
@@ -37,7 +42,6 @@ public class SimulationTest {
                 order(ASK, ONE, P, v(".9"))
         );
         s.deal(worst, e1, bestOrders, e2);
-        report();
     }
 
     @Test
@@ -50,7 +54,6 @@ public class SimulationTest {
                 order(BID, ONE, P, v("1.2"))
         );
         s.deal(worst, e1, bestOrders, e2);
-        report();
     }
 
     @Test
@@ -63,7 +66,6 @@ public class SimulationTest {
                 order(ASK, ONE, P, v(".9"))
         );
         s.deal(worst, e1, bestOrders, e2);
-        report();
     }
 
     @Test
@@ -76,11 +78,6 @@ public class SimulationTest {
                 order(BID, ONE, P, v("1.1"))
         );
         s.deal(worst, e1, bestOrders, e2);
-        report();
-    }
-
-    protected void report() {
-        Exchanges.report(Arrays.asList(e1, e2));
     }
 
     protected static BigDecimal v(final String s) {
@@ -88,31 +85,37 @@ public class SimulationTest {
     }
 
 
-    IExchange e1;
-    IExchange e2;
+    Exchange e1;
+    Exchange e2;
 
     static CurrencyPair P = CurrencyPair.BTC_EUR;
 
     protected Simulation createSimulator(BigDecimal... fee) {
         if (fee.length == 0) fee = new BigDecimal[]{ZERO};
 
+        HashMap<Exchange, IExchangeMonitor> monitors = new HashMap<>();
+
         IExecutorStrategyFactory executorStrategyFactory = new SchedulerExecutorFactory(Executors.newSingleThreadScheduledExecutor(), 100);
-        e1 = new SimpleExchange(new MockExchange(fee[0]), executorStrategyFactory);
-        e1.getWallet().put(EUR, TEN);
-        e1.getWallet().put(BTC, TEN);
+        e1 = new SimpleExchange(new MockExchange(fee[0]));
+        ExchangeMonitor m1 = new ExchangeMonitor(e1, executorStrategyFactory);
+        m1.getWallet().put(EUR, TEN);
+        m1.getWallet().put(BTC, TEN);
+        monitors.put(e1, m1);
 
-        e2 = new SimpleExchange(new MockExchange(fee[Math.min(1, fee.length-1)]), executorStrategyFactory);
-        e2.getWallet().put(EUR, TEN);
-        e2.getWallet().put(BTC, TEN);
+        e2 = new SimpleExchange(new MockExchange(fee[Math.min(1, fee.length - 1)]));
+        ExchangeMonitor m2 = new ExchangeMonitor(e2, executorStrategyFactory);
+        m2.getWallet().put(EUR, TEN);
+        m2.getWallet().put(BTC, TEN);
+        monitors.put(e2, m2);
 
-        return new Simulation();
+        return new Simulation(monitors);
     }
 
     // exchange objects are used just as a key
     private static class MockExchange extends BaseExchange {
         static int cnt;
 
-        public MockExchange(final BigDecimal fee){
+        public MockExchange(final BigDecimal fee) {
             exchangeSpecification = new ExchangeSpecification((String) null);
             exchangeSpecification.setExchangeName("stub-" + cnt++);
             marketMetadataService = pair -> new BaseMarketMetadata(BigDecimal.ONE.setScale(8).movePointLeft(2), 8, fee);

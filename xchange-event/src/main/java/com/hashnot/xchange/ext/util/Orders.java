@@ -1,6 +1,6 @@
 package com.hashnot.xchange.ext.util;
 
-import com.hashnot.xchange.ext.IExchange;
+import com.hashnot.xchange.event.IExchangeMonitor;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.trade.LimitOrder;
@@ -48,13 +48,13 @@ public class Orders {
         return LimitOrder.Builder.from(order).orderType(revert(order.getType())).build();
     }
 
-    public static LimitOrder closing(LimitOrder order, IExchange feeService) {
+    public static LimitOrder closing(LimitOrder order, IExchangeMonitor feeService) {
         LimitOrder result = closing(order);
         updateNetPrice(result, feeService);
         return result;
     }
 
-    public static void updateNetPrice(LimitOrder order, IExchange x) {
+    public static void updateNetPrice(LimitOrder order, IExchangeMonitor x) {
         order.setNetPrice(getNetPrice(order, x.getMarketMetadata(order.getCurrencyPair()).getOrderFeeFactor()));
     }
 

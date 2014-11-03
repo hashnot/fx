@@ -1,7 +1,8 @@
 package com.hashnot.fx.framework;
 
-import com.hashnot.xchange.ext.IExchange;
+import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.ext.util.Orders;
+import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.trade.LimitOrder;
@@ -12,6 +13,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import static com.hashnot.xchange.ext.util.Numbers.Price.isBetter;
 import static com.hashnot.xchange.ext.util.Numbers.lt;
@@ -25,21 +27,30 @@ import static java.math.BigDecimal.ZERO;
  */
 public class Simulation {
     final private static Logger log = LoggerFactory.getLogger(Simulation.class);
+
+    final private Map<Exchange, IExchangeMonitor> monitors;
+
     private static final BigDecimal LOW_LIMIT = new BigDecimal(".001");
 
-    public OrderUpdateEvent deal(LimitOrder worst, IExchange worstExchange, List<LimitOrder> closeOrders, IExchange bestExchange) {
+    public Simulation(Map<Exchange, IExchangeMonitor> monitors) {
+        this.monitors = monitors;
+    }
+
+    public OrderUpdateEvent deal(LimitOrder worst, Exchange worstExchange, List<LimitOrder> closeOrders, Exchange bestExchange) {
 
         //after my open order os closed on the worst exchange, this money should disappear
         String openOutgoingCur = outgoingCurrency(worst);
 
         String closeOutCur = incomingCurrency(worst);
 
-        BigDecimal openOutGross = worstExchange.getWallet(openOutgoingCur);
+        IExchangeMonitor worstMonitor = monitors.get(worstExchange);
+        BigDecimal openOutGross = worstMonitor.getWallet(openOutgoingCur);
         CurrencyPair pair = worst.getCurrencyPair();
-        BigDecimal openOutNet = applyFeeToWallet(worstExchange, openOutGross, pair);
+        BigDecimal openOutNet = applyFeeToWallet(worstMonitor, openOutGross, pair);
 
-        BigDecimal closeOutGross = bestExchange.getWallet(closeOutCur);
-        BigDecimal closeOutNet = applyFeeToWallet(bestExchange, closeOutGross, pair);
+        IExchangeMonitor bestMonitor = monitors.get(bestExchange);
+        BigDecimal closeOutGross = bestMonitor.getWallet(closeOutCur);
+        BigDecimal closeOutNet = applyFeeToWallet(bestMonitor, closeOutGross, pair);
 
         log.debug("type: {}, worst {}, best {}", worst.getType(), worstExchange, bestExchange);
         log.debug("open  {} {} -> {}", openOutgoingCur, openOutGross, openOutNet);
@@ -61,44 +72,44 @@ public class Simulation {
         BigDecimal closeAmount;
         if (worst.getType() == Order.OrderType.ASK) {
             openAmount = openOutGross;
-            closeAmount = totalAmountByValue(closeOrders, closeOutNet, worst.getNetPrice(), bestExchange);
+            closeAmount = totalAmountByValue(closeOrders, closeOutNet, worst.getNetPrice(), bestMonitor);
         } else {
             openAmount = openOutGross.divide(worst.getLimitPrice(), c);
-            closeAmount = totalAmountByAmount(closeOrders, closeOutNet, worst.getNetPrice(), bestExchange);
+            closeAmount = totalAmountByAmount(closeOrders, closeOutNet, worst.getNetPrice(), bestMonitor);
         }
 
         log.debug("open: {}", openAmount);
         log.debug("close: {}", closeAmount);
 
-        BigDecimal openAmountActual = min(openAmount, closeAmount).setScale(getScale(worstExchange, bestExchange, pair), RoundingMode.FLOOR);
+        BigDecimal openAmountActual = min(openAmount, closeAmount).setScale(getScale(worstMonitor, bestMonitor, pair), RoundingMode.FLOOR);
 
-        if (!checkMinima(openAmountActual, worstExchange, pair)) {
+        if (!checkMinima(openAmountActual, worstMonitor, pair)) {
             log.debug("Amount {} less than minimum", openAmountActual);
             return null;
         }
         log.info("open for {}", openAmountActual);
 
-        return apply(worst, worstExchange, closeOrders, bestExchange, openAmountActual);
+        return apply(worst, worstMonitor, closeOrders, worstMonitor, openAmountActual);
     }
 
-    protected BigDecimal applyFeeToWallet(IExchange worstExchange, BigDecimal openOutGross, CurrencyPair pair) {
+    protected BigDecimal applyFeeToWallet(IExchangeMonitor worstExchange, BigDecimal openOutGross, CurrencyPair pair) {
         BigDecimal feeFactor = worstExchange.getMarketMetadata(pair).getOrderFeeFactor();
         return openOutGross.multiply(ONE.subtract(feeFactor));
     }
 
-    protected boolean checkMinima(BigDecimal openAmountActual, IExchange worstExchange, CurrencyPair listing) {
+    protected boolean checkMinima(BigDecimal openAmountActual, IExchangeMonitor worstExchange, CurrencyPair listing) {
         return !(lt(openAmountActual, LOW_LIMIT)
                 || lt(openAmountActual, worstExchange.getMarketMetadata(listing).getAmountMinimum())
         );
     }
 
-    private static int getScale(IExchange e1, IExchange e2, CurrencyPair pair) {
+    private static int getScale(IExchangeMonitor e1, IExchangeMonitor e2, CurrencyPair pair) {
         int s1 = e1.getMarketMetadata(pair).getPriceScale();
         int s2 = e2.getMarketMetadata(pair).getPriceScale();
         return Math.min(s1, s2);
     }
 
-    private OrderUpdateEvent apply(LimitOrder worst, IExchange worstExchange, List<LimitOrder> closeOrders, IExchange bestExchange, BigDecimal openAmount) {
+    private OrderUpdateEvent apply(LimitOrder worst, IExchangeMonitor worstExchange, List<LimitOrder> closeOrders, IExchangeMonitor bestExchange, BigDecimal openAmount) {
         //TODO BigDecimal price = betterPrice(worst.getLimitPrice(), worstExchange.getPriceStep(worst.getCurrencyPair()), worst.getType());
         LimitOrder openOrder = LimitOrder.Builder.from(worst).tradableAmount(openAmount).build();
         List<LimitOrder> myCloseOrders = new LinkedList<>();
@@ -122,10 +133,10 @@ public class Simulation {
             if (last) break;
         }
 
-        return new OrderUpdateEvent(worstExchange, bestExchange, openOrder, myCloseOrders);
+        return new OrderUpdateEvent(worstExchange.getExchange(), bestExchange.getExchange(), openOrder, myCloseOrders);
     }
 
-    static BigDecimal totalAmountByAmount(List<LimitOrder> orders, BigDecimal amountLimit, BigDecimal netPriceLimit, IExchange x) {
+    static BigDecimal totalAmountByAmount(List<LimitOrder> orders, BigDecimal amountLimit, BigDecimal netPriceLimit, IExchangeMonitor x) {
         BigDecimal totalValue = ZERO;
         BigDecimal totalAmount = ZERO;
         Order.OrderType type = revert(orders.get(0).getType());
@@ -155,7 +166,7 @@ public class Simulation {
         return totalAmount;
     }
 
-    static BigDecimal totalAmountByValue(List<LimitOrder> orders, BigDecimal valueLimit, BigDecimal netPriceLimit, IExchange x) {
+    static BigDecimal totalAmountByValue(List<LimitOrder> orders, BigDecimal valueLimit, BigDecimal netPriceLimit, IExchangeMonitor x) {
         BigDecimal totalValue = ZERO;
         BigDecimal totalAmount = ZERO;
         Order.OrderType type = revert(orders.get(0).getType());

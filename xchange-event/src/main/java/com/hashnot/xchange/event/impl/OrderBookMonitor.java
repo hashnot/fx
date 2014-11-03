@@ -5,8 +5,8 @@ import com.google.common.collect.Multimaps;
 import com.hashnot.xchange.event.IOrderBookListener;
 import com.hashnot.xchange.event.IOrderBookMonitor;
 import com.hashnot.xchange.event.OrderBookUpdateEvent;
-import com.hashnot.xchange.ext.IExchange;
 import com.hashnot.xchange.ext.Market;
+import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.marketdata.OrderBook;
 import org.slf4j.Logger;
@@ -14,8 +14,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 /**
@@ -24,11 +24,11 @@ import java.util.Map;
 public class OrderBookMonitor extends AbstractPollingMonitor implements Runnable, IOrderBookMonitor {
     final private static Logger log = LoggerFactory.getLogger(OrderBookMonitor.class);
 
-    final private IExchange parent;
+    final private Exchange parent;
 
-    final private Multimap<CurrencyPair, IOrderBookListener> orderBookListeners = Multimaps.newMultimap(new HashMap<>(), () -> Collections.newSetFromMap(new HashMap<>()));
+    final private Multimap<CurrencyPair, IOrderBookListener> orderBookListeners = Multimaps.newSetMultimap(new HashMap<>(), HashSet::new);
 
-    public OrderBookMonitor(IExchange parent, RunnableScheduler runnableScheduler) {
+    public OrderBookMonitor(Exchange parent, RunnableScheduler runnableScheduler) {
         super(runnableScheduler);
         this.parent = parent;
     }

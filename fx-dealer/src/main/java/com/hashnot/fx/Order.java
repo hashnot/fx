@@ -1,15 +1,15 @@
 package com.hashnot.fx;
 
 import com.hashnot.fx.framework.Main;
-import com.hashnot.fx.framework.impl.TrackingTradesMonitor;
+import com.hashnot.fx.framework.impl.TrackingUserTradesMonitor;
 import com.hashnot.xchange.event.IOrderBookListener;
-import com.hashnot.xchange.event.ITradeListener;
+import com.hashnot.xchange.event.IUserTradeListener;
 import com.hashnot.xchange.event.OrderBookUpdateEvent;
-import com.hashnot.xchange.ext.IExchange;
+import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.ext.util.Orders;
 import com.xeiam.xchange.currency.CurrencyPair;
-import com.xeiam.xchange.dto.marketdata.Trade;
 import com.xeiam.xchange.dto.trade.LimitOrder;
+import com.xeiam.xchange.dto.trade.UserTrade;
 import com.xeiam.xchange.service.polling.PollingTradeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,13 +43,13 @@ public class Order {
      * price or delta or auto (default)
      */
     public static void main(String[] args) throws Exception {
-        Collection<IExchange> exchanges = Main.load(args[0], Executors.newScheduledThreadPool(10));
-        IExchange x = find(exchanges, args[1]);
+        Collection<IExchangeMonitor> exchanges = Main.load(args[0], Executors.newScheduledThreadPool(10));
+        IExchangeMonitor x = find(exchanges, args[1]);
         x.start();
         order(x, args[2], args[3], args[4], args.length == 6 ? args[5] : null);
     }
 
-    private static void order(IExchange x, String type, String amount, String pair, String price) throws Exception {
+    private static void order(IExchangeMonitor x, String type, String amount, String pair, String price) throws Exception {
         OrderType orderType = Character.toLowerCase(type.charAt(0)) == 'a' ? ASK : BID;
 
         BigDecimal tradableAmount = null;
@@ -68,18 +68,18 @@ public class Order {
         log.info("{}", order);
     }
 
-    private static BigDecimal order(IExchange x, OrderType type, BigDecimal amount, BigDecimal value, CurrencyPair pair) throws ExecutionException, InterruptedException {
+    private static BigDecimal order(IExchangeMonitor x, OrderType type, BigDecimal amount, BigDecimal value, CurrencyPair pair) throws ExecutionException, InterruptedException {
 
         Dealer dealer = new Dealer(x, new LimitOrder(type, amount, pair, null, null, null), value);
 
         x.getOrderBookMonitor().addOrderBookListener(dealer, pair);
-        new TrackingTradesMonitor(x.getUserTradesMonitor()).addTradeListener(dealer);
+        new TrackingUserTradesMonitor(x.getUserTradesMonitor()).addTradeListener(dealer);
 
         return dealer.get();
     }
 
-    private static IExchange find(Collection<IExchange> exchanges, String name) {
-        for (IExchange x : exchanges) {
+    private static IExchangeMonitor find(Collection<IExchangeMonitor> exchanges, String name) {
+        for (IExchangeMonitor x : exchanges) {
             log.debug("{}", x);
             if (x.toString().matches(name))
                 return x;
@@ -89,9 +89,9 @@ public class Order {
 
 }
 
-class Dealer implements IOrderBookListener, ITradeListener {
+class Dealer implements IOrderBookListener, IUserTradeListener {
     final private static Logger log = LoggerFactory.getLogger(Dealer.class);
-    private IExchange x;
+    private IExchangeMonitor x;
     private LimitOrder order;
     private String orderId;
     private BigDecimal value = BigDecimal.ZERO;
@@ -102,7 +102,7 @@ class Dealer implements IOrderBookListener, ITradeListener {
     //false if partially executed
     private AtomicBoolean edit = new AtomicBoolean(true);
 
-    Dealer(IExchange x, LimitOrder order, BigDecimal tradableValue) {
+    Dealer(IExchangeMonitor x, LimitOrder order, BigDecimal tradableValue) {
         this.x = x;
         this.order = order;
     }
@@ -118,7 +118,7 @@ class Dealer implements IOrderBookListener, ITradeListener {
             BigDecimal price = Orders.betterPrice(orders.get(0).getLimitPrice(), x.getMarketMetadata(order.getCurrencyPair()).getPriceStep(), order.getType());
 
             try {
-                PollingTradeService tradeService = x.getPollingTradeService();
+                PollingTradeService tradeService = x.getExchange().getPollingTradeService();
                 LimitOrder order = from(this.order).limitPrice(price).build();
                 if (false) {
                     if (orderId != null)
@@ -133,7 +133,7 @@ class Dealer implements IOrderBookListener, ITradeListener {
     }
 
     @Override
-    public synchronized void trade(LimitOrder monitored, Trade trade, LimitOrder current) {
+    public synchronized void trade(LimitOrder monitored, UserTrade trade, LimitOrder current) {
         if (current == null) {
             x.getOrderBookMonitor().removeOrderBookListener(this, monitored.getCurrencyPair());
             done = true;

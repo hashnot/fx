@@ -1,15 +1,16 @@
 package com.hashnot.xchange.ext;
 
+import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 
 /**
  * @author Rafał Krupiński
  */
 public class Market {
-    public final IExchange exchange;
+    public final Exchange exchange;
     public final CurrencyPair listing;
 
-    public Market(IExchange exchange, CurrencyPair listing) {
+    public Market(Exchange exchange, CurrencyPair listing) {
         this.exchange = exchange;
         this.listing = listing;
     }

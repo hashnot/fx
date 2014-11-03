@@ -2,9 +2,10 @@ package com.hashnot.fx.dealer;
 
 import com.hashnot.fx.framework.*;
 import com.hashnot.fx.util.OrderBooks;
-import com.hashnot.xchange.ext.IExchange;
+import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.ext.Market;
 import com.hashnot.xchange.ext.util.Orders;
+import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import org.slf4j.Logger;
@@ -27,7 +28,8 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener {
     private final IOrderUpdater orderUpdater;
     final private IOrderBookSideMonitor orderBookSideMonitor;
 
-    public Simulation simulation;
+    final private Simulation simulation;
+    final private Map<Exchange, IExchangeMonitor> monitors;
 
     // side -> map(market -> best offer price)
     final private Map<MarketSide, BigDecimal> bestOffers = new HashMap<>();
@@ -36,10 +38,11 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener {
 
     final private Map<ListingSide, Market> worstMarkets = new HashMap<>();
 
-    public Dealer(Simulation simulation, IOrderUpdater orderUpdater, IOrderBookSideMonitor orderBookSideMonitor) {
+    public Dealer(Simulation simulation, IOrderUpdater orderUpdater, IOrderBookSideMonitor orderBookSideMonitor, Map<Exchange, IExchangeMonitor> monitors) {
         this.simulation = simulation;
         this.orderUpdater = orderUpdater;
         this.orderBookSideMonitor = orderBookSideMonitor;
+        this.monitors = monitors;
     }
 
     /**
@@ -145,17 +148,19 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener {
         //TODO change may mean that we need to change the open order to smaller one
 
         // open or update order
-        IExchange exchange = source.market.exchange;
-        List<LimitOrder> limited = OrderBooks.removeOverLimit(evt.newOrders, exchange.getLimit(listing.baseSymbol), exchange.getLimit(listing.counterSymbol));
+        Exchange exchange = source.market.exchange;
+        IExchangeMonitor monitor = monitors.get(exchange);
+        List<LimitOrder> limited = OrderBooks.removeOverLimit(evt.newOrders, monitor.getLimit(listing.baseSymbol), monitor.getLimit(listing.counterSymbol));
 
         // TODO remove net prices
-        Orders.updateNetPrices(limited, exchange.getMarketMetadata(source.market.listing).getOrderFeeFactor());
+        Orders.updateNetPrices(limited, monitor.getMarketMetadata(source.market.listing).getOrderFeeFactor());
 
         MarketSide worstKey = new MarketSide(worstMarket, side);
         LimitOrder worstOrder = new LimitOrder.Builder(side, listing).limitPrice(bestOffers.get(worstKey)).build();
-        Orders.updateNetPrice(worstOrder, worstMarket.exchange);
+        IExchangeMonitor worstExchange = monitors.get(worstMarket.exchange);
+        Orders.updateNetPrice(worstOrder, worstExchange);
 
-        LimitOrder bestOrder = Orders.closing(evt.newOrders.get(0), exchange);
+        LimitOrder bestOrder = Orders.closing(evt.newOrders.get(0), monitor);
 
         if (!isProfitable(worstOrder, bestOrder)) {
             orderUpdater.update(new OrderUpdateEvent(side));
@@ -170,12 +175,9 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener {
             orderUpdater.update(new OrderUpdateEvent(side));
     }
 
-    private boolean hasMinimumMoney(IExchange x, LimitOrder order, OrderType dir) {
-        return hasMinimumMoney(new Market(x, order.getCurrencyPair()), dir, order.getLimitPrice());
-    }
-
     private boolean hasMinimumMoney(Market market, OrderType dir, BigDecimal price) {
-        BigDecimal outAmount = market.exchange.getWallet(Orders.outgoingCurrency(dir, market.listing));
+        IExchangeMonitor monitor = monitors.get(market.exchange);
+        BigDecimal outAmount = monitor.getWallet(Orders.outgoingCurrency(dir, market.listing));
 
         BigDecimal baseAmount;
         if (dir == ASK)
@@ -184,73 +186,7 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener {
             baseAmount = outAmount.divide(price, c);
         }
 
-        return !lt(baseAmount, market.exchange.getMarketMetadata(market.listing).getAmountMinimum());
-    }
-
-    private void clearOrders(CurrencyPair pair) {
-        log.debug("TODO clearOrders");
-    }
-
-    private void updateLimitOrders(CurrencyPair pair, Collection<IExchange> exchanges, OrderType type) {
-        //podsumuj wszystkie oferty do
-        // - limitu stanu konta
-        // - limitu różnicy ceny
-
-        NavigableMap<LimitOrder, IExchange> bestOrders = null;//getBestOffers(pair, exchanges, type);
-        if (bestOrders.size() < 2) {
-            clearOrders(pair);
-            return;
-        }
-
-        // find best - closing orders
-        Map.Entry<LimitOrder, IExchange> best = null;
-        for (Map.Entry<LimitOrder, IExchange> e : bestOrders.entrySet()) {
-            if (hasMinimumMoney(e.getValue(), e.getKey(), revert(type))) {
-                best = e;
-                break;
-            }
-        }
-
-        if (best == null) {
-            log.info("No exchange has sufficient funds to close {}", type);
-            return;
-        }
-
-        // find worst - opening orders
-        Map.Entry<LimitOrder, IExchange> worst = null;
-        for (Map.Entry<LimitOrder, IExchange> e : bestOrders.descendingMap().entrySet()) {
-            if (hasMinimumMoney(e.getValue(), e.getKey(), type)) {
-                worst = e;
-                break;
-            }
-        }
-
-        if (worst == null) {
-            log.info("No exchange has sufficient funds to open {}", type);
-            return;
-        } else if (worst == best) {
-            log.info("Didn't find 2 exchanges with sufficient funds ({})", type);
-            return;
-        }
-
-        LimitOrder worstOrder = worst.getKey();
-        updateNetPrice(worstOrder, bestOrders.get(worstOrder));
-
-        IExchange worstExchange = worst.getValue();
-        IExchange bestExchange = best.getValue();
-
-        LimitOrder closingBest = closing(best.getKey(), bestExchange);
-        if (!isProfitable(worstOrder, closingBest)) {
-            orderUpdater.update(new OrderUpdateEvent(type));
-            return;
-        }
-
-        List<LimitOrder> closeOrders = null;//orderBooks.get(new Market(bestExchange, pair)).getOrders(type);
-        OrderUpdateEvent event = simulation.deal(worstOrder, worstExchange, closeOrders, bestExchange);
-        if (event != null)
-            orderUpdater.update(event);
-        else
-            orderUpdater.update(new OrderUpdateEvent(type));
+        return !lt(baseAmount, monitor.getMarketMetadata(market.listing).getAmountMinimum());
     }
 
     private static final Logger log = LoggerFactory.getLogger(Dealer.class);
