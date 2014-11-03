@@ -45,7 +45,7 @@ public class Main {
             bestOfferMonitor.addBestOfferListener(dealer, new MarketSide(market, Order.OrderType.ASK));
             bestOfferMonitor.addBestOfferListener(dealer, new MarketSide(market, Order.OrderType.BID));
             TrackingTradesMonitor trackingTradesMonitor = new TrackingTradesMonitor(exchange.getUserTradesMonitor());
-            CachingTradeService tradeService = new CachingTradeService(() -> new NotifyingTradeService(exchange.getPollingTradeService()));
+            CachingTradeService tradeService = new CachingTradeService(new NotifyingTradeService(exchange.getPollingTradeService()));
             exchange.setPollingTradeService(tradeService);
             trackingTradesMonitor.addTradeListener(orderManager);
 

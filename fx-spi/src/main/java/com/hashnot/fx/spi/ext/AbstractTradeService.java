@@ -1,6 +1,5 @@
 package com.hashnot.fx.spi.ext;
 
-import com.google.common.base.Supplier;
 import com.hashnot.fx.spi.ILimitOrderPlacementListener;
 import com.xeiam.xchange.ExchangeException;
 import com.xeiam.xchange.NotAvailableFromExchangeException;
@@ -18,50 +17,50 @@ import java.util.Collection;
  * @author Rafał Krupiński
  */
 public abstract class AbstractTradeService implements ITradeService {
-    final private Supplier<ITradeService> backend;
+    final private ITradeService backend;
 
-    protected AbstractTradeService(Supplier<ITradeService> backend) {
+    protected AbstractTradeService(ITradeService backend) {
         this.backend = backend;
     }
 
     @Override
     public OpenOrders getOpenOrders() throws ExchangeException, NotAvailableFromExchangeException, NotYetImplementedForExchangeException, IOException {
-        return backend.get().getOpenOrders();
+        return backend.getOpenOrders();
     }
 
     @Override
     public String placeMarketOrder(MarketOrder marketOrder) throws ExchangeException, NotAvailableFromExchangeException, NotYetImplementedForExchangeException, IOException {
-        return backend.get().placeMarketOrder(marketOrder);
+        return backend.placeMarketOrder(marketOrder);
     }
 
     @Override
     public String placeLimitOrder(LimitOrder limitOrder) throws ExchangeException, NotAvailableFromExchangeException, NotYetImplementedForExchangeException, IOException {
-        return backend.get().placeLimitOrder(limitOrder);
+        return backend.placeLimitOrder(limitOrder);
     }
 
     @Override
     public boolean cancelOrder(String orderId) throws ExchangeException, NotAvailableFromExchangeException, NotYetImplementedForExchangeException, IOException {
-        return backend.get().cancelOrder(orderId);
+        return backend.cancelOrder(orderId);
     }
 
     @Override
     public Trades getTradeHistory(Object... arguments) throws ExchangeException, NotAvailableFromExchangeException, NotYetImplementedForExchangeException, IOException {
-        return backend.get().getTradeHistory(arguments);
+        return backend.getTradeHistory(arguments);
     }
 
     @Override
     public Collection<CurrencyPair> getExchangeSymbols() throws IOException {
-        return backend.get().getExchangeSymbols();
+        return backend.getExchangeSymbols();
     }
 
     @Override
     public void removeLimitOrderPlacedListener(ILimitOrderPlacementListener listener) {
-        backend.get().removeLimitOrderPlacedListener(listener);
+        backend.removeLimitOrderPlacedListener(listener);
     }
 
     @Override
     public void addLimitOrderPlacedListener(ILimitOrderPlacementListener listener) {
-        backend.get().addLimitOrderPlacedListener(listener);
+        backend.addLimitOrderPlacedListener(listener);
     }
 
 }

@@ -20,7 +20,7 @@ public class CachingTradeService extends AbstractTradeService {
 
     final private Map<String, LimitOrder> openOrders = new ConcurrentHashMap<>();
 
-    public CachingTradeService(Supplier<ITradeService> backend) {
+    public CachingTradeService(ITradeService backend) {
         super(backend);
     }
 
