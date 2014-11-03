@@ -87,7 +87,11 @@ public class OrderBookSideMonitor implements IOrderBookSideMonitor, IOrderBookLi
 
         OrderBookSideUpdateEvent obse = new OrderBookSideUpdateEvent(new MarketSide(market, side), oldOrders, newOrders);
         for (IOrderBookSideListener listener : marketListeners.get(side)) {
-            listener.orderBookSideChanged(obse);
+            try {
+                listener.orderBookSideChanged(obse);
+            } catch (RuntimeException x) {
+                log.warn("Error", x);
+            }
         }
     }
 }

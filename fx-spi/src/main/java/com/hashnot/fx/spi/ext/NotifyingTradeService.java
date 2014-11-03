@@ -10,6 +10,8 @@ import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.dto.trade.MarketOrder;
 import com.xeiam.xchange.dto.trade.OpenOrders;
 import com.xeiam.xchange.service.polling.PollingTradeService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -21,6 +23,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Rafał Krupiński
  */
 public class NotifyingTradeService implements ITradeService {
+    final private static Logger log = LoggerFactory.getLogger(NotifyingTradeService.class);
+
     private PollingTradeService backend;
 
     private Set<ILimitOrderPlacementListener> listeners = Collections.newSetFromMap(new ConcurrentHashMap<>());
@@ -43,7 +47,11 @@ public class NotifyingTradeService implements ITradeService {
     public String placeLimitOrder(LimitOrder limitOrder) throws ExchangeException, NotAvailableFromExchangeException, NotYetImplementedForExchangeException, IOException {
         String id = backend.placeLimitOrder(limitOrder);
         for (ILimitOrderPlacementListener listener : listeners)
-            listener.limitOrderPlaced(limitOrder, id);
+            try {
+                listener.limitOrderPlaced(limitOrder, id);
+            } catch (RuntimeException e) {
+                log.warn("Error", e);
+            }
         return id;
     }
 

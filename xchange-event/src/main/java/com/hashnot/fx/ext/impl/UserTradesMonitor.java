@@ -29,7 +29,11 @@ public class UserTradesMonitor extends AbstractPollingMonitor implements ITrades
             Trades trades = parent.getPollingTradeService().getTradeHistory();
 
             for (ITradesListener listener : this.listeners)
-                listener.trades(trades);
+                try {
+                    listener.trades(trades);
+                } catch (RuntimeException e) {
+                    log.warn("Error", e);
+                }
         } catch (IOException e) {
             log.error("Error", e);
         }

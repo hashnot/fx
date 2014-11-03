@@ -107,8 +107,13 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
     }
 
     protected void notifyBestOfferListeners(BestOfferEvent bestOfferEvent) {
-        for (IBestOfferListener listener : bestOfferListeners.get(bestOfferEvent.source))
-            listener.updateBestOffer(bestOfferEvent);
+        for (IBestOfferListener listener : bestOfferListeners.get(bestOfferEvent.source)) {
+            try {
+                listener.updateBestOffer(bestOfferEvent);
+            } catch (RuntimeException e) {
+                log.warn("Error", e);
+            }
+        }
     }
 
 

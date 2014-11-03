@@ -37,7 +37,11 @@ public class TickerMonitor extends AbstractPollingMonitor implements ITickerMoni
                 previous.put(market, ticker);
 
                 for (ITickerListener listener : e.getValue()) {
-                    listener.ticker(ticker, exchange);
+                    try {
+                        listener.ticker(ticker, exchange);
+                    } catch (Exception e1) {
+                        log.warn("Error", e);
+                    }
                 }
             } catch (IOException x) {
                 log.error("Error", x);

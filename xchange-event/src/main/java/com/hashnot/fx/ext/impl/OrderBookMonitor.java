@@ -39,12 +39,20 @@ public class OrderBookMonitor extends AbstractPollingMonitor implements Runnable
             try {
                 CurrencyPair pair = e.getKey();
                 OrderBook orderBook = parent.getPollingMarketDataService().getOrderBook(pair);
-                OrderBookUpdateEvent evt = new OrderBookUpdateEvent(new Market(parent, pair), orderBook);
-                for (IOrderBookListener listener : e.getValue()) {
-                    listener.orderBookChanged(evt);
-                }
+                notifyListeners(pair, orderBook, e.getValue());
             } catch (IOException x) {
                 log.warn("Error", x);
+            }
+        }
+    }
+
+    protected void notifyListeners(CurrencyPair pair, OrderBook orderBook, Collection<IOrderBookListener> listeners) {
+        OrderBookUpdateEvent evt = new OrderBookUpdateEvent(new Market(parent, pair), orderBook);
+        for (IOrderBookListener listener : listeners) {
+            try {
+                listener.orderBookChanged(evt);
+            } catch (RuntimeException e1) {
+                log.warn("Error", e1);
             }
         }
     }

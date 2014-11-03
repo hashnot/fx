@@ -70,7 +70,11 @@ public class TrackingTradesMonitor implements ITradesListener, ILimitOrderPlacem
                 OrderPair pair = e.getKey();
                 Trade trade = e.getValue();
                 for (ITradeListener listener : tradeListeners) {
-                    listener.trade(pair.original, trade, pair.current);
+                    try {
+                        listener.trade(pair.original, trade, pair.current);
+                    } catch (RuntimeException e1) {
+                        log.warn("Error", e);
+                    }
                 }
             }
 

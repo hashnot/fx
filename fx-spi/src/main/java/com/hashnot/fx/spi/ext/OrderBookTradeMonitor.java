@@ -132,7 +132,11 @@ public class OrderBookTradeMonitor implements IOrderBookSideListener, ILimitOrde
         Trade trade = new Trade(original.getType(), original.getTradableAmount().subtract(amount), original.getCurrencyPair(), price, null, null);
 
         for (ITradeListener orderListener : tradeListeners)
-            orderListener.trade(original, trade, afterOrder);
+            try {
+                orderListener.trade(original, trade, afterOrder);
+            } catch (Exception e) {
+                log.warn("Error", e);
+            }
     }
 
 
