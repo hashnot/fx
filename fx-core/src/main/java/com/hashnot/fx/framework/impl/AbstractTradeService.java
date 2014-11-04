@@ -1,5 +1,6 @@
 package com.hashnot.fx.framework.impl;
 
+import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.ExchangeException;
 import com.xeiam.xchange.NotAvailableFromExchangeException;
 import com.xeiam.xchange.NotYetImplementedForExchangeException;
@@ -17,39 +18,43 @@ import java.util.Collection;
  * @author Rafał Krupiński
  */
 public abstract class AbstractTradeService implements PollingTradeService {
-    final private PollingTradeService backend;
+    final private Exchange exchange;
 
-    protected AbstractTradeService(PollingTradeService backend) {
-        this.backend = backend;
+    protected AbstractTradeService(Exchange exchange) {
+        this.exchange = exchange;
     }
 
     @Override
     public OpenOrders getOpenOrders() throws ExchangeException, NotAvailableFromExchangeException, NotYetImplementedForExchangeException, IOException {
-        return backend.getOpenOrders();
+        return backend().getOpenOrders();
     }
 
     @Override
     public String placeMarketOrder(MarketOrder marketOrder) throws ExchangeException, NotAvailableFromExchangeException, NotYetImplementedForExchangeException, IOException {
-        return backend.placeMarketOrder(marketOrder);
+        return backend().placeMarketOrder(marketOrder);
     }
 
     @Override
     public String placeLimitOrder(LimitOrder limitOrder) throws ExchangeException, NotAvailableFromExchangeException, NotYetImplementedForExchangeException, IOException {
-        return backend.placeLimitOrder(limitOrder);
+        return backend().placeLimitOrder(limitOrder);
     }
 
     @Override
     public boolean cancelOrder(String orderId) throws ExchangeException, NotAvailableFromExchangeException, NotYetImplementedForExchangeException, IOException {
-        return backend.cancelOrder(orderId);
+        return backend().cancelOrder(orderId);
     }
 
     @Override
     public UserTrades getTradeHistory(Object... arguments) throws ExchangeException, NotAvailableFromExchangeException, NotYetImplementedForExchangeException, IOException {
-        return backend.getTradeHistory(arguments);
+        return backend().getTradeHistory(arguments);
     }
 
     @Override
     public Collection<CurrencyPair> getExchangeSymbols() throws IOException {
-        return backend.getExchangeSymbols();
+        return backend().getExchangeSymbols();
+    }
+
+    protected PollingTradeService backend() {
+        return exchange.getPollingTradeService();
     }
 }

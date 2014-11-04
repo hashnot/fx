@@ -2,9 +2,7 @@ package com.hashnot.fx.framework;
 
 import com.hashnot.fx.dealer.Dealer;
 import com.hashnot.fx.framework.impl.BestOfferMonitor;
-import com.hashnot.fx.framework.impl.CachingTradeService;
 import com.hashnot.fx.framework.impl.OrderBookSideMonitor;
-import com.hashnot.fx.framework.impl.TrackingUserTradesMonitor;
 import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.ext.Market;
 import com.xeiam.xchange.Exchange;
@@ -32,11 +30,13 @@ public class Main {
     public static void main(String[] args) throws IOException, InterruptedException {
         ThreadFactory tf = new ConfigurableThreadFactory("%d/%d");
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(10, tf);
+        Runtime.getRuntime().addShutdownHook(new Thread(scheduler::shutdown,"shutdown thread pool"));
+
         Collection<IExchangeMonitor> monitors = load(args[0], scheduler);
         Map<Exchange, IExchangeMonitor> monitorMap = new HashMap<>();
 
         Simulation simulation = new Simulation(monitorMap);
-        OrderManager orderManager = new OrderManager();
+        OrderManager orderManager = new OrderManager(monitorMap);
         IBestOfferMonitor bestOfferMonitor = new BestOfferMonitor(monitorMap);
         OrderBookSideMonitor orderBookSideMonitor = new OrderBookSideMonitor(monitorMap);
 
@@ -54,11 +54,11 @@ public class Main {
             final Market market = new Market(x, pair);
             bestOfferMonitor.addBestOfferListener(dealer, new MarketSide(market, Order.OrderType.ASK));
             bestOfferMonitor.addBestOfferListener(dealer, new MarketSide(market, Order.OrderType.BID));
-            TrackingUserTradesMonitor trackingTradesMonitor = new TrackingUserTradesMonitor(monitor.getUserTradesMonitor());
-            CachingTradeService tradeService = new CachingTradeService(x.getPollingTradeService());
-            trackingTradesMonitor.addTradeListener(orderManager);
 
-            Runtime.getRuntime().addShutdownHook(new Thread(tradeService::cancelAll, monitor.toString() + "-cancel"));
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                ((ITradeService) x.getPollingTradeService()).cancelAll();
+                monitor.stop();
+            }, monitor.toString() + "-stop"));
         }
         report(monitors);
     }

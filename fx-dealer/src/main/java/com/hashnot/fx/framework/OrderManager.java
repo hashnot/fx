@@ -1,9 +1,11 @@
 package com.hashnot.fx.framework;
 
-import com.hashnot.xchange.event.IUserTradeListener;
-import com.xeiam.xchange.dto.Order;
+import com.hashnot.xchange.event.IExchangeMonitor;
+import com.hashnot.xchange.event.IUserTradesListener;
+import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.dto.trade.UserTrade;
+import com.xeiam.xchange.dto.trade.UserTrades;
 import com.xeiam.xchange.service.polling.PollingTradeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,9 +24,16 @@ import static java.math.BigDecimal.ZERO;
 /**
  * @author Rafał Krupiński
  */
-public class OrderManager implements IOrderUpdater, IUserTradeListener {
+public class OrderManager implements IOrderUpdater, IUserTradesListener {
     final private static Logger log = LoggerFactory.getLogger(OrderManager.class);
+
+    final private Map<Exchange, IExchangeMonitor> monitors;
+
     final private Map<OrderType, OrderUpdateEvent> openOrders = new HashMap<>();
+
+    public OrderManager(Map<Exchange, IExchangeMonitor> monitors) {
+        this.monitors = monitors;
+    }
 
     /*
      old value is called self, new - evt
@@ -73,6 +82,9 @@ public class OrderManager implements IOrderUpdater, IUserTradeListener {
     protected void open(OrderType type, OrderUpdateEvent update) throws IOException {
         if (openOrders.containsKey(type))
             throw new IllegalStateException("Seems order already open " + type);
+
+        monitors.get(update.closeExchange).getUserTradesMonitor().addTradesListener(this);
+
         log.info("Open @{} {} ", update.openExchange, update.openedOrder);
         update.openOrderId = update.openExchange.getPollingTradeService().placeLimitOrder(update.openedOrder);
         log.info("Opened {}", update.openOrderId);
@@ -92,17 +104,17 @@ public class OrderManager implements IOrderUpdater, IUserTradeListener {
     }
 
     @Override
-    public void trade(LimitOrder openedOrder, UserTrade trade, LimitOrder currentOrder) {
-        List<LimitOrder> closingOrders = openOrders.get(trade.getType()).closingOrders;
-        Order.OrderType type = closingOrders.get(0).getType();
-        PollingTradeService tradeService = openOrders.get(type).closeExchange.getPollingTradeService();
-
-        if (currentOrder == null)
-            close(closingOrders, tradeService);
-        else {
-            BigDecimal amount = openedOrder.getTradableAmount().subtract(currentOrder.getTradableAmount());
-            close(closingOrders, amount, tradeService);
+    public void trades(UserTrades trades) {
+        // TODO merge trades to make less closing orders
+        for (UserTrade trade : trades.getUserTrades()) {
+            trade(trade);
         }
+    }
+
+    private void trade(UserTrade trade) {
+        OrderUpdateEvent event = openOrders.get(trade.getType());
+        // TODO unregister listener when order is filled
+        close(event.closingOrders, trade.getTradableAmount(), event.closeExchange.getPollingTradeService());
     }
 
     private void close(List<LimitOrder> orders, BigDecimal amountLimit, PollingTradeService tradeService) {
@@ -122,16 +134,6 @@ public class OrderManager implements IOrderUpdater, IUserTradeListener {
                     placeLimitOrder(from(order).tradableAmount(amount).build(), tradeService);
                     break;
                 }
-            }
-        } catch (IOException e) {
-            throw new ConnectionException(e);
-        }
-    }
-
-    private void close(List<LimitOrder> orders, PollingTradeService pollingTradeService) {
-        try {
-            for (LimitOrder order : orders) {
-                placeLimitOrder(order, pollingTradeService);
             }
         } catch (IOException e) {
             throw new ConnectionException(e);

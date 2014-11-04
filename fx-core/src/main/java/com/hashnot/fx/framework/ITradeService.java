@@ -9,4 +9,6 @@ public interface ITradeService extends PollingTradeService {
     void addLimitOrderPlacedListener(ILimitOrderPlacementListener listener);
 
     void removeLimitOrderPlacedListener(ILimitOrderPlacementListener listener);
+
+    void cancelAll();
 }
