@@ -2,6 +2,7 @@ package com.hashnot.xchange.event.impl;
 
 import com.hashnot.xchange.event.IUserTradesMonitor;
 import com.hashnot.xchange.event.IUserTradesListener;
+import com.hashnot.xchange.event.UserTradesEvent;
 import com.hashnot.xchange.event.impl.exec.RunnableScheduler;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.marketdata.Trades;
@@ -57,10 +58,10 @@ public class UserTradesMonitor extends AbstractPollingMonitor implements IUserTr
                 log.warn("Unsupported exchange {}", parent);
                 return;
             }
-
+            UserTradesEvent evt = new UserTradesEvent(trades, parent);
             for (IUserTradesListener listener : this.listeners)
                 try {
-                    listener.trades(trades);
+                    listener.trades(evt);
                 } catch (RuntimeException e) {
                     log.warn("Error in {}", listener, e);
                 }

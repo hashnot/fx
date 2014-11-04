@@ -1,10 +1,7 @@
 package com.hashnot.fx.framework.impl;
 
-import com.hashnot.fx.framework.ILimitOrderPlacementListener;
-import com.hashnot.fx.framework.IOrderBookSideListener;
-import com.hashnot.fx.framework.OrderBookSideUpdateEvent;
-import com.hashnot.fx.framework.IUserTradeListener;
-import com.hashnot.fx.framework.IUserTradeMonitor;
+import com.hashnot.fx.framework.*;
+import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.dto.trade.UserTrade;
 import com.xeiam.xchange.service.polling.PollingTradeService;
@@ -80,24 +77,30 @@ public class OrderBookUserTradeMonitor implements IOrderBookSideListener, ILimit
             return;
         }
 
+        if (tradeListeners.isEmpty()) {
+            log.warn("Received order book update but no one is listening");
+            return;
+        }
+
         Iterator<LimitOrder> afterIter = evt.getChanges().iterator();
+        Exchange source = evt.source.market.exchange;
 
         for (LimitOrder change : evt.newOrders) {
             BigDecimal price = change.getLimitPrice();
 
             LimitOrder afterOrder = find(afterIter, price);
 
-            changed(afterOrder, price);
+            changed(afterOrder, price, source);
         }
     }
 
-    private void changed(LimitOrder afterOrder, BigDecimal price) {
+    private void changed(LimitOrder afterOrder, BigDecimal price, Exchange source) {
         LimitOrder monitored = monitoredOrder.get(price);
 
         if (monitored != null) {
             BigDecimal currentAmount = monitoredCurrent.get(price);
             if (afterOrder == null) {
-                notify(monitored, null);
+                notify(monitored, null, source);
             } else {
                 int amountCmp = afterOrder.getTradableAmount().compareTo(currentAmount);
                 if (amountCmp > 0) {
@@ -106,7 +109,7 @@ public class OrderBookUserTradeMonitor implements IOrderBookSideListener, ILimit
                     monitoredCurrent.remove(price);
                 } else if (amountCmp < 0) {
                     monitoredCurrent.put(price, afterOrder.getTradableAmount());
-                    notify(monitored, afterOrder);
+                    notify(monitored, afterOrder, source);
                 } else {
                     log.warn("Illegal state: order after change is equal to the state before the change: {}", afterOrder);
                 }
@@ -121,20 +124,20 @@ public class OrderBookUserTradeMonitor implements IOrderBookSideListener, ILimit
                 monitoredOrder.put(price, original);
 
                 if (amountCmp < 0)
-                    notify(original, afterOrder);
+                    notify(original, afterOrder, source);
             }
         }
 
     }
 
-    private void notify(LimitOrder original, LimitOrder afterOrder) {
+    private void notify(LimitOrder original, LimitOrder afterOrder, Exchange source) {
         BigDecimal amount = afterOrder != null ? afterOrder.getTradableAmount() : BigDecimal.ZERO;
         BigDecimal price = afterOrder != null ? afterOrder.getLimitPrice() : null;
         UserTrade trade = new UserTrade(original.getType(), original.getTradableAmount().subtract(amount), original.getCurrencyPair(), price, null, null, null, null, null);
 
         for (IUserTradeListener orderListener : tradeListeners)
             try {
-                orderListener.trade(original, trade, afterOrder);
+                orderListener.trade(new UserTradeEvent(original, trade, afterOrder, source));
             } catch (Exception e) {
                 log.warn("Error", e);
             }

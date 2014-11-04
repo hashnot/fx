@@ -1,7 +1,10 @@
 package com.hashnot.fx.framework.impl;
 
-import com.hashnot.xchange.event.IUserTradesMonitor;
 import com.hashnot.fx.framework.IUserTradeListener;
+import com.hashnot.fx.framework.UserTradeEvent;
+import com.hashnot.xchange.event.IUserTradesMonitor;
+import com.hashnot.xchange.event.UserTradesEvent;
+import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.marketdata.Trades;
@@ -21,6 +24,7 @@ import static org.mockito.Mockito.*;
 public class TrackingTradesMonitorTest {
 
     private static final BigDecimal TWO = new BigDecimal(2);
+    private static Exchange source = mock(Exchange.class);
 
     @Test
     public void testLimitOrderPlaced() throws Exception {
@@ -35,8 +39,8 @@ public class TrackingTradesMonitorTest {
         trackingTradesMonitor.limitOrderPlaced(order, id);
 
         UserTrade trade = trade(ASK, ONE, BTC_EUR, ONE, "id", id);
-        trackingTradesMonitor.trades(new UserTrades(asList(trade), 0l, Trades.TradeSortType.SortByID));
-        verify(orderListener).trade(order, trade, null);
+        trackingTradesMonitor.trades(new UserTradesEvent(new UserTrades(asList(trade), 0l, Trades.TradeSortType.SortByID), source));
+        verify(orderListener).trade(new UserTradeEvent(order, trade, null, source));
     }
 
     @Test
@@ -54,8 +58,8 @@ public class TrackingTradesMonitorTest {
         UserTrade t1 = trade(ASK, ONE, BTC_EUR, ONE, "t1", id);
         UserTrade t2 = trade(ASK, ONE, BTC_EUR, ONE, "t2", id);
 
-        trackingTradesMonitor.trades(new UserTrades(asList(t1, t2), 0l, Trades.TradeSortType.SortByID));
-        verify(orderListener, times(1)).trade(order, trade(ASK, TWO, BTC_EUR, ONE, "t2", id), null);
+        trackingTradesMonitor.trades(new UserTradesEvent(new UserTrades(asList(t1, t2), 0l, Trades.TradeSortType.SortByID), source));
+        verify(orderListener, times(1)).trade(new UserTradeEvent(order, trade(ASK, TWO, BTC_EUR, ONE, "t2", id), null, source));
     }
 
     @Test
@@ -75,11 +79,11 @@ public class TrackingTradesMonitorTest {
 
         LimitOrder one = new LimitOrder(ASK, ONE, BTC_EUR, id, null, ONE);
 
-        trackingTradesMonitor.trades(new UserTrades(asList(t1), 0l, Trades.TradeSortType.SortByID));
-        verify(orderListener).trade(order, t1, one);
+        trackingTradesMonitor.trades(new UserTradesEvent(new UserTrades(asList(t1), 0l, Trades.TradeSortType.SortByID), source));
+        verify(orderListener).trade(new UserTradeEvent(order, t1, one, source));
 
-        trackingTradesMonitor.trades(new UserTrades(asList(t2), 0l, Trades.TradeSortType.SortByID));
-        verify(orderListener).trade(order, t2, null);
+        trackingTradesMonitor.trades(new UserTradesEvent(new UserTrades(asList(t2), 0l, Trades.TradeSortType.SortByID), source));
+        verify(orderListener).trade(new UserTradeEvent(order, t2, null, source));
     }
 
     private static UserTrade trade(Order.OrderType side, BigDecimal amount, CurrencyPair pair, BigDecimal price, String tradeId, String orderId) {

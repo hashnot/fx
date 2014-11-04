@@ -1,8 +1,9 @@
 package com.hashnot.fx.framework.impl;
 
+import com.hashnot.fx.framework.IUserTradeListener;
 import com.hashnot.fx.framework.MarketSide;
 import com.hashnot.fx.framework.OrderBookSideUpdateEvent;
-import com.hashnot.fx.framework.IUserTradeListener;
+import com.hashnot.fx.framework.UserTradeEvent;
 import com.hashnot.xchange.ext.Market;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
@@ -47,7 +48,7 @@ public class OrderBookTrackingTradesMonitorTest {
 
         mon.orderBookSideChanged(new OrderBookSideUpdateEvent(ms, stage1, stage0));
 
-        verify(orderListener, times(1)).trade(one, null, null);
+        verify(orderListener, times(1)).trade(new UserTradeEvent(one, null, null, null));
 
     }
 
@@ -59,7 +60,6 @@ public class OrderBookTrackingTradesMonitorTest {
 
         OrderBookUserTradeMonitor mon = new OrderBookUserTradeMonitor(tradeService);
         mon.addTradeListener(orderListener);
-
 
 
         LimitOrder one = new LimitOrder(Order.OrderType.ASK, ONE, P, "o1", null, ONE);
@@ -75,7 +75,7 @@ public class OrderBookTrackingTradesMonitorTest {
 
         mon.orderBookSideChanged(new OrderBookSideUpdateEvent(ms, stage2, stage1));
 
-        verify(orderListener, times(1)).trade(one, null, one);
+        verify(orderListener, times(1)).trade(new UserTradeEvent(one, null, one, null));
     }
 
     @Test
@@ -98,9 +98,9 @@ public class OrderBookTrackingTradesMonitorTest {
 
         List<LimitOrder> stage2 = asList(one);
         mon.orderBookSideChanged(new OrderBookSideUpdateEvent(ms, stage1, stage2));
-        verify(orderListener).trade(two, null, one);
+        verify(orderListener).trade(new UserTradeEvent(two, null, one, null));
 
         mon.orderBookSideChanged(new OrderBookSideUpdateEvent(ms, stage2, stage0));
-        verify(orderListener).trade(two, null, null);
+        verify(orderListener).trade(new UserTradeEvent(two, null, null, null));
     }
 }

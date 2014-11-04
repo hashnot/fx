@@ -2,10 +2,10 @@ package com.hashnot.fx.framework;
 
 import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.event.IUserTradesListener;
+import com.hashnot.xchange.event.UserTradesEvent;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.dto.trade.UserTrade;
-import com.xeiam.xchange.dto.trade.UserTrades;
 import com.xeiam.xchange.service.polling.PollingTradeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -104,9 +104,9 @@ public class OrderManager implements IOrderUpdater, IUserTradesListener {
     }
 
     @Override
-    public void trades(UserTrades trades) {
+    public void trades(UserTradesEvent evt) {
         // TODO merge trades to make less closing orders
-        for (UserTrade trade : trades.getUserTrades()) {
+        for (UserTrade trade : evt.userTrades.getUserTrades()) {
             trade(trade);
         }
     }

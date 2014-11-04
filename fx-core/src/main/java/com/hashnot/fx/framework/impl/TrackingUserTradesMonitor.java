@@ -1,13 +1,14 @@
 package com.hashnot.fx.framework.impl;
 
 import com.hashnot.fx.framework.ILimitOrderPlacementListener;
-import com.hashnot.xchange.event.IUserTradesMonitor;
 import com.hashnot.fx.framework.IUserTradeListener;
 import com.hashnot.fx.framework.IUserTradeMonitor;
+import com.hashnot.fx.framework.UserTradeEvent;
 import com.hashnot.xchange.event.IUserTradesListener;
+import com.hashnot.xchange.event.IUserTradesMonitor;
+import com.hashnot.xchange.event.UserTradesEvent;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.dto.trade.UserTrade;
-import com.xeiam.xchange.dto.trade.UserTrades;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,25 +41,25 @@ public class TrackingUserTradesMonitor implements IUserTradesListener, ILimitOrd
     final private Map<OrderPair, UserTrade> changed = new HashMap<>();
 
     @Override
-    public void trades(UserTrades trades) {
+    public void trades(UserTradesEvent evt) {
         try {
 
-            for (UserTrade trade : trades.getUserTrades()) {
-                String id = trade.getOrderId();
-                OrderPair pair = orders.get(id);
+            for (UserTrade trade : evt.userTrades.getUserTrades()) {
+                String orderId = trade.getOrderId();
+                OrderPair pair = orders.get(orderId);
                 if (pair == null) {
-                    log.warn("Trade on an unknown order {}", trade.getOrderId());
+                    log.warn("Trade on an unknown order {}", orderId);
                     continue;
                 }
 
                 BigDecimal currentAmount = pair.current.getTradableAmount().subtract(trade.getTradableAmount());
                 int amountCmp = currentAmount.compareTo(ZERO);
                 if (amountCmp <= 0) {
-                    orders.remove(id);
+                    orders.remove(orderId);
                     pair.current = null;
 
                     if (amountCmp < 0)
-                        log.warn("Calculated Order has negative amount {}", id);
+                        log.warn("Calculated Order has negative amount {}", orderId);
                 } else if (amountCmp > 0) {
                     pair.current = from(pair.current).tradableAmount(currentAmount).build();
                 }
@@ -71,7 +72,7 @@ public class TrackingUserTradesMonitor implements IUserTradesListener, ILimitOrd
                 UserTrade trade = e.getValue();
                 for (IUserTradeListener listener : tradeListeners) {
                     try {
-                        listener.trade(pair.original, trade, pair.current);
+                        listener.trade(new UserTradeEvent(pair.original, trade, pair.current, evt.source));
                     } catch (RuntimeException e1) {
                         log.warn("Error", e);
                     }
@@ -98,7 +99,9 @@ public class TrackingUserTradesMonitor implements IUserTradesListener, ILimitOrd
 
     @Override
     public void limitOrderPlaced(LimitOrder order, String id) {
-        orders.put(id, new OrderPair(order, order));
+        // add ID
+        LimitOrder limitOrder = from(order).id(id).build();
+        orders.put(id, new OrderPair(limitOrder, limitOrder));
         updateRunning();
     }
 

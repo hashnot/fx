@@ -1,15 +1,15 @@
 package com.hashnot.fx;
 
-import com.hashnot.fx.framework.Main;
-import com.hashnot.fx.framework.impl.TrackingUserTradesMonitor;
-import com.hashnot.xchange.event.IOrderBookListener;
 import com.hashnot.fx.framework.IUserTradeListener;
-import com.hashnot.xchange.event.OrderBookUpdateEvent;
+import com.hashnot.fx.framework.Main;
+import com.hashnot.fx.framework.UserTradeEvent;
+import com.hashnot.fx.framework.impl.TrackingUserTradesMonitor;
 import com.hashnot.xchange.event.IExchangeMonitor;
+import com.hashnot.xchange.event.IOrderBookListener;
+import com.hashnot.xchange.event.OrderBookUpdateEvent;
 import com.hashnot.xchange.ext.util.Orders;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.trade.LimitOrder;
-import com.xeiam.xchange.dto.trade.UserTrade;
 import com.xeiam.xchange.service.polling.PollingTradeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -133,9 +133,9 @@ class Dealer implements IOrderBookListener, IUserTradeListener {
     }
 
     @Override
-    public synchronized void trade(LimitOrder monitored, UserTrade trade, LimitOrder current) {
-        if (current == null) {
-            x.getOrderBookMonitor().removeOrderBookListener(this, monitored.getCurrencyPair());
+    public synchronized void trade(UserTradeEvent evt) {
+        if (evt.current == null) {
+            x.getOrderBookMonitor().removeOrderBookListener(this, evt.monitored.getCurrencyPair());
             done = true;
             notify();
         } else
