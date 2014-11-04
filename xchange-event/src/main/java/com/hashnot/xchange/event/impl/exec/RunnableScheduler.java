@@ -1,4 +1,4 @@
-package com.hashnot.xchange.event.impl;
+package com.hashnot.xchange.event.impl.exec;
 
 /**
  * @author Rafał Krupiński

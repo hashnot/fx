@@ -1,16 +1,13 @@
 package com.hashnot.xchange.event.impl;
 
-import com.hashnot.xchange.event.IOrderBookMonitor;
-import com.hashnot.xchange.event.ITickerMonitor;
-import com.hashnot.xchange.event.ITradesMonitor;
+import com.hashnot.xchange.event.*;
 import com.hashnot.xchange.event.impl.exec.IExecutorStrategy;
 import com.hashnot.xchange.event.impl.exec.IExecutorStrategyFactory;
-import com.hashnot.xchange.event.IExchangeMonitor;
+import com.hashnot.xchange.event.impl.exec.RoundRobinRunnable;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.account.AccountInfo;
 import com.xeiam.xchange.dto.marketdata.MarketMetadata;
-import com.xeiam.xchange.service.polling.PollingTradeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,8 +36,9 @@ public class ExchangeMonitor implements IExchangeMonitor {
     protected final Map<CurrencyPair, MarketMetadata> metadata = new HashMap<>();
 
     final protected IOrderBookMonitor orderBookMonitor;
-    final protected ITradesMonitor userTradesMonitor;
+    final protected IUserTradesMonitor userTradesMonitor;
     final protected ITickerMonitor tickerMonitor;
+    final private IOpenOrdersMonitor openOrdersMonitor;
 
     final protected RoundRobinRunnable runnableScheduler = new RoundRobinRunnable();
     private final IExecutorStrategy executor;
@@ -52,6 +50,7 @@ public class ExchangeMonitor implements IExchangeMonitor {
         orderBookMonitor = new OrderBookMonitor(getExchange(), runnableScheduler);
         userTradesMonitor = new UserTradesMonitor(getExchange(), runnableScheduler);
         tickerMonitor = new TickerMonitor(getExchange(), runnableScheduler);
+        openOrdersMonitor = new OpenOrdersMonitor(getExchange(), runnableScheduler);
     }
 
     public MarketMetadata getMarketMetadata(CurrencyPair pair) {
@@ -87,6 +86,7 @@ public class ExchangeMonitor implements IExchangeMonitor {
 
     @Override
     public void stop() {
+        executor.stop();
     }
 
     @Override
@@ -110,13 +110,18 @@ public class ExchangeMonitor implements IExchangeMonitor {
     }
 
     @Override
-    public ITradesMonitor getUserTradesMonitor() {
+    public IUserTradesMonitor getUserTradesMonitor() {
         return userTradesMonitor;
     }
 
     @Override
     public IOrderBookMonitor getOrderBookMonitor() {
         return orderBookMonitor;
+    }
+
+    @Override
+    public IOpenOrdersMonitor getOpenOrdersMonitor() {
+        return openOrdersMonitor;
     }
 
     protected void updateWallet(Exchange x) throws IOException {

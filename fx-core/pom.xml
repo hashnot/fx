@@ -18,7 +18,7 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.hashnot.xchange</groupId>
+            <groupId>${groupId.xchange}</groupId>
             <artifactId>xchange-core</artifactId>
             <version>${v.xchange}</version>
         </dependency>

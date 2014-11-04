@@ -1,9 +1,9 @@
 package com.hashnot.fx.framework.impl;
 
 import com.hashnot.fx.framework.ILimitOrderPlacementListener;
-import com.hashnot.xchange.event.ITradesMonitor;
-import com.hashnot.xchange.event.IUserTradeListener;
-import com.hashnot.xchange.event.IUserTradeMonitor;
+import com.hashnot.xchange.event.IUserTradesMonitor;
+import com.hashnot.fx.framework.IUserTradeListener;
+import com.hashnot.fx.framework.IUserTradeMonitor;
 import com.hashnot.xchange.event.IUserTradesListener;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.dto.trade.UserTrade;
@@ -28,7 +28,7 @@ public class TrackingUserTradesMonitor implements IUserTradesListener, ILimitOrd
     final private static Logger log = LoggerFactory.getLogger(TrackingUserTradesMonitor.class);
 
     final private Set<IUserTradeListener> tradeListeners = Collections.newSetFromMap(new ConcurrentHashMap<>());
-    private final ITradesMonitor tradesMonitor;
+    private final IUserTradesMonitor tradesMonitor;
 
 
     //state
@@ -102,7 +102,7 @@ public class TrackingUserTradesMonitor implements IUserTradesListener, ILimitOrd
         updateRunning();
     }
 
-    public TrackingUserTradesMonitor(ITradesMonitor tradesMonitor) {
+    public TrackingUserTradesMonitor(IUserTradesMonitor tradesMonitor) {
         this.tradesMonitor = tradesMonitor;
     }
 

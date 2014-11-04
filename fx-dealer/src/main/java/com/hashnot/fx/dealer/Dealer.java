@@ -12,12 +12,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static com.hashnot.xchange.ext.util.Numbers.Price.*;
 import static com.hashnot.xchange.ext.util.Numbers.eq;
 import static com.hashnot.xchange.ext.util.Numbers.lt;
-import static com.hashnot.xchange.ext.util.Orders.*;
+import static com.hashnot.xchange.ext.util.Orders.c;
+import static com.hashnot.xchange.ext.util.Orders.isProfitable;
 import static com.xeiam.xchange.dto.Order.OrderType;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
 

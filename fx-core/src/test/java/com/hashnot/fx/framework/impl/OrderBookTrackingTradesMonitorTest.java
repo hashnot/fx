@@ -2,7 +2,7 @@ package com.hashnot.fx.framework.impl;
 
 import com.hashnot.fx.framework.MarketSide;
 import com.hashnot.fx.framework.OrderBookSideUpdateEvent;
-import com.hashnot.xchange.event.IUserTradeListener;
+import com.hashnot.fx.framework.IUserTradeListener;
 import com.hashnot.xchange.ext.Market;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;

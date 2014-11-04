@@ -3,7 +3,7 @@ package com.hashnot.fx;
 import com.hashnot.fx.framework.Main;
 import com.hashnot.fx.framework.impl.TrackingUserTradesMonitor;
 import com.hashnot.xchange.event.IOrderBookListener;
-import com.hashnot.xchange.event.IUserTradeListener;
+import com.hashnot.fx.framework.IUserTradeListener;
 import com.hashnot.xchange.event.OrderBookUpdateEvent;
 import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.ext.util.Orders;

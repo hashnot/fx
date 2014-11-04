@@ -13,23 +13,25 @@ import java.util.Map;
  */
 public interface IExchangeMonitor {
 
+    ITickerMonitor getTickerMonitor();
+
+    IUserTradesMonitor getUserTradesMonitor();
+
+    IOrderBookMonitor getOrderBookMonitor();
+
+    IOpenOrdersMonitor getOpenOrdersMonitor();
+
     MarketMetadata getMarketMetadata(CurrencyPair pair);
 
     BigDecimal getWallet(String currency);
 
     Map<String, BigDecimal> getWallet();
 
-    ITickerMonitor getTickerMonitor();
-
     BigDecimal getLimit(String currency);
 
     void start();
 
     void stop();
-
-    ITradesMonitor getUserTradesMonitor();
-
-    IOrderBookMonitor getOrderBookMonitor();
 
     void updateWallet() throws IOException;
 

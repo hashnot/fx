@@ -1,5 +1,7 @@
 package com.hashnot.xchange.event.impl;
 
+import com.hashnot.xchange.event.impl.exec.RunnableScheduler;
+
 /**
  * @author Rafał Krupiński
  */

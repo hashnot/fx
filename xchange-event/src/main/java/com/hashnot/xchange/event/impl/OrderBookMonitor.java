@@ -5,6 +5,7 @@ import com.google.common.collect.Multimaps;
 import com.hashnot.xchange.event.IOrderBookListener;
 import com.hashnot.xchange.event.IOrderBookMonitor;
 import com.hashnot.xchange.event.OrderBookUpdateEvent;
+import com.hashnot.xchange.event.impl.exec.RunnableScheduler;
 import com.hashnot.xchange.ext.Market;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;

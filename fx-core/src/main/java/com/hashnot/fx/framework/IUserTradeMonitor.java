@@ -1,4 +1,4 @@
-package com.hashnot.xchange.event;
+package com.hashnot.fx.framework;
 
 /**
  * @author Rafał Krupiński

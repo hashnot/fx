@@ -14,22 +14,22 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>fx-spi</artifactId>
+            <artifactId>fx-core</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>com.hashnot.xchange</groupId>
+            <groupId>${groupId.xchange}</groupId>
             <artifactId>xchange-kraken</artifactId>
             <version>${v.xchange}</version>
         </dependency>
         <dependency>
-            <groupId>com.hashnot.xchange</groupId>
+            <groupId>${groupId.xchange}</groupId>
             <artifactId>xchange-hitbtc</artifactId>
             <version>${v.xchange}</version>
         </dependency>
         <dependency>
-            <groupId>com.hashnot.xchange</groupId>
+            <groupId>${groupId.xchange}</groupId>
             <artifactId>xchange-anx</artifactId>
             <version>${v.xchange}</version>
         </dependency>

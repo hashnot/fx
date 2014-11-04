@@ -1,7 +1,7 @@
 package com.hashnot.fx.framework.impl;
 
-import com.hashnot.xchange.event.ITradesMonitor;
-import com.hashnot.xchange.event.IUserTradeListener;
+import com.hashnot.xchange.event.IUserTradesMonitor;
+import com.hashnot.fx.framework.IUserTradeListener;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.marketdata.Trades;
@@ -26,7 +26,7 @@ public class TrackingTradesMonitorTest {
     public void testLimitOrderPlaced() throws Exception {
         IUserTradeListener orderListener = mock(IUserTradeListener.class);
 
-        ITradesMonitor tradesMonitor = mock(ITradesMonitor.class);
+        IUserTradesMonitor tradesMonitor = mock(IUserTradesMonitor.class);
         TrackingUserTradesMonitor trackingTradesMonitor = new TrackingUserTradesMonitor(tradesMonitor);
         trackingTradesMonitor.addTradeListener(orderListener);
 
@@ -43,7 +43,7 @@ public class TrackingTradesMonitorTest {
     public void testLimitOrdersPlaced() throws Exception {
         IUserTradeListener orderListener = mock(IUserTradeListener.class);
 
-        ITradesMonitor tradesMonitor = mock(ITradesMonitor.class);
+        IUserTradesMonitor tradesMonitor = mock(IUserTradesMonitor.class);
         TrackingUserTradesMonitor trackingTradesMonitor = new TrackingUserTradesMonitor(tradesMonitor);
         trackingTradesMonitor.addTradeListener(orderListener);
 
@@ -62,7 +62,7 @@ public class TrackingTradesMonitorTest {
     public void testLimitOrdersPlaced2() throws Exception {
         IUserTradeListener orderListener = mock(IUserTradeListener.class);
 
-        ITradesMonitor tradesMonitor = mock(ITradesMonitor.class);
+        IUserTradesMonitor tradesMonitor = mock(IUserTradesMonitor.class);
         TrackingUserTradesMonitor trackingTradesMonitor = new TrackingUserTradesMonitor(tradesMonitor);
         trackingTradesMonitor.addTradeListener(orderListener);
 

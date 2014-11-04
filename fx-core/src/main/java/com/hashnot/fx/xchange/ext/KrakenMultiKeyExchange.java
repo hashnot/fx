@@ -1,6 +1,5 @@
 package com.hashnot.fx.xchange.ext;
 
-import com.hashnot.xchange.ext.AbstractExchange;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.ExchangeFactory;
 import com.xeiam.xchange.ExchangeSpecification;

@@ -4,6 +4,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.hashnot.xchange.event.ITickerListener;
 import com.hashnot.xchange.event.ITickerMonitor;
+import com.hashnot.xchange.event.impl.exec.RunnableScheduler;
 import com.hashnot.xchange.ext.Market;
 import com.hashnot.xchange.ext.util.Numbers;
 import com.xeiam.xchange.Exchange;
