@@ -3,6 +3,7 @@ package com.hashnot.fx.framework;
 import com.hashnot.fx.dealer.Dealer;
 import com.hashnot.fx.framework.impl.BestOfferMonitor;
 import com.hashnot.fx.framework.impl.OrderBookSideMonitor;
+import com.hashnot.fx.util.ConfigurableThreadFactory;
 import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.ext.Market;
 import com.xeiam.xchange.Exchange;
@@ -28,7 +29,7 @@ public class Main {
     private static final CurrencyPair pair = CurrencyPair.BTC_EUR;
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        ThreadFactory tf = new ConfigurableThreadFactory("%d/%d");
+        ThreadFactory tf = new ConfigurableThreadFactory();
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(10, tf);
         Runtime.getRuntime().addShutdownHook(new Thread(scheduler::shutdown,"shutdown thread pool"));
 

@@ -1,4 +1,4 @@
-package com.hashnot.fx.framework;
+package com.hashnot.fx.util;
 
 import org.slf4j.LoggerFactory;
 
@@ -13,11 +13,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ConfigurableThreadFactory implements ThreadFactory {
     ThreadFactory backend = Executors.defaultThreadFactory();
 
-    private static String FORMAT = "pool-%d-thread-%d";
+    private static String FORMAT = "%d/%d";
     private String format = FORMAT;
 
     private static AtomicInteger POOL_COUNT = new AtomicInteger();
-    private int poolCount = POOL_COUNT.incrementAndGet();
+    private final int poolCount = POOL_COUNT.incrementAndGet();
     private AtomicInteger threadCount = new AtomicInteger();
 
     private boolean daemon;

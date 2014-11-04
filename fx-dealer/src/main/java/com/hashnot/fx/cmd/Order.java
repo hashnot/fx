@@ -1,4 +1,4 @@
-package com.hashnot.fx;
+package com.hashnot.fx.cmd;
 
 import com.hashnot.fx.framework.IUserTradeListener;
 import com.hashnot.fx.framework.Main;
