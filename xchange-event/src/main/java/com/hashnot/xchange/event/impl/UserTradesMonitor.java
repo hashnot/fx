@@ -37,17 +37,20 @@ public class UserTradesMonitor extends AbstractPollingMonitor implements IUserTr
             // TODO exchange specific code
             PollingTradeService tradeService = parent.getPollingTradeService();
             UserTrades trades;
-            if ("com.xeiam.xchange.anx.v2.service.polling.ANXTradeService".equals(tradeService.getClass().getName())) {
+            if (parent.toString().startsWith("ANXPRO")) {
 
                 trades = tradeService.getTradeHistory(previous);
                 assert Trades.TradeSortType.SortByTimestamp == trades.getTradeSortType();
                 List<UserTrade> userTrades = trades.getUserTrades();
+                if (userTrades.isEmpty())
+                    return;
+
                 UserTrade first = userTrades.get(0);
                 UserTrade last = userTrades.get(userTrades.size() - 1);
                 log.info("first: {}, last: {}", first.getTimestamp(), last.getTimestamp());
                 previous = last.getTimestamp().getTime();
 
-            } else if (tradeService instanceof KrakenTradeService) {
+            } else if (parent.toString().startsWith("Kraken")) {
                 KrakenTradeService krakenTradeService = (KrakenTradeService) tradeService;
                 trades = KrakenAdapters.adaptTradesHistory(krakenTradeService.getKrakenTradeHistory(null, false, previous, null, null));
 
@@ -55,9 +58,12 @@ public class UserTradesMonitor extends AbstractPollingMonitor implements IUserTr
                     previous = Math.max(previous, trade.getTimestamp().getTime());
                 }
             } else {
-                log.warn("Unsupported exchange {}", parent);
+                log.warn("Unsupported exchange {}", tradeService);
                 return;
             }
+            if (trades.getUserTrades().isEmpty())
+                return;
+
             UserTradesEvent evt = new UserTradesEvent(trades, parent);
             for (IUserTradesListener listener : this.listeners)
                 try {

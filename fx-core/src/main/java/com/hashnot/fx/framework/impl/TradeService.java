@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
 /**
  * @author Rafał Krupiński
@@ -26,7 +27,7 @@ public class TradeService extends AbstractTradeService implements ITradeService 
 
     private Set<ILimitOrderPlacementListener> listeners = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
-    public TradeService(Exchange backend) {
+    public TradeService(Supplier<Exchange> backend) {
         super(backend);
     }
 

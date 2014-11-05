@@ -24,12 +24,28 @@ public class KrakenMultiKeyExchange extends AbstractExchange {
 
     @Override
     protected Exchange getExchange() {
-        return exchanges.get((keyCounter.incrementAndGet() % exchanges.size()));
+        return getExchange(true);
+    }
+
+    @Override
+    protected Exchange getExchange(boolean forRemote) {
+        int counter = forRemote ? keyCounter.incrementAndGet() : keyCounter.get();
+        return exchanges.get(counter % exchanges.size());
     }
 
     @Override
     public void applySpecification(ExchangeSpecification exchangeSpecification) {
         for (Exchange exchange : exchanges)
             exchange.applySpecification(exchangeSpecification);
+    }
+
+    @Override
+    public ExchangeSpecification getDefaultExchangeSpecification() {
+        return getExchange(false).getDefaultExchangeSpecification();
+    }
+
+    @Override
+    public ExchangeSpecification getExchangeSpecification() {
+        return getExchange(false).getExchangeSpecification();
     }
 }

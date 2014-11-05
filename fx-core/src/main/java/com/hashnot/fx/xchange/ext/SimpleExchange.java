@@ -17,4 +17,9 @@ public class SimpleExchange extends AbstractExchange {
     protected Exchange getExchange() {
         return exchange;
     }
+
+    @Override
+    protected Exchange getExchange(boolean forRemote) {
+        return exchange;
+    }
 }

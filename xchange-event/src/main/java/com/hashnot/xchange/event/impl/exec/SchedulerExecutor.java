@@ -37,7 +37,7 @@ public class SchedulerExecutor implements IExecutorStrategy, Runnable {
         try {
             runnable.run();
         } catch (RuntimeException e) {
-            log.warn("Error", e);
+            log.warn("Error from {}", runnable, e);
         }
     }
 

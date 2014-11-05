@@ -13,14 +13,15 @@ import com.xeiam.xchange.service.polling.PollingTradeService;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.function.Supplier;
 
 /**
  * @author Rafał Krupiński
  */
 public abstract class AbstractTradeService implements PollingTradeService {
-    final private Exchange exchange;
+    final private Supplier<Exchange> exchange;
 
-    protected AbstractTradeService(Exchange exchange) {
+    protected AbstractTradeService(Supplier<Exchange> exchange) {
         this.exchange = exchange;
     }
 
@@ -55,6 +56,6 @@ public abstract class AbstractTradeService implements PollingTradeService {
     }
 
     protected PollingTradeService backend() {
-        return exchange.getPollingTradeService();
+        return exchange.get().getPollingTradeService();
     }
 }

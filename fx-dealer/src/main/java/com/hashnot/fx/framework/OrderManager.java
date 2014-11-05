@@ -113,6 +113,10 @@ public class OrderManager implements IOrderUpdater, IUserTradesListener {
 
     private void trade(UserTrade trade) {
         OrderUpdateEvent event = openOrders.get(trade.getType());
+        if (event == null || !trade.getOrderId().equals(event.openOrderId)) {
+            log.debug("Trade of an unknown order {}", trade);
+            return;
+        }
         // TODO unregister listener when order is filled
         close(event.closingOrders, trade.getTradableAmount(), event.closeExchange.getPollingTradeService());
     }

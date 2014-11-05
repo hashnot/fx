@@ -16,7 +16,12 @@ import com.xeiam.xchange.service.streaming.StreamingExchangeService;
 public abstract class AbstractExchange implements Exchange {
     protected abstract Exchange getExchange();
 
-    private final ITradeService tradeService = new TradeService(this);
+    /**
+     * Client code declares if it's going to call remote methods on the exchange
+     */
+    protected abstract Exchange getExchange(boolean forRemote);
+
+    private final ITradeService tradeService = new TradeService(this::getExchange);
 
     public PollingMarketDataService getPollingMarketDataService() {
         return getExchange().getPollingMarketDataService();
@@ -49,5 +54,10 @@ public abstract class AbstractExchange implements Exchange {
 
     public ExchangeSpecification getExchangeSpecification() {
         return getExchange().getExchangeSpecification();
+    }
+
+    @Override
+    public String toString() {
+        return getExchange(false).toString();
     }
 }
