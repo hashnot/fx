@@ -2,26 +2,23 @@ package com.hashnot.fx.framework.impl;
 
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+import com.google.common.collect.SetMultimap;
 import com.hashnot.fx.framework.*;
-import com.hashnot.xchange.event.ITickerListener;
 import com.hashnot.xchange.event.IExchangeMonitor;
+import com.hashnot.xchange.event.ITickerListener;
 import com.hashnot.xchange.ext.Market;
 import com.xeiam.xchange.Exchange;
-import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.marketdata.Ticker;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.hashnot.xchange.ext.util.Numbers.Price.forNull;
 import static com.hashnot.xchange.ext.util.Numbers.eq;
-import static com.hashnot.xchange.ext.util.Orders.revert;
+import static com.xeiam.xchange.dto.Order.OrderType;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
 import static com.xeiam.xchange.dto.Order.OrderType.BID;
 
@@ -36,7 +33,7 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
 
     final private Map<Exchange, IExchangeMonitor> monitors;
 
-    final private Multimap<MarketSide, IBestOfferListener> bestOfferListeners = Multimaps.newSetMultimap(new HashMap<>(), HashSet::new);
+    final private Map<Market, Multimap<OrderType, IBestOfferListener>> bestOfferListeners = new HashMap<>();
 
     final private Multimap<MarketSide, IOrderBookSideListener> orderBookListeners = Multimaps.newSetMultimap(new HashMap<>(), HashSet::new);
 
@@ -52,17 +49,17 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
     public void ticker(Ticker ticker, Exchange source) {
         Market market = new Market(source, ticker.getCurrencyPair());
 
-        boolean serviced = checkBestOffer(market, ticker.getAsk(), ASK);
-        serviced |= checkBestOffer(market, ticker.getBid(), BID);
+        boolean serviced = checkBestOffer(ticker.getAsk(), new MarketSide(market, ASK));
+        serviced |= checkBestOffer(ticker.getBid(), new MarketSide(market, BID));
 
         if (!serviced)
             log.warn("Received a ticker update from {} but no listeners are registered", market);
     }
 
-    protected boolean checkBestOffer(Market market, BigDecimal price, Order.OrderType side) {
-        MarketSide key = new MarketSide(market, side);
+    protected boolean checkBestOffer(BigDecimal price, MarketSide key) {
+        Market market = key.market;
 
-        if (!bestOfferListeners.containsKey(key)) {
+        if (!bestOfferListeners.containsKey(market)) {
             return false;
         }
 
@@ -71,7 +68,7 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
             return false;
         }
 
-        BigDecimal cached = cache.getOrDefault(key, forNull(side));
+        BigDecimal cached = cache.getOrDefault(key, forNull(key.side));
 
         if (!eq(price, cached)) {
             BestOfferEvent evt = new BestOfferEvent(price, key);
@@ -87,7 +84,7 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
         // they are here just so we know what to listen to.
 
         // we should only be notified if we have both best offer and order book listeners
-        if (!orderBookListeners.containsKey(evt.source) || !bestOfferListeners.containsKey(evt.source)) {
+        if (!(orderBookListeners.containsKey(evt.source) && bestOfferListeners.containsKey(evt.source.market))) {
             log.warn("Received an OrderBook update bot no listeners are registered");
             return;
         }
@@ -96,7 +93,7 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
     }
 
     private void checkBestOffer(OrderBookSideUpdateEvent evt) {
-        Order.OrderType side = evt.source.side;
+        OrderType side = evt.source.side;
         BigDecimal curPrice = getBestOfferPrice(evt.newOrders, side);
 
         BigDecimal cached = cache.getOrDefault(evt.source, forNull(side));
@@ -107,7 +104,7 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
         notifyBestOfferListeners(new BestOfferEvent(curPrice, evt.source));
     }
 
-    protected BigDecimal getBestOfferPrice(List<LimitOrder> orders, Order.OrderType type) {
+    protected BigDecimal getBestOfferPrice(List<LimitOrder> orders, OrderType type) {
         BigDecimal value;
         if (orders.isEmpty())
             value = forNull(type);
@@ -116,25 +113,27 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
         return value;
     }
 
+    private static final SetMultimap<OrderType, IBestOfferListener> EMPTY_MULTIMAP = Multimaps.newSetMultimap(new HashMap<>(), HashSet::new);
+
     protected void notifyBestOfferListeners(BestOfferEvent bestOfferEvent) {
-        for (IBestOfferListener listener : bestOfferListeners.get(bestOfferEvent.source)) {
+        MarketSide source = bestOfferEvent.source;
+        for (IBestOfferListener listener : bestOfferListeners.getOrDefault(source.market, EMPTY_MULTIMAP).get(source.side)) {
             try {
                 listener.updateBestOffer(bestOfferEvent);
             } catch (RuntimeException e) {
-                log.warn("Error", e);
+                log.warn("Error from {}", listener, e);
             }
         }
     }
 
-
     @Override
     public void addBestOfferListener(IBestOfferListener listener, MarketSide source) {
-        boolean listen = bestOfferListeners.put(source, listener);
+        boolean listen = bestOfferListeners.computeIfAbsent(source.market, (k) -> Multimaps.newSetMultimap(new HashMap<>(), HashSet::new)).put(source.side, listener);
         if (!listen)
             return;
 
         if (!orderBookListeners.containsKey(source)) {
-            registerTickerListener(source);
+            monitors.get(source.market.exchange).getTickerMonitor().addTickerListener(this, source.market);
         } else {
             super.addOrderBookSideListener(this, source);
         }
@@ -142,10 +141,12 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
 
     @Override
     public void removeBestOfferListener(IBestOfferListener listener, MarketSide source) {
-        bestOfferListeners.remove(source, listener);
+        Market market = source.market;
+        Multimap<OrderType, IBestOfferListener> marketBestOfferListeners = bestOfferListeners.getOrDefault(market, EMPTY_MULTIMAP);
+        marketBestOfferListeners.remove(source.side, listener);
 
-        if (!bestOfferListeners.containsKey(source)) {
-            deregisterTickerListener(source);
+        if (marketBestOfferListeners.isEmpty()) {
+            monitors.get(market.exchange).getTickerMonitor().removeTickerListener(this, market);
             super.removeOrderBookSideListener(this, source);
         }
     }
@@ -158,8 +159,9 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
 
         super.addOrderBookSideListener(listener, source);
 
-        if (bestOfferListeners.containsKey(source)) {
-            deregisterTickerListener(source);
+        Market market = source.market;
+        if (bestOfferListeners.containsKey(market)) {
+            monitors.get(market.exchange).getTickerMonitor().removeTickerListener(this, market);
             super.addOrderBookSideListener(this, source);
         }
     }
@@ -172,26 +174,10 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
 
         super.removeOrderBookSideListener(listener, source);
 
-        if (bestOfferListeners.containsKey(source) && !orderBookListeners.containsKey(source)) {
-            registerTickerListener(source);
+        Market market = source.market;
+        if (bestOfferListeners.containsKey(market) && !orderBookListeners.containsKey(source)) {
+            monitors.get(market.exchange).getTickerMonitor().addTickerListener(this, market);
             super.removeOrderBookSideListener(this, source);
         }
     }
-
-    protected void deregisterTickerListener(MarketSide source) {
-        Market market = source.market;
-        // don't deregister if we already are registered
-        if (!bestOfferListeners.containsKey(new MarketSide(market, revert(source.side)))) {
-            monitors.get(market.exchange).getTickerMonitor().removeTickerListener(this, market);
-        }
-    }
-
-    protected void registerTickerListener(MarketSide source) {
-        Market market = source.market;
-        // don't register if we already are registered
-        if (!bestOfferListeners.containsKey(new MarketSide(market, revert(source.side)))) {
-            monitors.get(market.exchange).getTickerMonitor().addTickerListener(this, market);
-        }
-    }
-
 }

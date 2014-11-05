@@ -38,10 +38,9 @@ public class Main {
 
         Simulation simulation = new Simulation(monitorMap);
         OrderManager orderManager = new OrderManager(monitorMap);
-        IBestOfferMonitor bestOfferMonitor = new BestOfferMonitor(monitorMap);
-        OrderBookSideMonitor orderBookSideMonitor = new OrderBookSideMonitor(monitorMap);
+        BestOfferMonitor bestOfferMonitor = new BestOfferMonitor(monitorMap);
 
-        Dealer dealer = new Dealer(simulation, orderManager, orderBookSideMonitor, monitorMap);
+        Dealer dealer = new Dealer(simulation, orderManager, bestOfferMonitor, monitorMap);
 
         for (IExchangeMonitor monitor : monitors) {
             Exchange exchange = monitor.getExchange();
@@ -59,7 +58,7 @@ public class Main {
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 ((ITradeService) x.getPollingTradeService()).cancelAll();
                 monitor.stop();
-            }, monitor.toString() + "-stop"));
+            }, x.toString() + "-stop"));
         }
         report(monitors);
     }
