@@ -31,23 +31,27 @@ public class TickerMonitor extends AbstractPollingMonitor implements ITickerMoni
     @Override
     public void run() {
         for (Map.Entry<Market, Collection<ITickerListener>> e : listeners.asMap().entrySet()) {
+            Market market = e.getKey();
+            Ticker ticker;
             try {
-                Market market = e.getKey();
-                Ticker ticker = exchange.getPollingMarketDataService().getTicker(market.listing);
-                Ticker prev = previous.get(market);
-                if (prev != null && eq(prev, ticker))
-                    continue;
-                previous.put(market, ticker);
-
-                for (ITickerListener listener : e.getValue()) {
-                    try {
-                        listener.ticker(ticker, exchange);
-                    } catch (Exception e1) {
-                        log.warn("Error", e);
-                    }
-                }
+                log.debug("Getting ticker from {}", exchange);
+                ticker = exchange.getPollingMarketDataService().getTicker(market.listing);
+                log.debug("{}", ticker);
             } catch (IOException x) {
                 log.error("Error", x);
+                continue;
+            }
+            Ticker prev = previous.get(market);
+            if (prev != null && eq(prev, ticker))
+                continue;
+            previous.put(market, ticker);
+
+            for (ITickerListener listener : e.getValue()) {
+                try {
+                    listener.ticker(ticker, exchange);
+                } catch (Exception e1) {
+                    log.warn("Error", e);
+                }
             }
         }
     }

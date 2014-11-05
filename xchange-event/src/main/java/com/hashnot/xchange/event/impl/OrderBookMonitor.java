@@ -38,7 +38,9 @@ public class OrderBookMonitor extends AbstractPollingMonitor implements Runnable
         for (Map.Entry<CurrencyPair, Collection<IOrderBookListener>> e : orderBookListeners.asMap().entrySet()) {
             try {
                 CurrencyPair pair = e.getKey();
+                log.debug("Getting order book from {}", parent);
                 OrderBook orderBook = parent.getPollingMarketDataService().getOrderBook(pair);
+                log.debug("Order book @{}", orderBook.getTimeStamp().getTime());
                 notifyListeners(pair, orderBook, e.getValue());
             } catch (IOException x) {
                 log.warn("Error", x);

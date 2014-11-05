@@ -76,7 +76,6 @@ public class OrderManager implements IOrderUpdater, IUserTradesListener {
         return o1.getCurrencyPair().equals(o2.getCurrencyPair()) && o1.getType() == o2.getType()
                 && eq(o1.getLimitPrice(), o2.getLimitPrice())
                 && o1.getTradableAmount().compareTo(o2.getTradableAmount()) <= 0;
-
     }
 
     protected void open(OrderType type, OrderUpdateEvent update) throws IOException {
@@ -85,9 +84,7 @@ public class OrderManager implements IOrderUpdater, IUserTradesListener {
 
         monitors.get(update.closeExchange).getUserTradesMonitor().addTradesListener(this);
 
-        log.info("Open @{} {} ", update.openExchange, update.openedOrder);
-        update.openOrderId = update.openExchange.getPollingTradeService().placeLimitOrder(update.openedOrder);
-        log.info("Opened {}", update.openOrderId);
+        update.openOrderId = placeLimitOrder(update.openedOrder, update.openExchange.getPollingTradeService());
         openOrders.put(type, update);
     }
 
@@ -144,8 +141,9 @@ public class OrderManager implements IOrderUpdater, IUserTradesListener {
         }
     }
 
-    protected void placeLimitOrder(LimitOrder order, PollingTradeService tradeService) throws IOException {
-        log.info("Open {} @{}", order, tradeService.getClass().getSimpleName());
-        tradeService.placeLimitOrder(order);
+    protected String placeLimitOrder(LimitOrder order, PollingTradeService tradeService) throws IOException {
+        String id = tradeService.placeLimitOrder(order);
+        log.info("Open {} {} @{}", id, order, tradeService.getClass().getSimpleName());
+        return id;
     }
 }
