@@ -107,7 +107,7 @@ public class OrderBookSideMonitor implements IOrderBookSideMonitor, IOrderBookLi
             try {
                 listener.orderBookSideChanged(obse);
             } catch (RuntimeException x) {
-                log.warn("Error", x);
+                log.warn("Error from {}", listener, x);
             }
         }
     }

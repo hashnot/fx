@@ -49,7 +49,7 @@ public class TradeService extends AbstractTradeService implements ITradeService 
             try {
                 listener.limitOrderPlaced(limitOrder, id);
             } catch (RuntimeException e) {
-                log.warn("Error", e);
+                log.warn("Error from {}",listener, e);
             }
         return id;
     }

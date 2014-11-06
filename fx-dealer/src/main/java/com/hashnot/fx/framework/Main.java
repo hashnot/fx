@@ -30,7 +30,7 @@ public class Main {
 
     public static void main(String[] args) throws IOException, InterruptedException {
         ThreadFactory tf = new ConfigurableThreadFactory();
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(10, tf);
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(9, tf);
         Runtime.getRuntime().addShutdownHook(new Thread(scheduler::shutdown,"shutdown thread pool"));
 
         Collection<IExchangeMonitor> monitors = load(args[0], scheduler);

@@ -55,6 +55,11 @@ public abstract class AbstractTradeService implements PollingTradeService {
         return backend().getExchangeSymbols();
     }
 
+    @Override
+    public String toString() {
+        return backend().toString();
+    }
+
     protected PollingTradeService backend() {
         return exchange.get().getPollingTradeService();
     }

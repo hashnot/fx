@@ -143,7 +143,7 @@ public class OrderManager implements IOrderUpdater, IUserTradesListener {
 
     protected String placeLimitOrder(LimitOrder order, PollingTradeService tradeService) throws IOException {
         String id = tradeService.placeLimitOrder(order);
-        log.info("Open {} {} @{}", id, order, tradeService.getClass().getSimpleName());
+        log.info("Open {} {} @{}", id, order, tradeService);
         return id;
     }
 }
