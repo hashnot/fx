@@ -19,7 +19,7 @@ import java.util.function.Supplier;
  * @author Rafał Krupiński
  */
 public abstract class AbstractTradeService implements PollingTradeService {
-    final private Supplier<Exchange> exchange;
+    final protected Supplier<Exchange> exchange;
 
     protected AbstractTradeService(Supplier<Exchange> exchange) {
         this.exchange = exchange;

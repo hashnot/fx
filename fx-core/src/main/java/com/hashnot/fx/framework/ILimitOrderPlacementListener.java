@@ -6,5 +6,5 @@ import com.xeiam.xchange.dto.trade.LimitOrder;
  * @author Rafał Krupiński
  */
 public interface ILimitOrderPlacementListener {
-    void limitOrderPlaced(LimitOrder order, String id);
+    void limitOrderPlaced(OrderEvent orderEvent);
 }

@@ -33,6 +33,8 @@ import static com.hashnot.xchange.ext.util.Numbers.eq;
  * In theory we could want to keep two orders at single price, but in different directions.
  * This should be considered an error, because these transactions would be redundant,
  * and lossy because of the fees
+ * <p>
+ * TODO not fully implemented
  *
  * @author Rafał Krupiński
  */
@@ -67,8 +69,8 @@ public class OrderBookUserTradeMonitor implements IOrderBookSideListener, ILimit
     }
 
     @Override
-    public void limitOrderPlaced(LimitOrder order, String id) {
-        openOrders.put(order.getLimitPrice(), order);
+    public void limitOrderPlaced(OrderEvent evt) {
+        openOrders.put(evt.order.getLimitPrice(), evt.order);
     }
 
     @Override
@@ -160,12 +162,12 @@ public class OrderBookUserTradeMonitor implements IOrderBookSideListener, ILimit
     }
 
     @Override
-    public void addTradeListener(IUserTradeListener orderListener) {
+    public void addTradeListener(IUserTradeListener orderListener, Exchange exchange) {
         tradeListeners.add(orderListener);
     }
 
     @Override
-    public void removeTradeListener(IUserTradeListener orderListener) {
+    public void removeTradeListener(IUserTradeListener orderListener, Exchange exchange) {
         tradeListeners.remove(orderListener);
     }
 }

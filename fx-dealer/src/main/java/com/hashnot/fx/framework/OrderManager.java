@@ -22,6 +22,8 @@ import static com.xeiam.xchange.dto.trade.LimitOrder.Builder.from;
 import static java.math.BigDecimal.ZERO;
 
 /**
+ * TODO migrate to UserTradeListener
+ *
  * @author Rafał Krupiński
  */
 public class OrderManager implements IOrderUpdater, IUserTradesListener {

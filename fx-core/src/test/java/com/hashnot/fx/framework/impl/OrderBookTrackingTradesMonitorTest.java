@@ -1,10 +1,8 @@
 package com.hashnot.fx.framework.impl;
 
-import com.hashnot.fx.framework.IUserTradeListener;
-import com.hashnot.fx.framework.MarketSide;
-import com.hashnot.fx.framework.OrderBookSideUpdateEvent;
-import com.hashnot.fx.framework.UserTradeEvent;
+import com.hashnot.fx.framework.*;
 import com.hashnot.xchange.ext.Market;
+import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.trade.LimitOrder;
@@ -24,7 +22,8 @@ import static org.mockito.Mockito.*;
 public class OrderBookTrackingTradesMonitorTest {
     private static final BigDecimal TWO = new BigDecimal(2);
     protected static final CurrencyPair P = CurrencyPair.BTC_EUR;
-    final private static Market m = new Market(null, P);
+    final private static Exchange x = mock(Exchange.class);
+    final private static Market m = new Market(x, P);
     final private static MarketSide ms = new MarketSide(m, Order.OrderType.ASK);
 
     @Test
@@ -35,11 +34,11 @@ public class OrderBookTrackingTradesMonitorTest {
 
         OrderBookUserTradeMonitor mon = new OrderBookUserTradeMonitor(tradeService);
 
-        mon.addTradeListener(orderListener);
+        mon.addTradeListener(orderListener, x);
 
 
         LimitOrder one = new LimitOrder(Order.OrderType.ASK, ONE, m.listing, null, null, ONE);
-        mon.limitOrderPlaced(one, "id");
+        mon.limitOrderPlaced(new OrderEvent("id", one, x));
 
         List<LimitOrder> stage0 = emptyList();
         List<LimitOrder> stage1 = asList(one);
@@ -59,11 +58,11 @@ public class OrderBookTrackingTradesMonitorTest {
         IUserTradeListener orderListener = mock(IUserTradeListener.class);
 
         OrderBookUserTradeMonitor mon = new OrderBookUserTradeMonitor(tradeService);
-        mon.addTradeListener(orderListener);
+        mon.addTradeListener(orderListener, x);
 
 
         LimitOrder one = new LimitOrder(Order.OrderType.ASK, ONE, P, "o1", null, ONE);
-        mon.limitOrderPlaced(one, "id");
+        mon.limitOrderPlaced(new OrderEvent("id", one, x));
 
         List<LimitOrder> stage0 = emptyList();
         List<LimitOrder> stage1 = asList(one);
@@ -84,14 +83,14 @@ public class OrderBookTrackingTradesMonitorTest {
         IUserTradeListener orderListener = mock(IUserTradeListener.class);
 
         OrderBookUserTradeMonitor mon = new OrderBookUserTradeMonitor(tradeService);
-        mon.addTradeListener(orderListener);
+        mon.addTradeListener(orderListener, x);
 
 
         List<LimitOrder> stage0 = emptyList();
 
         LimitOrder one = new LimitOrder(Order.OrderType.ASK, ONE, P, null, null, ONE);
         LimitOrder two = new LimitOrder(Order.OrderType.ASK, TWO, P, null, null, ONE);
-        mon.limitOrderPlaced(two, "id");
+        mon.limitOrderPlaced(new OrderEvent("id", two, x));
 
         List<LimitOrder> stage1 = asList(two);
         mon.orderBookSideChanged(new OrderBookSideUpdateEvent(ms, stage0, stage1));

@@ -34,4 +34,13 @@ public class UserTradeEvent extends Event<Exchange> {
                 && (current == null ? evt.current == null : current.equals(evt.current))
                 && trade.equals(evt.trade);
     }
+
+    @Override
+    public String toString() {
+        return "UserTradeEvent{" +
+                "monitored=" + monitored +
+                ", current=" + current +
+                ", trade=" + trade +
+                '}';
+    }
 }

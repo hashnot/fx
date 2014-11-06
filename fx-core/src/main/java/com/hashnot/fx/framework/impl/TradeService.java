@@ -2,6 +2,7 @@ package com.hashnot.fx.framework.impl;
 
 import com.hashnot.fx.framework.ILimitOrderPlacementListener;
 import com.hashnot.fx.framework.ITradeService;
+import com.hashnot.fx.framework.OrderEvent;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.ExchangeException;
 import com.xeiam.xchange.NotAvailableFromExchangeException;
@@ -16,6 +17,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
+
+import static com.hashnot.xchange.ext.util.Multiplexer.multiplex;
 
 /**
  * @author Rafał Krupiński
@@ -41,16 +44,14 @@ public class TradeService extends AbstractTradeService implements ITradeService 
 
     @Override
     public String placeLimitOrder(LimitOrder limitOrder) throws ExchangeException, NotAvailableFromExchangeException, NotYetImplementedForExchangeException, IOException {
-        String id = super.placeLimitOrder(limitOrder);
+        Exchange exchange = this.exchange.get();
+        String id = exchange.getPollingTradeService().placeLimitOrder(limitOrder);
         if (openOrders.containsKey(id))
-            log.warn("ID {} present @{}", id, this);
+            log.warn("ID {} present @{}", id, exchange);
         openOrders.put(id, limitOrder);
-        for (ILimitOrderPlacementListener listener : listeners)
-            try {
-                listener.limitOrderPlaced(limitOrder, id);
-            } catch (RuntimeException e) {
-                log.warn("Error from {}",listener, e);
-            }
+
+        multiplex(listeners, new OrderEvent(id, limitOrder, exchange), (l, e) -> l.limitOrderPlaced(e));
+
         return id;
     }
 
