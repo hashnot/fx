@@ -61,6 +61,7 @@ public class TradeService extends AbstractTradeService implements ITradeService 
         return id;
     }
 
+    // TODO move to OrderTracker
     public void cancelAll() {
         openOrders.forEach((k, v) -> {
             log.info("Cancel {} at shutdown", k);

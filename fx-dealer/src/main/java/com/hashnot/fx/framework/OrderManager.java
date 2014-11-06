@@ -1,9 +1,5 @@
 package com.hashnot.fx.framework;
 
-import com.hashnot.xchange.event.IExchangeMonitor;
-import com.hashnot.xchange.event.IUserTradesListener;
-import com.hashnot.xchange.event.UserTradesEvent;
-import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.dto.trade.UserTrade;
 import com.xeiam.xchange.service.polling.PollingTradeService;
@@ -26,16 +22,10 @@ import static java.math.BigDecimal.ZERO;
  *
  * @author Rafał Krupiński
  */
-public class OrderManager implements IOrderUpdater, IUserTradesListener {
+public class OrderManager implements IOrderUpdater, IUserTradeListener {
     final private static Logger log = LoggerFactory.getLogger(OrderManager.class);
 
-    final private Map<Exchange, IExchangeMonitor> monitors;
-
     final private Map<OrderType, OrderUpdateEvent> openOrders = new HashMap<>();
-
-    public OrderManager(Map<Exchange, IExchangeMonitor> monitors) {
-        this.monitors = monitors;
-    }
 
     /*
      old value is called self, new - evt
@@ -56,7 +46,8 @@ public class OrderManager implements IOrderUpdater, IUserTradesListener {
             if (self == null) {
                 open(key, evt);
             } else if (!isIgnoreUpdate(self, evt)) {
-                updateOrder(self, evt, key);
+                // instead of update, cancel and let next iteration opens it again
+                cancel(key, self);
             } else {
                 log.debug("Update order ignored");
             }
@@ -84,8 +75,6 @@ public class OrderManager implements IOrderUpdater, IUserTradesListener {
         if (openOrders.containsKey(type))
             throw new IllegalStateException("Seems order already open " + type);
 
-        monitors.get(update.closeExchange).getUserTradesMonitor().addTradesListener(this);
-
         update.openOrderId = placeLimitOrder(update.openedOrder, update.openExchange.getPollingTradeService());
         openOrders.put(type, update);
     }
@@ -97,17 +86,9 @@ public class OrderManager implements IOrderUpdater, IUserTradesListener {
         openOrders.remove(key);
     }
 
-    protected void updateOrder(OrderUpdateEvent self, OrderUpdateEvent event, OrderType type) throws ConnectionException, IOException {
-        cancel(type, self);
-        //open(type, event);
-    }
-
     @Override
-    public void trades(UserTradesEvent evt) {
-        // TODO merge trades to make less closing orders
-        for (UserTrade trade : evt.userTrades.getUserTrades()) {
-            trade(trade);
-        }
+    public void trade(UserTradeEvent evt) {
+        trade(evt.trade);
     }
 
     private void trade(UserTrade trade) {
@@ -116,7 +97,6 @@ public class OrderManager implements IOrderUpdater, IUserTradesListener {
             log.debug("Trade of an unknown order {}", trade);
             return;
         }
-        // TODO unregister listener when order is filled
         close(event.closingOrders, trade.getTradableAmount(), event.closeExchange.getPollingTradeService());
     }
 
