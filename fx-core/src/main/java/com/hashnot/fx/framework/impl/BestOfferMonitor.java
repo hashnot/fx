@@ -14,10 +14,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 import static com.hashnot.xchange.ext.util.Numbers.Price.forNull;
 import static com.hashnot.xchange.ext.util.Numbers.eq;
+import static com.hashnot.xchange.ext.util.Orders.revert;
 import static com.xeiam.xchange.dto.Order.OrderType;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
 import static com.xeiam.xchange.dto.Order.OrderType.BID;
@@ -175,7 +179,7 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
         super.removeOrderBookSideListener(listener, source);
 
         Market market = source.market;
-        if (bestOfferListeners.containsKey(market) && !orderBookListeners.containsKey(source)) {
+        if (bestOfferListeners.containsKey(market) && !(orderBookListeners.containsKey(source) || orderBookListeners.containsKey(new MarketSide(market, revert(source.side))))) {
             monitors.get(market.exchange).getTickerMonitor().addTickerListener(this, market);
             super.removeOrderBookSideListener(this, source);
         }
