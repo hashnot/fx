@@ -6,6 +6,7 @@ import com.google.common.collect.SetMultimap;
 import com.hashnot.fx.framework.*;
 import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.event.ITickerListener;
+import com.hashnot.xchange.event.TickerEvent;
 import com.hashnot.xchange.ext.Market;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.marketdata.Ticker;
@@ -50,8 +51,9 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
     }
 
     @Override
-    public void ticker(Ticker ticker, Exchange source) {
-        Market market = new Market(source, ticker.getCurrencyPair());
+    public void ticker(TickerEvent evt) {
+        Ticker ticker = evt.ticker;
+        Market market = new Market(evt.source, ticker.getCurrencyPair());
 
         boolean serviced = checkBestOffer(ticker.getAsk(), new MarketSide(market, ASK));
         serviced |= checkBestOffer(ticker.getBid(), new MarketSide(market, BID));
@@ -137,7 +139,7 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
             return;
 
         if (!orderBookListeners.containsKey(source)) {
-            monitors.get(source.market.exchange).getTickerMonitor().addTickerListener(this, source.market);
+            monitors.get(source.market.exchange).getTickerMonitor().addTickerListener(this, source.market.listing);
         } else {
             super.addOrderBookSideListener(this, source);
         }
@@ -150,7 +152,7 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
         marketBestOfferListeners.remove(source.side, listener);
 
         if (marketBestOfferListeners.isEmpty()) {
-            monitors.get(market.exchange).getTickerMonitor().removeTickerListener(this, market);
+            monitors.get(market.exchange).getTickerMonitor().removeTickerListener(this, market.listing);
             super.removeOrderBookSideListener(this, source);
         }
     }
@@ -165,7 +167,7 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
 
         Market market = source.market;
         if (bestOfferListeners.containsKey(market)) {
-            monitors.get(market.exchange).getTickerMonitor().removeTickerListener(this, market);
+            monitors.get(market.exchange).getTickerMonitor().removeTickerListener(this, market.listing);
             super.addOrderBookSideListener(this, source);
         }
     }
@@ -180,7 +182,7 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
 
         Market market = source.market;
         if (bestOfferListeners.containsKey(market) && !(orderBookListeners.containsKey(source) || orderBookListeners.containsKey(new MarketSide(market, revert(source.side))))) {
-            monitors.get(market.exchange).getTickerMonitor().addTickerListener(this, market);
+            monitors.get(market.exchange).getTickerMonitor().addTickerListener(this, market.listing);
             super.removeOrderBookSideListener(this, source);
         }
     }

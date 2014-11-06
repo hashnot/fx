@@ -5,6 +5,7 @@ import com.hashnot.xchange.event.IOrderBookMonitor;
 import com.hashnot.xchange.event.ITickerMonitor;
 import com.hashnot.xchange.event.OrderBookUpdateEvent;
 import com.hashnot.xchange.event.IExchangeMonitor;
+import com.hashnot.xchange.event.TickerEvent;
 import com.hashnot.xchange.ext.Market;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
@@ -73,7 +74,7 @@ public class BestOfferMonitorTest {
         verify(obm).addOrderBookListener(mon, p);
 
 
-        mon.ticker(t, m(obm, tm).exchange);
+        mon.ticker(new TickerEvent(t, ms.market.exchange));
         verifyZeroInteractions(obl);
 
 
@@ -93,10 +94,10 @@ public class BestOfferMonitorTest {
 
 
         mon.addBestOfferListener(bol, ms);
-        verify(tm).addTickerListener(mon, m);
+        verify(tm).addTickerListener(mon, p);
 
 
-        mon.ticker(t, m.exchange);
+        mon.ticker(new TickerEvent(t, m.exchange));
         verify(bol).updateBestOffer(eq(boe(ms)));
         //verify(bol).updateBestOffer(eq(boe(m, BID)));
         verifyNoMoreInteractions(bol);
@@ -118,20 +119,20 @@ public class BestOfferMonitorTest {
 
 
         mon.addBestOfferListener(bol, ms);
-        verify(tm).addTickerListener(mon, m);
+        verify(tm).addTickerListener(mon, p);
         verifyNoMoreInteractions(tm);
         verifyZeroInteractions(obm);
 
 
         mon.addOrderBookSideListener(obl, ms);
-        verify(tm).removeTickerListener(mon, m);
+        verify(tm).removeTickerListener(mon, p);
         verifyNoMoreInteractions(tm);
         verify(obm).addOrderBookListener(mon, p);
         //verify(obm).addOrderBookListener(mon, p);
         verifyNoMoreInteractions(obm);
 
 
-        mon.ticker(t, m.exchange);
+        mon.ticker(new TickerEvent(t, m.exchange));
         verifyZeroInteractions(obl);
         verifyZeroInteractions(bol);
 
@@ -165,7 +166,7 @@ public class BestOfferMonitorTest {
         verifyZeroInteractions(tm);
 
 
-        mon.ticker(t, m.exchange);
+        mon.ticker(new TickerEvent(t, m.exchange));
         verifyZeroInteractions(obsl);
         verifyZeroInteractions(bol);
 
@@ -190,13 +191,13 @@ public class BestOfferMonitorTest {
 
 
         mon.addBestOfferListener(bol, ms);
-        verify(tm).addTickerListener(mon, m);
+        verify(tm).addTickerListener(mon, p);
         verifyNoMoreInteractions(tm);
         verifyZeroInteractions(obm);
 
 
         mon.addOrderBookSideListener(obl, ms);
-        verify(tm).removeTickerListener(mon, m);
+        verify(tm).removeTickerListener(mon, p);
         verify(obm).addOrderBookListener(mon, p);
         //verify(obm).addOrderBookListener(mon, p);
         verifyNoMoreInteractions(tm);
@@ -206,12 +207,12 @@ public class BestOfferMonitorTest {
         mon.removeOrderBookSideListener(obl, ms);
         verify(obm).removeOrderBookListener(mon, p);
         //verify(obm).removeOrderBookListener(mon, p);
-        verify(tm, times(2)).addTickerListener(mon, m);
+        verify(tm, times(2)).addTickerListener(mon, p);
         verifyNoMoreInteractions(tm);
         verifyNoMoreInteractions(obm);
 
 
-        mon.ticker(t, m.exchange);
+        mon.ticker(new TickerEvent(t, m.exchange));
         verify(bol).updateBestOffer(eq(boe(ms)));
         verifyNoMoreInteractions(bol);
         verifyZeroInteractions(obl);

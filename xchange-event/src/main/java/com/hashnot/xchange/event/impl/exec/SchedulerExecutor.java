@@ -3,6 +3,7 @@ package com.hashnot.xchange.event.impl.exec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -50,5 +51,10 @@ public class SchedulerExecutor implements IExecutorStrategy, Runnable {
     @Override
     public synchronized boolean isStarted() {
         return future != null;
+    }
+
+    @Override
+    public Executor getExecutor() {
+        return executor;
     }
 }

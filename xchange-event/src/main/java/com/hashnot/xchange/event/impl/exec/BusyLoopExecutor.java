@@ -1,5 +1,6 @@
 package com.hashnot.xchange.event.impl.exec;
 
+import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -33,5 +34,10 @@ public class BusyLoopExecutor implements IExecutorStrategy {
     @Override
     public boolean isStarted() {
         return run.get();
+    }
+
+    @Override
+    public Executor getExecutor() {
+        return executor;
     }
 }

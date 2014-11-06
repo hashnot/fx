@@ -1,82 +1,69 @@
 package com.hashnot.xchange.event.impl;
 
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
 import com.hashnot.xchange.event.ITickerListener;
 import com.hashnot.xchange.event.ITickerMonitor;
+import com.hashnot.xchange.event.TickerEvent;
 import com.hashnot.xchange.event.impl.exec.RunnableScheduler;
-import com.hashnot.xchange.ext.Market;
 import com.hashnot.xchange.ext.util.Numbers;
 import com.xeiam.xchange.Exchange;
+import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.marketdata.Ticker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 /**
  * @author Rafał Krupiński
  */
-public class TickerMonitor extends AbstractPollingMonitor implements ITickerMonitor {
+public class TickerMonitor extends AbstractParametrizedMonitor<CurrencyPair, ITickerListener, TickerEvent> implements ITickerMonitor {
     final private Logger log = LoggerFactory.getLogger(TickerMonitor.class);
 
     private final Exchange exchange;
-    private final Multimap<Market, ITickerListener> listeners = Multimaps.newSetMultimap(new HashMap<>(), HashSet::new);
-    private final Map<Market, Ticker> previous = new HashMap<>();
+    private final Map<CurrencyPair, Ticker> previous = new HashMap<>();
 
     @Override
-    public void run() {
-        for (Map.Entry<Market, Collection<ITickerListener>> e : listeners.asMap().entrySet()) {
-            Market market = e.getKey();
-            Ticker ticker;
-            try {
-                log.debug("Getting ticker from {}", exchange);
-                ticker = exchange.getPollingMarketDataService().getTicker(market.listing);
-                log.debug("{}", ticker);
-            } catch (IOException x) {
-                log.error("Error", x);
-                continue;
-            }
-            Ticker prev = previous.get(market);
-            if (prev != null && eq(prev, ticker))
-                continue;
-            previous.put(market, ticker);
+    protected TickerEvent getData(CurrencyPair pair) throws IOException {
+        log.debug("Getting ticker from {}", exchange);
+        Ticker ticker = exchange.getPollingMarketDataService().getTicker(pair);
+        log.debug("{}", ticker);
 
-            for (ITickerListener listener : e.getValue()) {
-                try {
-                    listener.ticker(ticker, exchange);
-                } catch (Exception e1) {
-                    log.warn("Error", e);
-                }
-            }
-        }
+        Ticker prev = previous.get(pair);
+        if (prev != null && eq(prev, ticker))
+            return null;
+        previous.put(pair, ticker);
+
+        return new TickerEvent(ticker, exchange);
+
     }
 
     @Override
-    public void addTickerListener(ITickerListener listener, Market market) {
-        assert exchange == market.exchange;
+    protected void notifyListener(ITickerListener listener, TickerEvent evt) {
+        listener.ticker(evt);
+    }
+
+    @Override
+    public void addTickerListener(ITickerListener listener, CurrencyPair pair) {
         synchronized (listeners) {
-            listeners.put(market, listener);
+            listeners.put(pair, listener);
             enable();
         }
     }
 
     @Override
-    public void removeTickerListener(ITickerListener listener, Market market) {
-        assert exchange == market.exchange;
+    public void removeTickerListener(ITickerListener listener, CurrencyPair pair) {
         synchronized (listeners) {
-            listeners.remove(market, listener);
+            listeners.remove(pair, listener);
             if (listeners.isEmpty())
                 disable();
         }
     }
 
-    public TickerMonitor(Exchange exchange, RunnableScheduler scheduler) {
-        super(scheduler);
+    public TickerMonitor(Exchange exchange, RunnableScheduler scheduler, Executor executor) {
+        super(scheduler, executor);
         this.exchange = exchange;
     }
 

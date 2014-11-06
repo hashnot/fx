@@ -47,9 +47,9 @@ public class ExchangeMonitor implements IExchangeMonitor {
         this.parent = parent;
         executor = executorStrategyFactory.create(runnableScheduler);
 
-        orderBookMonitor = new OrderBookMonitor(getExchange(), runnableScheduler);
+        orderBookMonitor = new OrderBookMonitor(getExchange(), runnableScheduler, executor.getExecutor());
         userTradesMonitor = new UserTradesMonitor(getExchange(), runnableScheduler);
-        tickerMonitor = new TickerMonitor(getExchange(), runnableScheduler);
+        tickerMonitor = new TickerMonitor(getExchange(), runnableScheduler, executor.getExecutor());
         openOrdersMonitor = new OpenOrdersMonitor(getExchange(), runnableScheduler);
     }
 
