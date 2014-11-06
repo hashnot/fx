@@ -7,4 +7,6 @@ import com.xeiam.xchange.dto.trade.LimitOrder;
  */
 public interface ILimitOrderPlacementListener {
     void limitOrderPlaced(OrderEvent orderEvent);
+
+    void orderCanceled(OrderCancelEvent orderCancelEvent);
 }

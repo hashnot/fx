@@ -2,6 +2,7 @@ package com.hashnot.fx.framework.impl;
 
 import com.hashnot.fx.framework.ILimitOrderPlacementListener;
 import com.hashnot.fx.framework.ITradeService;
+import com.hashnot.fx.framework.OrderCancelEvent;
 import com.hashnot.fx.framework.OrderEvent;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.ExchangeException;
@@ -36,9 +37,14 @@ public class TradeService extends AbstractTradeService implements ITradeService 
 
     @Override
     public boolean cancelOrder(String orderId) throws ExchangeException, NotAvailableFromExchangeException, NotYetImplementedForExchangeException, IOException {
-        boolean result = super.cancelOrder(orderId);
+        Exchange x = exchange.get();
+        boolean result = x.getPollingTradeService().cancelOrder(orderId);
         if (openOrders.remove(orderId) == null)
             log.info("Unknown order {}", orderId);
+
+        if (result)
+            multiplex(listeners, new OrderCancelEvent(orderId, x), (l, e) -> l.orderCanceled(e));
+
         return result;
     }
 

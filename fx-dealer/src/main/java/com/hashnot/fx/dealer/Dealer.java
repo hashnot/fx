@@ -32,6 +32,8 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener {
     final private IOrderBookSideMonitor orderBookSideMonitor;
 
     final private Simulation simulation;
+    final private IOrderTracker orderTracker;
+
     final private Map<Exchange, IExchangeMonitor> monitors;
 
     // side -> map(market -> best offer price)
@@ -41,10 +43,11 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener {
 
     final private Map<ListingSide, Market> openMarkets = new HashMap<>();
 
-    public Dealer(Simulation simulation, IOrderUpdater orderUpdater, IOrderBookSideMonitor orderBookSideMonitor, Map<Exchange, IExchangeMonitor> monitors) {
+    public Dealer(Simulation simulation, IOrderUpdater orderUpdater, IOrderBookSideMonitor orderBookSideMonitor, IOrderTracker orderTracker, Map<Exchange, IExchangeMonitor> monitors) {
         this.simulation = simulation;
         this.orderUpdater = orderUpdater;
         this.orderBookSideMonitor = orderBookSideMonitor;
+        this.orderTracker = orderTracker;
         this.monitors = monitors;
     }
 
@@ -60,6 +63,13 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener {
         if (!hasMinimumMoney(market, side, evt.price)) {
             log.debug("Ignore exchange without {} enough money for {}", evt.source, side);
             return;
+        }
+
+        for (LimitOrder order : orderTracker.getMonitored(market.exchange).values()) {
+            if (eq(order.getLimitPrice(), evt.price)) {
+                log.info("Best offer is mine");
+                return;
+            }
         }
 
         MarketSide mSide = new MarketSide(market, side);

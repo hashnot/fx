@@ -2,7 +2,7 @@ package com.hashnot.fx.framework;
 
 import com.hashnot.fx.dealer.Dealer;
 import com.hashnot.fx.framework.impl.BestOfferMonitor;
-import com.hashnot.fx.framework.impl.OrderBookSideMonitor;
+import com.hashnot.fx.framework.impl.OrderTracker;
 import com.hashnot.fx.util.ConfigurableThreadFactory;
 import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.ext.Market;
@@ -37,10 +37,11 @@ public class Main {
         Map<Exchange, IExchangeMonitor> monitorMap = new HashMap<>();
 
         Simulation simulation = new Simulation(monitorMap);
+        OrderTracker orderTracker = new OrderTracker(monitorMap);
         OrderManager orderManager = new OrderManager(monitorMap);
         BestOfferMonitor bestOfferMonitor = new BestOfferMonitor(monitorMap);
 
-        Dealer dealer = new Dealer(simulation, orderManager, bestOfferMonitor, monitorMap);
+        Dealer dealer = new Dealer(simulation, orderManager, bestOfferMonitor, orderTracker, monitorMap);
 
         for (IExchangeMonitor monitor : monitors) {
             Exchange exchange = monitor.getExchange();
@@ -55,8 +56,11 @@ public class Main {
             bestOfferMonitor.addBestOfferListener(dealer, new MarketSide(market, Order.OrderType.ASK));
             bestOfferMonitor.addBestOfferListener(dealer, new MarketSide(market, Order.OrderType.BID));
 
+            ITradeService tradeService = (ITradeService) x.getPollingTradeService();
+            tradeService.addLimitOrderPlacedListener(orderTracker);
+
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                ((ITradeService) x.getPollingTradeService()).cancelAll();
+                tradeService.cancelAll();
                 monitor.stop();
             }, x.toString() + "-stop"));
         }

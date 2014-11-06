@@ -102,10 +102,27 @@ public class OrderTracker implements IUserTradesListener, ILimitOrderPlacementLi
         if (old != null) {
             log.warn("Order {} already monitored", id);
             return;
-        }
+        } else
+            log.info("Tracking {}", id);
 
         Map<String, LimitOrder> current = this.current.computeIfAbsent(source, (k) -> new HashMap<>());
         current.put(id, limitOrder);
+    }
+
+    @Override
+    public void orderCanceled(OrderCancelEvent evt) {
+        Exchange x = evt.source;
+        String id = evt.id;
+
+        Map<String, LimitOrder> current = this.current.getOrDefault(x, emptyMap());
+        LimitOrder limitOrder = current.get(id);
+        if (limitOrder == null)
+            log.warn("Cancelled unknown order {}@{}", id, x);
+        else {
+            log.info("Removing {}@{}", id, x);
+            this.monitored.getOrDefault(x, emptyMap()).remove(id);
+            current.remove(id);
+        }
     }
 
     public OrderTracker(Map<Exchange, IExchangeMonitor> monitors) {

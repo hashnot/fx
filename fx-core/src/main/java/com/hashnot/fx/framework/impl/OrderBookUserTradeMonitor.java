@@ -74,6 +74,11 @@ public class OrderBookUserTradeMonitor implements IOrderBookSideListener, ILimit
     }
 
     @Override
+    public void orderCanceled(OrderCancelEvent orderCancelEvent) {
+        // TODO implement
+    }
+
+    @Override
     public void orderBookSideChanged(OrderBookSideUpdateEvent evt) {
         if (evt.newOrders.isEmpty()) {
             return;

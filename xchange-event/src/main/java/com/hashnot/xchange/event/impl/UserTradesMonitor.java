@@ -34,6 +34,7 @@ public class UserTradesMonitor extends AbstractPollingMonitor implements IUserTr
     @Override
     public void run() {
         try {
+            log.debug("Getting trades from {}", parent);
             // TODO exchange specific code
             PollingTradeService tradeService = parent.getPollingTradeService();
             UserTrades trades;
@@ -61,7 +62,11 @@ public class UserTradesMonitor extends AbstractPollingMonitor implements IUserTr
                 log.warn("Unsupported exchange {}", tradeService);
                 return;
             }
-            if (trades.getUserTrades().isEmpty())
+
+            List<UserTrade> tradeList = trades.getUserTrades();
+            log.debug("User trades {}", tradeList.size());
+
+            if (tradeList.isEmpty())
                 return;
 
             UserTradesEvent evt = new UserTradesEvent(trades, parent);
