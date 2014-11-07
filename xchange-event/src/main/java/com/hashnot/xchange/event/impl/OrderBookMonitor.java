@@ -42,17 +42,10 @@ public class OrderBookMonitor extends AbstractParametrizedMonitor<CurrencyPair, 
 
     @Override
     public void addOrderBookListener(IOrderBookListener orderBookListener, CurrencyPair pair) {
-        synchronized (listeners) {
-            listeners.put(pair, orderBookListener);
-            enable();
-        }
+        addListener(orderBookListener, pair);
     }
 
     public void removeOrderBookListener(IOrderBookListener orderBookListener, CurrencyPair pair) {
-        synchronized (listeners) {
-            listeners.get(pair).remove(orderBookListener);
-            if (listeners.isEmpty())
-                disable();
-        }
+        removeListener(orderBookListener, pair);
     }
 }

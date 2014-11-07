@@ -47,19 +47,12 @@ public class TickerMonitor extends AbstractParametrizedMonitor<CurrencyPair, ITi
 
     @Override
     public void addTickerListener(ITickerListener listener, CurrencyPair pair) {
-        synchronized (listeners) {
-            listeners.put(pair, listener);
-            enable();
-        }
+        addListener(listener, pair);
     }
 
     @Override
     public void removeTickerListener(ITickerListener listener, CurrencyPair pair) {
-        synchronized (listeners) {
-            listeners.remove(pair, listener);
-            if (listeners.isEmpty())
-                disable();
-        }
+        removeListener(listener, pair);
     }
 
     public TickerMonitor(Exchange exchange, RunnableScheduler scheduler, Executor executor) {

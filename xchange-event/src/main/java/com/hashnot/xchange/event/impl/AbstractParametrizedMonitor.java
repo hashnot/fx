@@ -3,6 +3,7 @@ package com.hashnot.xchange.event.impl;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.hashnot.xchange.event.impl.exec.RunnableScheduler;
+import com.hashnot.xchange.ext.util.Multiplexer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,6 +13,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.Executor;
+
+import static com.hashnot.xchange.ext.util.Multiplexer.multiplex;
 
 /**
  * @author Rafał Krupiński
@@ -47,6 +50,27 @@ public abstract class AbstractParametrizedMonitor<P, L, R> extends AbstractPolli
         }
     }
 
+    protected void addListener(L listener, P param) {
+        synchronized (listeners) {
+            boolean put = listeners.put(param, listener);
+            if (put)
+                log.debug("{} listens on {} @{}", listener, param, this);
+
+            enable();
+        }
+    }
+
+    protected void removeListener(L listener, P param) {
+        synchronized (listeners) {
+            boolean remove = listeners.remove(param, listener);
+            if (remove)
+                log.debug("{} doesn't listen on {} @{}", listener, param, this);
+
+            if (listeners.isEmpty())
+                disable();
+        }
+    }
+
     private class ListenerNotifier implements Runnable {
         protected R data;
         protected Collection<L> listeners;
@@ -58,19 +82,11 @@ public abstract class AbstractParametrizedMonitor<P, L, R> extends AbstractPolli
 
         @Override
         public void run() {
-            for (L listener : listeners) {
-                try {
-                    notifyListener(listener, data);
-                } catch (RuntimeException x) {
-                    log.warn("Error from {}", listener, x);
-                }
-            }
-
+            multiplex(listeners, data, (l, e) -> notifyListener(l, e));
         }
-
     }
 
-    protected abstract void notifyListener(L listener, R data);
+    abstract protected void notifyListener(L listener, R data);
 
     abstract protected R getData(P param) throws IOException;
 }
