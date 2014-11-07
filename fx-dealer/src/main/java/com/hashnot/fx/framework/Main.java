@@ -31,14 +31,14 @@ public class Main {
     public static void main(String[] args) throws IOException, InterruptedException {
         ThreadFactory tf = new ConfigurableThreadFactory();
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(9, tf);
-        Runtime.getRuntime().addShutdownHook(new Thread(scheduler::shutdown,"shutdown thread pool"));
+        Runtime.getRuntime().addShutdownHook(new Thread(scheduler::shutdown, "shutdown thread pool"));
 
         Collection<IExchangeMonitor> monitors = load(args[0], scheduler);
         Map<Exchange, IExchangeMonitor> monitorMap = new HashMap<>();
 
         Simulation simulation = new Simulation(monitorMap);
         OrderTracker orderTracker = new OrderTracker(monitorMap);
-        OrderManager orderManager = new OrderManager();
+        OrderManager orderManager = new OrderManager(orderTracker);
         BestOfferMonitor bestOfferMonitor = new BestOfferMonitor(monitorMap);
 
         Dealer dealer = new Dealer(simulation, orderManager, bestOfferMonitor, orderTracker, monitorMap);
@@ -47,9 +47,8 @@ public class Main {
             Exchange exchange = monitor.getExchange();
             monitorMap.put(exchange, monitor);
             monitor.start();
-
-            orderTracker.addTradeListener(orderManager, exchange);
         }
+
         for (Map.Entry<Exchange, IExchangeMonitor> e : monitorMap.entrySet()) {
             Exchange x = e.getKey();
             IExchangeMonitor monitor = e.getValue();

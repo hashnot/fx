@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,14 +18,18 @@ import static com.xeiam.xchange.dto.trade.LimitOrder.Builder.from;
 import static java.math.BigDecimal.ZERO;
 
 /**
- * TODO migrate to UserTradeListener
- *
  * @author Rafał Krupiński
  */
 public class OrderManager implements IOrderUpdater, IUserTradeListener {
     final private static Logger log = LoggerFactory.getLogger(OrderManager.class);
 
-    final private Map<OrderType, OrderUpdateEvent> openOrders = new HashMap<>();
+    final private IUserTradeMonitor tradeMonitor;
+
+    final private Map<OrderType, OrderUpdateEvent> openOrders = new EnumMap<>(OrderType.class);
+
+    public OrderManager(IUserTradeMonitor tradeMonitor) {
+        this.tradeMonitor = tradeMonitor;
+    }
 
     /*
      old value is called self, new - evt
@@ -75,6 +79,8 @@ public class OrderManager implements IOrderUpdater, IUserTradeListener {
         if (openOrders.containsKey(type))
             throw new IllegalStateException("Seems order already open " + type);
 
+        tradeMonitor.addTradeListener(this, update.openExchange);
+
         update.openOrderId = placeLimitOrder(update.openedOrder, update.openExchange.getPollingTradeService());
         openOrders.put(type, update);
     }
@@ -97,6 +103,7 @@ public class OrderManager implements IOrderUpdater, IUserTradeListener {
             log.debug("Trade of an unknown order {}", trade);
             return;
         }
+        // TODO unregister listener when order is filled
         close(event.closingOrders, trade.getTradableAmount(), event.closeExchange.getPollingTradeService());
     }
 

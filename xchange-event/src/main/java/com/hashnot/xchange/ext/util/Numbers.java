@@ -30,6 +30,9 @@ public final class Numbers {
     public static <T extends Comparable<T>> boolean lt(T o1, T o2) {
         return o1.compareTo(o2) < 0;
     }
+    public static <T extends Comparable<T>> boolean gt(T o1, T o2) {
+        return o1.compareTo(o2) > 0;
+    }
 
     public static final class BigDecimal {
         public static final java.math.BigDecimal _ONE = ONE.negate();
@@ -50,11 +53,15 @@ public final class Numbers {
          * Conventional MAX_VALUE
          */
         final public static java.math.BigDecimal MAX = new java.math.BigDecimal(new BigInteger(new byte[]{1}), -Integer.MAX_VALUE);
+
         /**
          * Conventional MIN_VALUE
          */
         final public static java.math.BigDecimal MIN = new java.math.BigDecimal(new BigInteger(-1, new byte[]{1}), -Integer.MAX_VALUE);
 
+        /**
+         * @see java.lang.Comparable#compareTo(Object)
+         */
         public static <T extends Comparable<T>> int compareTo(T n1, T n2, Order.OrderType side) {
             return n1.compareTo(n2) * Orders.factor(side);
         }

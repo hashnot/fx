@@ -23,7 +23,7 @@ public class OrderManagerTest {
 
     @Test
     public void testTrade() throws Exception {
-        OrderManager orderManager = new OrderManager();
+        OrderManager orderManager = new OrderManager(mock(IUserTradeMonitor.class));
         Exchange openExchange = mock(Exchange.class);
         PollingTradeService openTradeService = mock(PollingTradeService.class);
         when(openExchange.getPollingTradeService()).thenReturn(openTradeService);

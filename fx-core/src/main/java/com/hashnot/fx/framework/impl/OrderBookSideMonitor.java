@@ -67,8 +67,10 @@ public class OrderBookSideMonitor implements IOrderBookSideMonitor, IOrderBookLi
 
         marketListeners.remove(source.side, listener);
 
-        if (marketListeners.isEmpty())
+        if (marketListeners.isEmpty()) {
             monitors.get(market.exchange).getOrderBookMonitor().removeOrderBookListener(this, market.listing);
+            orderBooks.remove(market);
+        }
     }
 
     @Override
