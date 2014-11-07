@@ -60,6 +60,11 @@ public abstract class AbstractTradeService implements PollingTradeService {
         return backend().toString();
     }
 
+    @Override
+    public Object createTradeHistoryParams() {
+        return backend().createTradeHistoryParams();
+    }
+
     protected PollingTradeService backend() {
         return exchange.get().getPollingTradeService();
     }
