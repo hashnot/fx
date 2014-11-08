@@ -12,6 +12,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Executor;
 
 /**
@@ -20,19 +23,30 @@ import java.util.concurrent.Executor;
 public class OrderBookMonitor extends AbstractParametrizedMonitor<CurrencyPair, IOrderBookListener, OrderBookUpdateEvent> implements Runnable, IOrderBookMonitor {
     final private static Logger log = LoggerFactory.getLogger(OrderBookMonitor.class);
 
-    final private Exchange parent;
+    final private Exchange exchange;
 
-    public OrderBookMonitor(Exchange parent, RunnableScheduler runnableScheduler, Executor executor) {
+    final private Map<CurrencyPair, Long> timestamps = new HashMap<>();
+
+    public OrderBookMonitor(Exchange exchange, RunnableScheduler runnableScheduler, Executor executor) {
         super(runnableScheduler, executor);
-        this.parent = parent;
+        this.exchange = exchange;
     }
 
     @Override
     protected OrderBookUpdateEvent getData(CurrencyPair pair) throws IOException {
-        log.debug("Getting order book from {}", parent);
-        OrderBook orderBook = parent.getPollingMarketDataService().getOrderBook(pair);
-        log.debug("Order book @{}", orderBook.getTimeStamp().getTime());
-        return new OrderBookUpdateEvent(new Market(parent, pair), orderBook);
+        log.debug("Getting order book from {}", exchange);
+        OrderBook orderBook = exchange.getPollingMarketDataService().getOrderBook(pair);
+        Date timeStamp = orderBook.getTimeStamp();
+        Long time = timeStamp == null ? null : timeStamp.getTime();
+        log.debug("Order book @{}", time == null ? "-" : time);
+
+        if (timeStamp != null) {
+            Long put = timestamps.put(pair, time);
+            if (time.equals(put))
+                return null;
+        }
+
+        return new OrderBookUpdateEvent(new Market(exchange, pair), orderBook);
     }
 
     @Override
@@ -47,5 +61,10 @@ public class OrderBookMonitor extends AbstractParametrizedMonitor<CurrencyPair, 
 
     public void removeOrderBookListener(IOrderBookListener orderBookListener, CurrencyPair pair) {
         removeListener(orderBookListener, pair);
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "@" + exchange;
     }
 }

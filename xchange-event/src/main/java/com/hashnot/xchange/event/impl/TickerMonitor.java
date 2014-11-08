@@ -31,12 +31,11 @@ public class TickerMonitor extends AbstractParametrizedMonitor<CurrencyPair, ITi
         Ticker ticker = exchange.getPollingMarketDataService().getTicker(pair);
         log.debug("{}", ticker);
 
-        Ticker prev = previous.get(pair);
-        if (prev != null && eq(prev, ticker))
+        Ticker prev = previous.put(pair, ticker);
+        if (prev == null || !eq(prev, ticker))
+            return new TickerEvent(ticker, exchange);
+        else
             return null;
-        previous.put(pair, ticker);
-
-        return new TickerEvent(ticker, exchange);
 
     }
 
@@ -62,6 +61,13 @@ public class TickerMonitor extends AbstractParametrizedMonitor<CurrencyPair, ITi
 
     private static boolean eq(Ticker t1, Ticker t2) {
         assert t1.getCurrencyPair().equals(t2.getCurrencyPair());
-        return Numbers.eq(t1.getAsk(), t2.getAsk()) && Numbers.eq(t1.getBid(), t2.getBid());
+        return t1.getTimestamp() == null ? t2.getTimestamp() == null : t1.getTimestamp().equals(t2.getTimestamp())
+                && Numbers.eq(t1.getAsk(), t2.getAsk())
+                && Numbers.eq(t1.getBid(), t2.getBid());
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "@" + exchange;
     }
 }
