@@ -35,4 +35,16 @@ public class OrderUpdateEvent {
         this.openedOrder = null;
         this.closingOrders = null;
     }
+
+    @Override
+    public String toString() {
+        return "OrderUpdateEvent{" +
+                "openExchange=" + openExchange +
+                ", closeExchange=" + closeExchange +
+                ", openedOrder=" + openedOrder +
+                ", openOrderId='" + openOrderId + '\'' +
+                ", closingOrders=" + closingOrders +
+                ", clear=" + clear +
+                '}';
+    }
 }

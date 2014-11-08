@@ -13,6 +13,7 @@ import java.util.ListIterator;
 
 import static com.hashnot.xchange.ext.util.Numbers.BigDecimal.isZero;
 import static com.hashnot.xchange.ext.util.Numbers.Price.compareTo;
+import static com.hashnot.xchange.ext.util.Numbers.gt;
 import static com.xeiam.xchange.dto.trade.LimitOrder.Builder.from;
 
 /**
@@ -50,7 +51,7 @@ public class OrderBooks {
 
         Iterator<LimitOrder> oi = orders.iterator();
         int i = 0;
-        while (oi.hasNext() && (totalValue.compareTo(counterLimit) <= 0 || totalAmount.compareTo(baseLimit) <= 0)) {
+        while (oi.hasNext() && (!gt(totalValue, counterLimit) || !gt(totalAmount, baseLimit))) {
             ++i;
 
             LimitOrder order = oi.next();
@@ -70,10 +71,7 @@ public class OrderBooks {
     }
 
     private static List<LimitOrder> diff(OrderBook beforeBook, OrderBook afterBook, Order.OrderType type) {
-        List<LimitOrder> beforeOrders = beforeBook.getOrders(type);
-        List<LimitOrder> newOrders = afterBook.getOrders(type);
-
-        return diff(beforeOrders, newOrders, type);
+        return diff(beforeBook.getOrders(type), afterBook.getOrders(type), type);
     }
 
     public static List<LimitOrder> diff(List<LimitOrder> oldOrders, List<LimitOrder> newOrders, Order.OrderType type) {

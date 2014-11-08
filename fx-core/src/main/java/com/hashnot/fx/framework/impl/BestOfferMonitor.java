@@ -15,11 +15,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import static com.hashnot.xchange.ext.util.Multiplexer.multiplex;
 import static com.hashnot.xchange.ext.util.Numbers.Price.forNull;
 import static com.hashnot.xchange.ext.util.Numbers.eq;
 import static com.hashnot.xchange.ext.util.Orders.revert;
@@ -119,22 +117,16 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
         return value;
     }
 
-    private static final SetMultimap<OrderType, IBestOfferListener> EMPTY_MULTIMAP = Multimaps.newSetMultimap(new HashMap<>(), HashSet::new);
+    private static final SetMultimap<OrderType, IBestOfferListener> EMPTY_MULTIMAP = Multimaps.newSetMultimap(new EnumMap<>(OrderType.class), HashSet::new);
 
     protected void notifyBestOfferListeners(BestOfferEvent bestOfferEvent) {
         MarketSide source = bestOfferEvent.source;
-        for (IBestOfferListener listener : bestOfferListeners.getOrDefault(source.market, EMPTY_MULTIMAP).get(source.side)) {
-            try {
-                listener.updateBestOffer(bestOfferEvent);
-            } catch (RuntimeException e) {
-                log.warn("Error from {}", listener, e);
-            }
-        }
+        multiplex(bestOfferListeners.getOrDefault(source.market, EMPTY_MULTIMAP).get(source.side), bestOfferEvent, (l, e) -> l.updateBestOffer(e));
     }
 
     @Override
     public void addBestOfferListener(IBestOfferListener listener, MarketSide source) {
-        boolean listen = bestOfferListeners.computeIfAbsent(source.market, (k) -> Multimaps.newSetMultimap(new HashMap<>(), HashSet::new)).put(source.side, listener);
+        boolean listen = bestOfferListeners.computeIfAbsent(source.market, (k) -> Multimaps.newSetMultimap(new EnumMap<>(OrderType.class), HashSet::new)).put(source.side, listener);
         if (!listen)
             return;
 

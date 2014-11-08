@@ -3,15 +3,15 @@ package com.hashnot.xchange.event.impl;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.hashnot.xchange.event.impl.exec.RunnableScheduler;
-import com.hashnot.xchange.ext.util.Multiplexer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 
 import static com.hashnot.xchange.ext.util.Multiplexer.multiplex;
@@ -27,7 +27,7 @@ public abstract class AbstractParametrizedMonitor<P, L, R> extends AbstractPolli
 
     protected Executor executor;
 
-    final protected Multimap<P, L> listeners = Multimaps.newSetMultimap(new HashMap<>(), HashSet::new);
+    final protected Multimap<P, L> listeners = Multimaps.newSetMultimap(new HashMap<>(), () -> Collections.newSetFromMap(new ConcurrentHashMap<>()));
 
     final protected Logger log = LoggerFactory.getLogger(getClass());
 
@@ -41,7 +41,8 @@ public abstract class AbstractParametrizedMonitor<P, L, R> extends AbstractPolli
                 if (data == null)
                     return;
 
-                executor.execute(new ListenerNotifier(data, e.getValue()));
+                if (!listeners.isEmpty())
+                    executor.execute(new ListenerNotifier(data, e.getValue()));
             } catch (IOException x) {
                 log.warn("Error from {}", this, x);
                 return;
