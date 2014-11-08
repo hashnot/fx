@@ -1,11 +1,13 @@
 package com.hashnot.fx.framework;
 
 import com.hashnot.xchange.ext.Market;
+import com.xeiam.xchange.Exchange;
+import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
 
 /**
-* @author Rafał Krupiński
-*/
+ * @author Rafał Krupiński
+ */
 public class MarketSide {
 
     public final Market market;
@@ -14,6 +16,10 @@ public class MarketSide {
     public MarketSide(Market market, Order.OrderType side) {
         this.side = side;
         this.market = market;
+    }
+
+    public MarketSide(Exchange exchange, CurrencyPair listing, Order.OrderType side) {
+        this(new Market(exchange, listing), side);
     }
 
     @Override

@@ -12,6 +12,7 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.List;
 
+import static com.hashnot.xchange.ext.util.Numbers.Price.isCloser;
 import static com.hashnot.xchange.ext.util.Numbers.eq;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
 import static com.xeiam.xchange.dto.Order.OrderType.BID;
@@ -111,7 +112,7 @@ public class Orders {
     }
 
     public static boolean isProfitable(LimitOrder worst, LimitOrder best) {
-        boolean result = !Numbers.Price.isWorse(worst.getNetPrice(), best.getNetPrice(), worst.getType());
+        boolean result = !isCloser(worst.getNetPrice(), best.getNetPrice(), worst.getType());
         log.debug("{} {} {} <=> {} {} {} {}profitable", worst.getType(), worst.getLimitPrice(), worst.getNetPrice(), best.getNetPrice(), best.getLimitPrice(), best.getType(), result ? "" : "not ");
         return result;
     }

@@ -8,7 +8,6 @@ import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.ext.Market;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
-import com.xeiam.xchange.dto.Order;
 import groovy.lang.GroovyShell;
 
 import java.io.File;
@@ -21,6 +20,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 
 import static com.hashnot.fx.util.Exchanges.report;
+import static com.xeiam.xchange.dto.Order.OrderType.ASK;
+import static com.xeiam.xchange.dto.Order.OrderType.BID;
 
 /**
  * @author Rafał Krupiński
@@ -41,7 +42,8 @@ public class Main {
         OrderManager orderManager = new OrderManager(orderTracker);
         BestOfferMonitor bestOfferMonitor = new BestOfferMonitor(monitorMap);
 
-        Dealer dealer = new Dealer(simulation, orderManager, bestOfferMonitor, orderTracker, monitorMap);
+        Dealer askDealer = new Dealer(simulation, orderManager, bestOfferMonitor, orderTracker, monitorMap, ASK, pair);
+        Dealer bidDealer = new Dealer(simulation, orderManager, bestOfferMonitor, orderTracker, monitorMap, BID, pair);
 
         for (IExchangeMonitor monitor : monitors) {
             Exchange exchange = monitor.getExchange();
@@ -54,8 +56,8 @@ public class Main {
             IExchangeMonitor monitor = e.getValue();
 
             final Market market = new Market(x, pair);
-            bestOfferMonitor.addBestOfferListener(dealer, new MarketSide(market, Order.OrderType.ASK));
-            bestOfferMonitor.addBestOfferListener(dealer, new MarketSide(market, Order.OrderType.BID));
+            bestOfferMonitor.addBestOfferListener(askDealer, new MarketSide(market, ASK));
+            bestOfferMonitor.addBestOfferListener(bidDealer, new MarketSide(market, BID));
 
             ITradeService tradeService = (ITradeService) x.getPollingTradeService();
             tradeService.addLimitOrderPlacedListener(orderTracker);

@@ -48,7 +48,7 @@ public final class Numbers {
     private Numbers() {
     }
 
-    public static class Price {
+    public final static class Price {
         /**
          * Conventional MAX_VALUE
          */
@@ -66,11 +66,17 @@ public final class Numbers {
             return n1.compareTo(n2) * Orders.factor(side);
         }
 
-        public static <T extends Comparable<T>> boolean isBetter(T better, T worse, Order.OrderType side) {
+        /**
+         * true if first would be further to the average then the second in an order book.
+         */
+        public static <T extends Comparable<T>> boolean isFurther(T better, T worse, Order.OrderType side) {
             return compareTo(better, worse, side) > 0;
         }
 
-        public static <T extends Comparable<T>> boolean isWorse(T worse, T better, Order.OrderType side) {
+        /**
+         * true if first would be closer to the average then the second in an order book.
+         */
+        public static <T extends Comparable<T>> boolean isCloser(T worse, T better, Order.OrderType side) {
             return compareTo(worse, better, side) < 0;
         }
 

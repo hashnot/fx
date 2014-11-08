@@ -15,7 +15,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import static com.hashnot.xchange.ext.util.Numbers.Price.isBetter;
+import static com.hashnot.xchange.ext.util.Numbers.Price.isFurther;
 import static com.hashnot.xchange.ext.util.Numbers.lt;
 import static com.hashnot.xchange.ext.util.Numbers.min;
 import static com.hashnot.xchange.ext.util.Orders.*;
@@ -89,7 +89,7 @@ public class Simulation {
         }
         log.info("open for {}", openAmountActual);
 
-        return apply(openOrder, openMonitor, closeOrders, openMonitor, openAmountActual);
+        return apply(openOrder, openExchange, closeOrders, closeExchange, openAmountActual);
     }
 
     protected BigDecimal applyFeeToWallet(IExchangeMonitor openMonitor, BigDecimal openOutGross, CurrencyPair pair) {
@@ -109,7 +109,7 @@ public class Simulation {
         return Math.min(s1, s2);
     }
 
-    private OrderUpdateEvent apply(LimitOrder openOrderTempl, IExchangeMonitor openMonitor, List<LimitOrder> closeOrders, IExchangeMonitor closeMonitor, BigDecimal openAmount) {
+    private OrderUpdateEvent apply(LimitOrder openOrderTempl, Exchange openExchange, List<LimitOrder> closeOrders, Exchange closeExchange, BigDecimal openAmount) {
         // TODO BigDecimal price = betterPrice(openOrderTempl, openMonitor);
         LimitOrder openOrder = LimitOrder.Builder.from(openOrderTempl)/*.limitPrice(price)*/.tradableAmount(openAmount).build();
         List<LimitOrder> myCloseOrders = new LinkedList<>();
@@ -133,7 +133,7 @@ public class Simulation {
             if (last) break;
         }
 
-        return new OrderUpdateEvent(openMonitor.getExchange(), closeMonitor.getExchange(), openOrder, myCloseOrders);
+        return new OrderUpdateEvent(openExchange, closeExchange, openOrder, myCloseOrders);
     }
 
     private BigDecimal betterPrice(LimitOrder openOrderTemplate, IExchangeMonitor openMonitor) {
@@ -147,7 +147,7 @@ public class Simulation {
         for (LimitOrder order : orders) {
             BigDecimal netPrice = Orders.getNetPrice(order.getLimitPrice(), type, x.getMarketMetadata(order.getCurrencyPair()).getOrderFeeFactor());
 
-            if (isBetter(netPrice, netPriceLimit, order.getType()))
+            if (isFurther(netPrice, netPriceLimit, order.getType()))
                 break;
             log.debug("order {}", order);
             BigDecimal newAmount = totalAmount.add(order.getTradableAmount());
@@ -176,7 +176,7 @@ public class Simulation {
         Order.OrderType type = revert(orders.get(0).getType());
         for (LimitOrder order : orders) {
             BigDecimal netPrice = Orders.getNetPrice(order.getLimitPrice(), type, x.getMarketMetadata(order.getCurrencyPair()).getOrderFeeFactor());
-            if (isBetter(netPrice, netPriceLimit, order.getType()))
+            if (isFurther(netPrice, netPriceLimit, order.getType()))
                 break;
             log.debug("order {}", order);
             BigDecimal curAmount = order.getTradableAmount();
