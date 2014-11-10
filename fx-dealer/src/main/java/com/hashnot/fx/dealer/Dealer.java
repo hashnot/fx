@@ -158,18 +158,6 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener {
             return;
         }
 
-        Exchange eventExchange = evt.source.market.exchange;
-        // 0 or one iterations
-        {
-            BigDecimal newPrice = evt.newOrders.get(0).getLimitPrice();
-            for (LimitOrder order : orderTracker.getMonitored(eventExchange).values()) {
-                if (eq(order.getLimitPrice(), newPrice)) {
-                    log.info("Best offer is mine");
-                    return;
-                }
-            }
-        }
-
         //TODO change may mean that we need to change the open order to smaller one
 
         // open or update order
@@ -178,6 +166,14 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener {
 
         // TODO remove net prices
         Orders.updateNetPrices(limited, closeMonitor.getMarketMetadata(listing).getOrderFeeFactor());
+
+        {
+            // return if there is open and profitable order
+            LimitOrder openOrder = getOpenOrder();
+            if (openOrder != null)
+                if (openOrderStillProfitable(openOrder, evt))
+                    return;
+        }
 
         LimitOrder closeOrder = Orders.closing(evt.newOrders.get(0), closeMonitor);
 
