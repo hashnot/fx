@@ -31,7 +31,6 @@ public abstract class AbstractParametrizedMonitor<P, L, R> extends AbstractPolli
 
     final protected Logger log = LoggerFactory.getLogger(getClass());
 
-
     @Override
     public void run() {
         for (Map.Entry<P, Collection<L>> e : listeners.asMap().entrySet()) {
@@ -41,14 +40,18 @@ public abstract class AbstractParametrizedMonitor<P, L, R> extends AbstractPolli
                 if (data == null)
                     return;
 
-                if (!listeners.isEmpty())
-                    executor.execute(new ListenerNotifier(data, e.getValue()));
+                callListeners(data, e.getValue());
             } catch (IOException x) {
                 log.warn("Error from {}", this, x);
                 return;
             }
 
         }
+    }
+
+    protected void callListeners(R data, Collection<L> listeners) {
+        if (!listeners.isEmpty())
+            executor.execute(new ListenerNotifier(data, listeners));
     }
 
     protected void addListener(L listener, P param) {
@@ -83,11 +86,11 @@ public abstract class AbstractParametrizedMonitor<P, L, R> extends AbstractPolli
 
         @Override
         public void run() {
-            multiplex(listeners, data, (l, e) -> notifyListener(l, e));
+            multiplex(listeners, data, (l, e) -> callListener(l, e));
         }
     }
 
-    abstract protected void notifyListener(L listener, R data);
+    abstract protected void callListener(L listener, R data);
 
     abstract protected R getData(P param) throws IOException;
 }

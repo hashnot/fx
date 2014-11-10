@@ -2,6 +2,7 @@ package com.hashnot.fx.dealer;
 
 import com.hashnot.fx.framework.*;
 import com.hashnot.xchange.event.IExchangeMonitor;
+import com.hashnot.xchange.event.IWalletMonitor;
 import com.hashnot.xchange.ext.util.Orders;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
@@ -135,9 +136,12 @@ public class DealerTest {
 
     private static IExchangeMonitor getExchangeMonitor(Exchange x) {
         IExchangeMonitor monitor = mock(IExchangeMonitor.class);
+
+        IWalletMonitor walletMonitor = mock(IWalletMonitor.class);
+        when(walletMonitor.getWallet(any())).thenReturn(TEN);
+
+        when(monitor.getWalletMonitor()).thenReturn(walletMonitor);
         when(monitor.getMarketMetadata(p)).thenReturn(new BaseMarketMetadata(ONE.movePointLeft(SCALE), SCALE, ZERO));
-        when(monitor.getWallet(any())).thenReturn(TEN);
-        when(monitor.getLimit(any())).thenReturn(new BigDecimal(2));
         when(monitor.getExchange()).thenReturn(x);
         return monitor;
     }

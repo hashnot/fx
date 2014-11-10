@@ -21,7 +21,7 @@ public class Exchanges {
         Map<String, BigDecimal> totals = new HashMap<>();
         for (IExchangeMonitor e : context) {
             log.info("{}", e);
-            for (Map.Entry<String, BigDecimal> f : e.getWallet().entrySet()) {
+            for (Map.Entry<String, BigDecimal> f : e.getWalletMonitor().getWallet().entrySet()) {
                 String currency = f.getKey();
                 BigDecimal amount = f.getValue();
                 log.info("{} = {}", currency, amount);

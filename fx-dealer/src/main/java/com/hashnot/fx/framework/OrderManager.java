@@ -36,7 +36,6 @@ public class OrderManager implements IOrderUpdater, IUserTradeListener {
      */
     @Override
     public void update(OrderUpdateEvent evt) {
-        try {
             if (evt.clear != null) {
                 OrderUpdateEvent self = openOrders.get(evt.clear);
                 if (self != null) {
@@ -50,14 +49,12 @@ public class OrderManager implements IOrderUpdater, IUserTradeListener {
             if (self == null) {
                 open(key, evt);
             } else if (!isIgnoreUpdate(self, evt)) {
-                // instead of update, cancel and let next iteration opens it again
                 cancel(key, self);
+            // instead of update, cancel and let next iteration opens it again
+            open(key, evt);
             } else {
                 log.debug("Update order ignored");
             }
-        } catch (IOException e) {
-            throw new ConnectionException(e);
-        }
     }
 
     /**
@@ -75,7 +72,7 @@ public class OrderManager implements IOrderUpdater, IUserTradeListener {
                 && o1.getTradableAmount().compareTo(o2.getTradableAmount()) <= 0;
     }
 
-    protected void open(OrderType type, OrderUpdateEvent update) throws IOException {
+    protected void open(OrderType type, OrderUpdateEvent update) {
         if (openOrders.containsKey(type))
             throw new IllegalStateException("Seems order already open " + type);
 
@@ -85,31 +82,38 @@ public class OrderManager implements IOrderUpdater, IUserTradeListener {
         openOrders.put(type, update);
     }
 
-    protected void cancel(OrderType key, OrderUpdateEvent self) throws IOException {
+    protected void cancel(OrderType key, OrderUpdateEvent self) {
         log.info("Cancel @{} {} {}", self.openExchange, self.openOrderId, self.openedOrder);
-        self.openExchange.getPollingTradeService().cancelOrder(self.openOrderId);
+        try {
+            self.openExchange.getPollingTradeService().cancelOrder(self.openOrderId);
+        } catch (IOException e) {
+            throw new ConnectionException(e);
+        }
         self.openOrderId = null;
         openOrders.remove(key);
     }
 
     @Override
     public void trade(UserTradeEvent evt) {
-        trade(evt.trade);
-    }
-
-    private void trade(UserTrade trade) {
+        UserTrade trade = evt.trade;
         OrderUpdateEvent event = openOrders.get(trade.getType());
+
         if (event == null || !trade.getOrderId().equals(event.openOrderId)) {
-            log.debug("Trade of an unknown order {}", trade);
+            log.debug("Trade of an unknown order {} @{}", trade, evt.source);
             return;
         }
+
+        if (!evt.source.equals(event.openExchange)) {
+            log.warn("Trade of untracked exchange {}@{}", trade, evt.source);
+            return;
+        }
+
         // TODO unregister listener when order is filled
         close(event.closingOrders, trade.getTradableAmount(), event.closeExchange.getPollingTradeService());
     }
 
     private void close(List<LimitOrder> orders, BigDecimal amountLimit, PollingTradeService tradeService) {
         BigDecimal totalAmount = ZERO;
-        try {
             for (LimitOrder order : orders) {
                 BigDecimal newAmount = totalAmount.add(order.getTradableAmount());
                 int cmp = newAmount.compareTo(amountLimit);
@@ -125,14 +129,15 @@ public class OrderManager implements IOrderUpdater, IUserTradeListener {
                     break;
                 }
             }
-        } catch (IOException e) {
-            throw new ConnectionException(e);
-        }
     }
 
-    protected String placeLimitOrder(LimitOrder order, PollingTradeService tradeService) throws IOException {
+    protected String placeLimitOrder(LimitOrder order, PollingTradeService tradeService) {
+        try {
         String id = tradeService.placeLimitOrder(order);
         log.info("Open {} {} @{}", id, order, tradeService);
         return id;
+        } catch (IOException e) {
+            throw new ConnectionException(e);
+        }
     }
 }

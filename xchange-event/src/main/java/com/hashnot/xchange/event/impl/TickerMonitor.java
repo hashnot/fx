@@ -40,7 +40,7 @@ public class TickerMonitor extends AbstractParametrizedMonitor<CurrencyPair, ITi
     }
 
     @Override
-    protected void notifyListener(ITickerListener listener, TickerEvent evt) {
+    protected void callListener(ITickerListener listener, TickerEvent evt) {
         listener.ticker(evt);
     }
 

@@ -16,8 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.hashnot.xchange.ext.util.Numbers.Price.*;
-import static com.hashnot.xchange.ext.util.Numbers.eq;
-import static com.hashnot.xchange.ext.util.Numbers.lt;
+import static com.hashnot.xchange.ext.util.Numbers.*;
 import static com.hashnot.xchange.ext.util.Orders.c;
 import static com.hashnot.xchange.ext.util.Orders.revert;
 import static com.xeiam.xchange.dto.Order.OrderType;
@@ -28,6 +27,8 @@ import static java.math.BigDecimal.ZERO;
  * @author Rafał Krupiński
  */
 public class Dealer implements IOrderBookSideListener, IBestOfferListener {
+    static private final BigDecimal TWO = new BigDecimal(2);
+
     private final IOrderUpdater orderUpdater;
     final private IOrderBookSideMonitor orderBookSideMonitor;
 
@@ -36,7 +37,7 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener {
 
     final private Map<Exchange, IExchangeMonitor> monitors;
 
-    // side -> map(market -> best offer price)
+    // side -> map(exchange -> best offer price)
     final private Map<Exchange, BigDecimal> bestOffers = new HashMap<>();
 
     private Exchange closeExchange;
@@ -86,13 +87,7 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener {
             return;
         }
 
-        // 0 or one iterations
-        for (LimitOrder order : orderTracker.getMonitored(eventExchange).values()) {
-            if (eq(order.getLimitPrice(), newPrice)) {
-                log.info("Best offer is mine");
-                return;
-            }
-        }
+        if (isMineTop(eventExchange, newPrice)) return;
 
         bestOffers.put(eventExchange, newPrice);
 
@@ -179,7 +174,7 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener {
 
         // open or update order
         IExchangeMonitor closeMonitor = monitors.get(closeExchange);
-        List<LimitOrder> limited = OrderBooks.removeOverLimit(evt.newOrders, closeMonitor.getLimit(listing.baseSymbol), closeMonitor.getLimit(listing.counterSymbol));
+        List<LimitOrder> limited = OrderBooks.removeOverLimit(evt.newOrders, getLimit(closeMonitor, listing.baseSymbol), getLimit(closeMonitor, listing.counterSymbol));
 
         // TODO remove net prices
         Orders.updateNetPrices(limited, closeMonitor.getMarketMetadata(listing).getOrderFeeFactor());
@@ -217,13 +212,39 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener {
             orderUpdater.update(new OrderUpdateEvent(side));
     }
 
+    protected static BigDecimal getLimit(IExchangeMonitor monitor, String currency) {
+        return monitor.getWalletMonitor().getWallet(currency).multiply(TWO);
+    }
+
+    private boolean openOrderStillProfitable(LimitOrder openOrder, OrderBookSideUpdateEvent evt) {
+        // working on a limited OrderBooks,
+        if (evt.getChanges().isEmpty())
+            return true;
+        BigDecimal closeAmount = Simulation.getCloseAmount(evt.newOrders, openOrder, monitors.get(closeExchange));
+        return !gt(closeAmount, openOrder.getTradableAmount());
+    }
+
+    protected boolean isMineTop(Exchange exchange, BigDecimal newTopPrice) {
+        LimitOrder order = getOpenOrder();
+        log.info("Best offer {}@{}/{}; mine {}", newTopPrice, side, exchange, order);
+        return (order != null && isCloser(order.getLimitPrice(), newTopPrice, side));
+    }
+
+    private LimitOrder getOpenOrder() {
+        // 0 or one iterations
+        for (LimitOrder order : orderTracker.getMonitored(openExchange).values())
+            if (order.getType() == side)
+                return order;
+        return null;
+    }
+
     private BigDecimal getOpenNetPrice(BigDecimal openGrossPrice) {
         return Orders.getNetPrice(openGrossPrice, side, monitors.get(openExchange).getMarketMetadata(listing).getOrderFeeFactor());
     }
 
     private boolean hasMinimumMoney(Exchange exchange, BigDecimal price) {
         IExchangeMonitor monitor = monitors.get(exchange);
-        BigDecimal outAmount = monitor.getWallet(Orders.outgoingCurrency(side, listing));
+        BigDecimal outAmount = monitor.getWalletMonitor().getWallet(Orders.outgoingCurrency(side, listing));
         BigDecimal amountMinimum = monitor.getMarketMetadata(listing).getAmountMinimum();
 
         BigDecimal baseAmount;

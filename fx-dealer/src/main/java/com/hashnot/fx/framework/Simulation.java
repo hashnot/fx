@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.hashnot.xchange.ext.util.Numbers.Price.isFurther;
+import static com.hashnot.xchange.ext.util.Numbers.gt;
 import static com.hashnot.xchange.ext.util.Numbers.lt;
 import static com.hashnot.xchange.ext.util.Numbers.min;
 import static com.hashnot.xchange.ext.util.Orders.*;
@@ -44,12 +45,12 @@ public class Simulation {
         String closeOutCur = incomingCurrency(openOrder);
 
         IExchangeMonitor openMonitor = monitors.get(openExchange);
-        BigDecimal openOutGross = openMonitor.getWallet(openOutgoingCur);
+        BigDecimal openOutGross = openMonitor.getWalletMonitor().getWallet(openOutgoingCur);
         CurrencyPair pair = openOrder.getCurrencyPair();
         BigDecimal openOutNet = applyFeeToWallet(openMonitor, openOutGross, pair);
 
         IExchangeMonitor closeMonitor = monitors.get(closeExchange);
-        BigDecimal closeOutGross = closeMonitor.getWallet(closeOutCur);
+        BigDecimal closeOutGross = closeMonitor.getWalletMonitor().getWallet(closeOutCur);
         BigDecimal closeOutNet = applyFeeToWallet(closeMonitor, closeOutGross, pair);
 
         log.debug("type: {}, open {}, close {}", openOrder.getType(), openExchange, closeExchange);
@@ -68,15 +69,11 @@ public class Simulation {
         //                  closeOut = base
 
 
-        BigDecimal openAmount;
-        BigDecimal closeAmount;
-        if (openOrder.getType() == Order.OrderType.ASK) {
-            openAmount = openOutGross;
-            closeAmount = totalAmountByValue(closeOrders, closeOutNet, openOrder.getNetPrice(), closeMonitor);
-        } else {
+        BigDecimal openAmount = openOutGross;
+        if (openOrder.getType() == Order.OrderType.BID)
             openAmount = openOutGross.divide(openOrder.getLimitPrice(), c);
-            closeAmount = totalAmountByAmount(closeOrders, closeOutNet, openOrder.getNetPrice(), closeMonitor);
-        }
+
+        BigDecimal closeAmount = getCloseAmount(closeOrders, closeOutNet, openOrder, closeMonitor);
 
         log.debug("open: {}", openAmount);
         log.debug("close: {}", closeAmount);
@@ -92,7 +89,7 @@ public class Simulation {
         return apply(openOrder, openExchange, closeOrders, closeExchange, openAmountActual);
     }
 
-    protected BigDecimal applyFeeToWallet(IExchangeMonitor openMonitor, BigDecimal openOutGross, CurrencyPair pair) {
+    protected static BigDecimal applyFeeToWallet(IExchangeMonitor openMonitor, BigDecimal openOutGross, CurrencyPair pair) {
         BigDecimal feeFactor = openMonitor.getMarketMetadata(pair).getOrderFeeFactor();
         return openOutGross.multiply(ONE.subtract(feeFactor));
     }
@@ -119,7 +116,7 @@ public class Simulation {
 
             boolean last = false;
             BigDecimal amount;
-            if (newTotal.compareTo(openAmount) > 0) {
+            if (gt(newTotal, openAmount)) {
                 amount = openAmount.subtract(total);
                 last = true;
             } else {
@@ -133,6 +130,21 @@ public class Simulation {
         }
 
         return new OrderUpdateEvent(openExchange, closeExchange, openOrder, myCloseOrders);
+    }
+
+    public static BigDecimal getCloseAmount(List<LimitOrder> closeOrders, LimitOrder openOrder, IExchangeMonitor closeMonitor) {
+        String closeOutCur = incomingCurrency(openOrder);
+        BigDecimal closeOutGross = closeMonitor.getWalletMonitor().getWallet(closeOutCur);
+        BigDecimal closeOutNet = applyFeeToWallet(closeMonitor, closeOutGross, openOrder.getCurrencyPair());
+
+        return getCloseAmount(closeOrders, closeOutNet, openOrder, closeMonitor);
+    }
+
+    static BigDecimal getCloseAmount(List<LimitOrder> closeOrders, BigDecimal closeOutNet, LimitOrder openOrder, IExchangeMonitor closeMonitor) {
+        if (openOrder.getType() == Order.OrderType.ASK)
+            return totalAmountByValue(closeOrders, closeOutNet, openOrder.getNetPrice(), closeMonitor);
+        else
+            return totalAmountByAmount(closeOrders, closeOutNet, openOrder.getNetPrice(), closeMonitor);
     }
 
     static BigDecimal totalAmountByAmount(List<LimitOrder> orders, BigDecimal amountLimit, BigDecimal netPriceLimit, IExchangeMonitor x) {
@@ -149,7 +161,7 @@ public class Simulation {
 
             BigDecimal actualAmount;
             boolean last = false;
-            if (newAmount.compareTo(amountLimit) > 0) {
+            if (gt(newAmount, amountLimit)) {
                 actualAmount = amountLimit.subtract(totalAmount);
                 totalAmount = totalAmount.add(actualAmount);
                 last = true;
@@ -183,7 +195,7 @@ public class Simulation {
             boolean last;
             // if >0 then cut amount
             // TODO if =0 then break
-            if (newValue.compareTo(valueLimit) >= 0) {
+            if (!lt(newValue, valueLimit)) {
                 curValue = valueLimit.subtract(totalValue);
                 curAmount = curValue.divide(order.getLimitPrice(), c);
                 totalAmount = totalAmount.add(curAmount);

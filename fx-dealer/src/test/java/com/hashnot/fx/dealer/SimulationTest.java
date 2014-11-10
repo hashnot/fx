@@ -98,14 +98,14 @@ public class SimulationTest {
         IExecutorStrategyFactory executorStrategyFactory = new SchedulerExecutorFactory(Executors.newSingleThreadScheduledExecutor(), 100);
         e1 = new SimpleExchange(new MockExchange(fee[0]));
         ExchangeMonitor m1 = new ExchangeMonitor(e1, executorStrategyFactory);
-        m1.getWallet().put(EUR, TEN);
-        m1.getWallet().put(BTC, TEN);
+        m1.getWalletMonitor().getWallet().put(EUR, TEN);
+        m1.getWalletMonitor().getWallet().put(BTC, TEN);
         monitors.put(e1, m1);
 
         e2 = new SimpleExchange(new MockExchange(fee[Math.min(1, fee.length - 1)]));
         ExchangeMonitor m2 = new ExchangeMonitor(e2, executorStrategyFactory);
-        m2.getWallet().put(EUR, TEN);
-        m2.getWallet().put(BTC, TEN);
+        m2.getWalletMonitor().getWallet().put(EUR, TEN);
+        m2.getWalletMonitor().getWallet().put(BTC, TEN);
         monitors.put(e2, m2);
 
         return new Simulation(monitors);

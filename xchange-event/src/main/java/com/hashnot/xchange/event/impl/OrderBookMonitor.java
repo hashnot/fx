@@ -50,7 +50,7 @@ public class OrderBookMonitor extends AbstractParametrizedMonitor<CurrencyPair, 
     }
 
     @Override
-    protected void notifyListener(IOrderBookListener listener, OrderBookUpdateEvent evt) {
+    protected void callListener(IOrderBookListener listener, OrderBookUpdateEvent evt) {
         listener.orderBookChanged(evt);
     }
 
