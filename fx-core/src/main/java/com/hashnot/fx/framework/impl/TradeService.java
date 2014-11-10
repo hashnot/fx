@@ -5,10 +5,8 @@ import com.hashnot.fx.framework.ITradeService;
 import com.hashnot.fx.framework.OrderCancelEvent;
 import com.hashnot.fx.framework.OrderEvent;
 import com.xeiam.xchange.Exchange;
-import com.xeiam.xchange.ExchangeException;
-import com.xeiam.xchange.NotAvailableFromExchangeException;
-import com.xeiam.xchange.NotYetImplementedForExchangeException;
 import com.xeiam.xchange.dto.trade.LimitOrder;
+import com.xeiam.xchange.service.polling.PollingTradeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +34,7 @@ public class TradeService extends AbstractTradeService implements ITradeService 
     }
 
     @Override
-    public boolean cancelOrder(String orderId) throws ExchangeException, NotAvailableFromExchangeException, NotYetImplementedForExchangeException, IOException {
+    public boolean cancelOrder(String orderId) throws IOException {
         Exchange x = exchange.get();
         boolean result = x.getPollingTradeService().cancelOrder(orderId);
         if (openOrders.remove(orderId) == null)
@@ -49,7 +47,7 @@ public class TradeService extends AbstractTradeService implements ITradeService 
     }
 
     @Override
-    public String placeLimitOrder(LimitOrder limitOrder) throws ExchangeException, NotAvailableFromExchangeException, NotYetImplementedForExchangeException, IOException {
+    public String placeLimitOrder(LimitOrder limitOrder) throws IOException {
         Exchange exchange = this.exchange.get();
         String id = exchange.getPollingTradeService().placeLimitOrder(limitOrder);
         if (openOrders.containsKey(id))
@@ -84,4 +82,9 @@ public class TradeService extends AbstractTradeService implements ITradeService 
         listeners.remove(listener);
     }
 
+    @Override
+    public String toString() {
+        PollingTradeService backend = backend();
+        return "TradeService(" + backend.getClass().getSimpleName() + "#" + System.identityHashCode(backend) + ")";
+    }
 }

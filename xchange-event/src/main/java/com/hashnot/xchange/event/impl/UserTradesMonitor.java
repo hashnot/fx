@@ -1,7 +1,7 @@
 package com.hashnot.xchange.event.impl;
 
-import com.hashnot.xchange.event.IUserTradesMonitor;
 import com.hashnot.xchange.event.IUserTradesListener;
+import com.hashnot.xchange.event.IUserTradesMonitor;
 import com.hashnot.xchange.event.UserTradesEvent;
 import com.hashnot.xchange.event.impl.exec.RunnableScheduler;
 import com.xeiam.xchange.Exchange;
@@ -9,7 +9,7 @@ import com.xeiam.xchange.dto.marketdata.Trades;
 import com.xeiam.xchange.dto.trade.UserTrade;
 import com.xeiam.xchange.dto.trade.UserTrades;
 import com.xeiam.xchange.service.polling.PollingTradeService;
-import com.xeiam.xchange.service.polling.opt.TradeHistorySinceTime;
+import com.xeiam.xchange.service.polling.trade.TradeHistoryParamsTimeSpanImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,41 +37,45 @@ public class UserTradesMonitor extends AbstractPollingMonitor implements IUserTr
     public void run() {
         PollingTradeService tradeService = exchange.getPollingTradeService();
 
-        Object params = tradeService.createTradeHistoryParams();
-        if (params instanceof TradeHistorySinceTime)
-            ((TradeHistorySinceTime) params).setFromTime(previous);
-
         UserTrades trades;
         try {
             log.debug("Getting trades from {}", exchange);
-            trades = tradeService.getTradeHistory(params);
+            trades = tradeService.getTradeHistory(new TradeHistoryParamsTimeSpanImpl(previous));
             log.debug("User trades {}", trades.getUserTrades().size());
         } catch (IOException e) {
             log.warn("Error from {}", tradeService, e);
             return;
         }
 
-        List<UserTrade> tradeList = trades.getUserTrades();
-        if (tradeList.isEmpty()) {
-            previous = new Date();
+        if (trades.getUserTrades().isEmpty()) {
             return;
-        } else if (tradeList.size() == 1) {
+        }
+
+        updatePreviousDate(trades);
+
+        multiplex(listeners, new UserTradesEvent(trades, exchange), (l, e) -> l.trades(e));
+    }
+
+    protected void updatePreviousDate(UserTrades trades) {
+        List<UserTrade> tradeList = trades.getUserTrades();
+
+        // never empty here
+        if (tradeList.size() == 1) {
             UserTrade userTrade = tradeList.get(0);
             previous = userTrade.getTimestamp() != null ? userTrade.getTimestamp() : new Date();
         } else {
             if (Trades.TradeSortType.SortByTimestamp == trades.getTradeSortType()) {
                 UserTrade first = tradeList.get(0);
+                if (first.getTimestamp() == null) {
+                    previous = new Date();
+                    return;
+                }
                 UserTrade last = tradeList.get(tradeList.size() - 1);
                 log.debug("first: {}, last: {}", first.getTimestamp(), last.getTimestamp());
-                if (first.getTimestamp() != null)
-                    previous = first.getTimestamp().compareTo(last.getTimestamp()) < 0 ? last.getTimestamp() : first.getTimestamp();
-                else
-                    previous = new Date();
+                previous = first.getTimestamp().compareTo(last.getTimestamp()) < 0 ? last.getTimestamp() : first.getTimestamp();
             } else
                 log.warn("Sorting by ID @", exchange);
         }
-
-        multiplex(listeners, new UserTradesEvent(trades, exchange), (l, e) -> l.trades(e));
     }
 
     public UserTradesMonitor(Exchange exchange, RunnableScheduler scheduler) {
