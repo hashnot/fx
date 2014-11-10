@@ -7,9 +7,9 @@ import com.hashnot.fx.framework.IOrderBookSideMonitor;
 import com.hashnot.fx.framework.MarketSide;
 import com.hashnot.fx.framework.OrderBookSideUpdateEvent;
 import com.hashnot.fx.util.OrderBooks;
+import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.event.IOrderBookListener;
 import com.hashnot.xchange.event.OrderBookUpdateEvent;
-import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.ext.Market;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.marketdata.OrderBook;
@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import static com.hashnot.xchange.ext.util.Multiplexer.multiplex;
 import static com.xeiam.xchange.dto.Order.OrderType;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
 import static com.xeiam.xchange.dto.Order.OrderType.BID;
@@ -105,12 +106,12 @@ public class OrderBookSideMonitor implements IOrderBookSideMonitor, IOrderBookLi
         }
 
         OrderBookSideUpdateEvent obse = new OrderBookSideUpdateEvent(new MarketSide(market, side), oldOrders, newOrders);
-        for (IOrderBookSideListener listener : marketListeners.get(side)) {
-            try {
-                listener.orderBookSideChanged(obse);
-            } catch (RuntimeException x) {
-                log.warn("Error from {}", listener, x);
-            }
-        }
+        multiplex(marketListeners.get(side), obse, (l, e) -> l.orderBookSideChanged(e));
+    }
+
+    @Override
+    public String toString() {
+        // intended singleton object, class name should suffice
+        return getClass().getSimpleName();
     }
 }

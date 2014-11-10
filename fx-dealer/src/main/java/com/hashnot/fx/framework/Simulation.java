@@ -110,8 +110,7 @@ public class Simulation {
     }
 
     private OrderUpdateEvent apply(LimitOrder openOrderTempl, Exchange openExchange, List<LimitOrder> closeOrders, Exchange closeExchange, BigDecimal openAmount) {
-        // TODO BigDecimal price = betterPrice(openOrderTempl, openMonitor);
-        LimitOrder openOrder = LimitOrder.Builder.from(openOrderTempl)/*.limitPrice(price)*/.tradableAmount(openAmount).build();
+        LimitOrder openOrder = LimitOrder.Builder.from(openOrderTempl).tradableAmount(openAmount).build();
         List<LimitOrder> myCloseOrders = new LinkedList<>();
 
         BigDecimal total = ZERO;
@@ -134,10 +133,6 @@ public class Simulation {
         }
 
         return new OrderUpdateEvent(openExchange, closeExchange, openOrder, myCloseOrders);
-    }
-
-    private BigDecimal betterPrice(LimitOrder openOrderTemplate, IExchangeMonitor openMonitor) {
-        return Orders.betterPrice(openOrderTemplate.getLimitPrice(), openMonitor.getMarketMetadata(openOrderTemplate.getCurrencyPair()).getPriceStep(), openOrderTemplate.getType());
     }
 
     static BigDecimal totalAmountByAmount(List<LimitOrder> orders, BigDecimal amountLimit, BigDecimal netPriceLimit, IExchangeMonitor x) {
