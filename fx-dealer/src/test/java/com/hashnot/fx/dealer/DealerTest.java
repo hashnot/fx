@@ -11,23 +11,38 @@ import com.xeiam.xchange.dto.trade.LimitOrder;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
+import static com.xeiam.xchange.dto.Order.OrderType.ASK;
+import static com.xeiam.xchange.dto.Order.OrderType.BID;
 import static com.xeiam.xchange.dto.trade.LimitOrder.Builder.from;
 import static java.math.BigDecimal.*;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.*;
 
+@RunWith(Parameterized.class)
 public class DealerTest {
-
     protected static final CurrencyPair p = CurrencyPair.BTC_EUR;
-    protected Order.OrderType side = Order.OrderType.ASK;
+    protected static final int SCALE = 5;
+
+    private Order.OrderType side;
+
+    public DealerTest(Order.OrderType side) {
+        this.side = side;
+    }
+
+
+    @Parameterized.Parameters
+    public static Iterable<Object[]> getParams() {
+        return asList(new Object[]{ASK}, new Object[]{BID});
+    }
 
     @Test
     public void testUpdateBestOffer() throws Exception {
@@ -44,7 +59,7 @@ public class DealerTest {
         IOrderTracker orderTracker = mock(IOrderTracker.class);
         IOrderBookSideMonitor orderBookSideMonitor = mock(IOrderBookSideMonitor.class);
 
-        Dealer dealer = new Dealer(new Simulation(monitors), orderUpdater, orderBookSideMonitor, orderTracker, monitors, side, p);
+        Dealer dealer = new Dealer(new Simulation(monitors), orderUpdater, orderBookSideMonitor, orderTracker, monitors, side, p, new GaussOrderOpenStrategy());
 
 
         // step 1: register first exchange - close
@@ -81,34 +96,46 @@ public class DealerTest {
         IOrderTracker orderTracker = mock(IOrderTracker.class);
         IOrderBookSideMonitor orderBookSideMonitor = mock(IOrderBookSideMonitor.class);
 
-        Dealer dealer = new Dealer(new Simulation(monitors), orderUpdater, orderBookSideMonitor, orderTracker, monitors, side, p);
+        BigDecimal openPrice = new BigDecimal(2);
+        BigDecimal priceDiff = ONE;
+        if (ASK == side)
+            priceDiff = priceDiff.negate();
+        BigDecimal closePrice = openPrice.add(priceDiff);
+
+
+        Dealer dealer = new Dealer(new Simulation(monitors), orderUpdater, orderBookSideMonitor, orderTracker, monitors, side, p, new SimpleOrderOpenStrategy());
 
         MarketSide closeSide = new MarketSide(closeExchange, p, side);
-        dealer.updateBestOffer(new BestOfferEvent(ONE, closeSide));
+        dealer.updateBestOffer(new BestOfferEvent(closePrice, closeSide));
 
 
         // step 2: register second exchange - open
         MarketSide openSide = new MarketSide(openExchange, p, side);
-        BigDecimal bestPrice = new BigDecimal(2);
-        dealer.updateBestOffer(new BestOfferEvent(bestPrice, openSide));
+        dealer.updateBestOffer(new BestOfferEvent(openPrice, openSide));
 
         reset(orderUpdater);
 
         // step 3: send order book
-        LimitOrder order = new LimitOrder(side, ONE, p, null, null, ONE);
-        List<LimitOrder> orders = Arrays.asList(order);
-        dealer.orderBookSideChanged(new OrderBookSideUpdateEvent(closeSide, emptyList(), orders));
+        LimitOrder openOrder = new LimitOrder(side, ONE, p, null, null, openPrice);
+        openOrder.setNetPrice(openPrice);
 
+
+        LimitOrder closeOrder = from(openOrder).limitPrice(closePrice).build();
+        closeOrder.setNetPrice(closePrice);
+        dealer.orderBookSideChanged(new OrderBookSideUpdateEvent(closeSide, emptyList(), asList(closeOrder)));
+
+
+        BigDecimal diff = ONE.movePointLeft(SCALE);
+        if (ASK == side) diff = diff.negate();
+        LimitOrder resultingOpenOrder = from(openOrder).limitPrice(openPrice.add(diff)).build();
 
         // this is highly tuned, mostly because of netPrice inconsistencies
-        verify(orderUpdater).update(argThat(new OrderUpdateEventMatcher(new OrderUpdateEvent(openExchange, closeExchange, from(order).limitPrice(bestPrice).build(), Arrays.asList(Orders.closing(order))))));
-
-
+        verify(orderUpdater).update(argThat(new OrderUpdateEventMatcher(new OrderUpdateEvent(openExchange, closeExchange, resultingOpenOrder, asList(Orders.closing(closeOrder))))));
     }
 
     private static IExchangeMonitor getExchangeMonitor(Exchange x) {
         IExchangeMonitor monitor = mock(IExchangeMonitor.class);
-        when(monitor.getMarketMetadata(p)).thenReturn(new BaseMarketMetadata(ONE.movePointLeft(5), 5, ZERO));
+        when(monitor.getMarketMetadata(p)).thenReturn(new BaseMarketMetadata(ONE.movePointLeft(SCALE), SCALE, ZERO));
         when(monitor.getWallet(any())).thenReturn(TEN);
         when(monitor.getLimit(any())).thenReturn(new BigDecimal(2));
         when(monitor.getExchange()).thenReturn(x);

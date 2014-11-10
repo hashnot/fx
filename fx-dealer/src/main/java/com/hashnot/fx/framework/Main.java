@@ -1,6 +1,7 @@
 package com.hashnot.fx.framework;
 
 import com.hashnot.fx.dealer.Dealer;
+import com.hashnot.fx.dealer.GaussOrderOpenStrategy;
 import com.hashnot.fx.framework.impl.BestOfferMonitor;
 import com.hashnot.fx.framework.impl.OrderTracker;
 import com.hashnot.fx.util.ConfigurableThreadFactory;
@@ -42,8 +43,9 @@ public class Main {
         OrderManager orderManager = new OrderManager(orderTracker);
         BestOfferMonitor bestOfferMonitor = new BestOfferMonitor(monitorMap);
 
-        Dealer askDealer = new Dealer(simulation, orderManager, bestOfferMonitor, orderTracker, monitorMap, ASK, pair);
-        Dealer bidDealer = new Dealer(simulation, orderManager, bestOfferMonitor, orderTracker, monitorMap, BID, pair);
+        GaussOrderOpenStrategy orderStrategy = new GaussOrderOpenStrategy();
+        Dealer askDealer = new Dealer(simulation, orderManager, bestOfferMonitor, orderTracker, monitorMap, ASK, pair, orderStrategy);
+        Dealer bidDealer = new Dealer(simulation, orderManager, bestOfferMonitor, orderTracker, monitorMap, BID, pair, orderStrategy);
 
         for (IExchangeMonitor monitor : monitors) {
             Exchange exchange = monitor.getExchange();
