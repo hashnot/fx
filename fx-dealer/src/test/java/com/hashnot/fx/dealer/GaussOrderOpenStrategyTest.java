@@ -11,7 +11,6 @@ import org.junit.runners.Parameterized;
 import java.math.BigDecimal;
 import java.util.Arrays;
 
-import static com.hashnot.xchange.ext.util.Numbers.BigDecimal._ONE;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
 import static com.xeiam.xchange.dto.Order.OrderType.BID;
 import static java.math.BigDecimal.ONE;
@@ -59,9 +58,9 @@ public class GaussOrderOpenStrategyTest {
         BigDecimal lo = input;
         BigDecimal hi = input;
         if (side == ASK) {
-            hi = hi.add(ONE);
-        } else
             lo = lo.subtract(ONE);
+        } else
+            hi = hi.add(ONE);
 
 
         assertThat(o.getPrice(input, ONE, 1, side), new BigDecimalBetween(lo, hi));
@@ -88,7 +87,7 @@ public class GaussOrderOpenStrategyTest {
 
         @Override
         public void describeTo(Description description) {
-            description.appendText("between 0 and 1");
+            description.appendText("between ").appendValue(low).appendText(" and ").appendValue(hi);
         }
     }
 }
