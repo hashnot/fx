@@ -29,7 +29,7 @@ import static java.math.BigDecimal.ZERO;
 public class Dealer implements IOrderBookSideListener, IBestOfferListener {
     static private final BigDecimal TWO = new BigDecimal(2);
 
-    private final IOrderUpdater orderUpdater;
+    private final OrderManager orderManager;
     final private IOrderBookSideMonitor orderBookSideMonitor;
 
     final private IOrderTracker orderTracker;
@@ -49,14 +49,14 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener {
 
     final private SimpleOrderOpenStrategy orderStrategy;
 
-    public Dealer(IOrderUpdater orderUpdater, IOrderBookSideMonitor orderBookSideMonitor, IOrderTracker orderTracker, Map<Exchange, IExchangeMonitor> monitors, OrderType side, CurrencyPair listing, SimpleOrderOpenStrategy orderStrategy) {
-        this.orderUpdater = orderUpdater;
+    public Dealer(IUserTradeMonitor userTradeMonitor, IOrderBookSideMonitor orderBookSideMonitor, IOrderTracker orderTracker, Map<Exchange, IExchangeMonitor> monitors, OrderType side, CurrencyPair listing, SimpleOrderOpenStrategy orderStrategy) {
         this.orderBookSideMonitor = orderBookSideMonitor;
         this.orderTracker = orderTracker;
         this.monitors = monitors;
         this.side = side;
         this.listing = listing;
         this.orderStrategy = orderStrategy;
+        this.orderManager = new OrderManager(userTradeMonitor);
     }
 
     /**
@@ -117,7 +117,7 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener {
         }
 
         if (dirty)
-            orderUpdater.update(new OrderUpdateEvent(side));
+            orderManager.cancel();
     }
 
     private void updateCloseMarket(Exchange newClose) {
@@ -195,16 +195,16 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener {
 
         log.debug("open {} {} {} <=> {} {} close {}profitable", openOrder.getType(), openGrossPrice, openNetPrice, closeOrder.getNetPrice(), closeOrder.getLimitPrice(), profitable ? "" : "not ");
         if (!profitable) {
-            orderUpdater.update(new OrderUpdateEvent(side));
+            orderManager.cancel();
             return;
         }
 
-        OrderUpdateEvent event = DealerHelper.deal(openOrder, openMonitor, limited, closeMonitor);
+        OrderBinding event = DealerHelper.deal(openOrder, openMonitor, limited, closeMonitor);
         if (event != null) {
             log.info("Place {}", event.openedOrder);
-            orderUpdater.update(event);
+            orderManager.update(event);
         } else
-            orderUpdater.update(new OrderUpdateEvent(side));
+            orderManager.cancel();
     }
 
     protected static BigDecimal getLimit(IExchangeMonitor monitor, String currency) {

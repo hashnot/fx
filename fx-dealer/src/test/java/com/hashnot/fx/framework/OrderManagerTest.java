@@ -1,5 +1,7 @@
 package com.hashnot.fx.framework;
 
+import com.hashnot.fx.dealer.OrderBinding;
+import com.hashnot.fx.dealer.OrderManager;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.trade.LimitOrder;
@@ -37,7 +39,7 @@ public class OrderManagerTest {
 
         when(openTradeService.placeLimitOrder(eq(openOrder))).thenReturn("ID");
 
-        orderManager.update(new OrderUpdateEvent(openExchange, closeExchange, openOrder, Arrays.asList(closeOrder)));
+        orderManager.update(new OrderBinding(openExchange, closeExchange, openOrder, Arrays.asList(closeOrder)));
 
         verify(openTradeService).placeLimitOrder(eq(openOrder));
 

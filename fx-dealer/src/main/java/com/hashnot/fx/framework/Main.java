@@ -39,12 +39,11 @@ public class Main {
         Map<Exchange, IExchangeMonitor> monitorMap = new HashMap<>();
 
         OrderTracker orderTracker = new OrderTracker(monitorMap);
-        OrderManager orderManager = new OrderManager(orderTracker);
         BestOfferMonitor bestOfferMonitor = new BestOfferMonitor(monitorMap);
 
         GaussOrderOpenStrategy orderStrategy = new GaussOrderOpenStrategy();
-        Dealer askDealer = new Dealer(orderManager, bestOfferMonitor, orderTracker, monitorMap, ASK, pair, orderStrategy);
-        Dealer bidDealer = new Dealer(orderManager, bestOfferMonitor, orderTracker, monitorMap, BID, pair, orderStrategy);
+        Dealer askDealer = new Dealer(orderTracker, bestOfferMonitor, orderTracker, monitorMap, ASK, pair, orderStrategy);
+        Dealer bidDealer = new Dealer(orderTracker, bestOfferMonitor, orderTracker, monitorMap, BID, pair, orderStrategy);
 
         for (IExchangeMonitor monitor : monitors) {
             Exchange exchange = monitor.getExchange();

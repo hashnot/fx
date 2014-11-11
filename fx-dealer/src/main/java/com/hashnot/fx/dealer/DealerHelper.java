@@ -1,6 +1,5 @@
 package com.hashnot.fx.dealer;
 
-import com.hashnot.fx.framework.OrderUpdateEvent;
 import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.ext.util.Orders;
 import com.xeiam.xchange.Exchange;
@@ -29,7 +28,7 @@ public class DealerHelper {
 
     private static final BigDecimal LOW_LIMIT = new BigDecimal(".001");
 
-    public static OrderUpdateEvent deal(LimitOrder openOrder, IExchangeMonitor openMonitor, List<LimitOrder> closeOrders, IExchangeMonitor closeMonitor) {
+    public static OrderBinding deal(LimitOrder openOrder, IExchangeMonitor openMonitor, List<LimitOrder> closeOrders, IExchangeMonitor closeMonitor) {
 
         //after my open order os closed on the open exchange, this money should disappear
         String openOutgoingCur = outgoingCurrency(openOrder);
@@ -98,7 +97,7 @@ public class DealerHelper {
         return Math.min(s1, s2);
     }
 
-    private static OrderUpdateEvent apply(LimitOrder openOrderTempl, Exchange openExchange, List<LimitOrder> closeOrders, Exchange closeExchange, BigDecimal openAmount) {
+    private static OrderBinding apply(LimitOrder openOrderTempl, Exchange openExchange, List<LimitOrder> closeOrders, Exchange closeExchange, BigDecimal openAmount) {
         LimitOrder openOrder = LimitOrder.Builder.from(openOrderTempl).tradableAmount(openAmount).build();
         List<LimitOrder> myCloseOrders = new LinkedList<>();
 
@@ -121,7 +120,7 @@ public class DealerHelper {
             if (last) break;
         }
 
-        return new OrderUpdateEvent(openExchange, closeExchange, openOrder, myCloseOrders);
+        return new OrderBinding(openExchange, closeExchange, openOrder, myCloseOrders);
     }
 
     public static BigDecimal getCloseAmount(List<LimitOrder> closeOrders, LimitOrder openOrder, IExchangeMonitor closeMonitor) {
