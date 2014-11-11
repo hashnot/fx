@@ -60,7 +60,7 @@ public class DealerTest {
         IOrderTracker orderTracker = mock(IOrderTracker.class);
         IOrderBookSideMonitor orderBookSideMonitor = mock(IOrderBookSideMonitor.class);
 
-        Dealer dealer = new Dealer(new Simulation(monitors), orderUpdater, orderBookSideMonitor, orderTracker, monitors, side, p, new GaussOrderOpenStrategy());
+        Dealer dealer = new Dealer(orderUpdater, orderBookSideMonitor, orderTracker, monitors, side, p, new GaussOrderOpenStrategy());
 
 
         // step 1: register first exchange - close
@@ -104,7 +104,7 @@ public class DealerTest {
         BigDecimal closePrice = openPrice.add(priceDiff);
 
 
-        Dealer dealer = new Dealer(new Simulation(monitors), orderUpdater, orderBookSideMonitor, orderTracker, monitors, side, p, new SimpleOrderOpenStrategy());
+        Dealer dealer = new Dealer(orderUpdater, orderBookSideMonitor, orderTracker, monitors, side, p, new SimpleOrderOpenStrategy());
 
         MarketSide closeSide = new MarketSide(closeExchange, p, side);
         dealer.updateBestOffer(new BestOfferEvent(closePrice, closeSide));

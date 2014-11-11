@@ -32,7 +32,6 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener {
     private final IOrderUpdater orderUpdater;
     final private IOrderBookSideMonitor orderBookSideMonitor;
 
-    final private Simulation simulation;
     final private IOrderTracker orderTracker;
 
     final private Map<Exchange, IExchangeMonitor> monitors;
@@ -50,8 +49,7 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener {
 
     final private SimpleOrderOpenStrategy orderStrategy;
 
-    public Dealer(Simulation simulation, IOrderUpdater orderUpdater, IOrderBookSideMonitor orderBookSideMonitor, IOrderTracker orderTracker, Map<Exchange, IExchangeMonitor> monitors, OrderType side, CurrencyPair listing, SimpleOrderOpenStrategy orderStrategy) {
-        this.simulation = simulation;
+    public Dealer(IOrderUpdater orderUpdater, IOrderBookSideMonitor orderBookSideMonitor, IOrderTracker orderTracker, Map<Exchange, IExchangeMonitor> monitors, OrderType side, CurrencyPair listing, SimpleOrderOpenStrategy orderStrategy) {
         this.orderUpdater = orderUpdater;
         this.orderBookSideMonitor = orderBookSideMonitor;
         this.orderTracker = orderTracker;
@@ -184,8 +182,9 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener {
         // ask -> diff > 0
         boolean profitable = isFurther(diff, ZERO, side);
 
+        IExchangeMonitor openMonitor = monitors.get(openExchange);
         if (profitable) {
-            int scale = monitors.get(openExchange).getMarketMetadata(listing).getPriceScale();
+            int scale = openMonitor.getMarketMetadata(listing).getPriceScale();
             // TODO use getAmount
             openGrossPrice = orderStrategy.getPrice(openGrossPrice, diff, scale, side);
             openNetPrice = getOpenNetPrice(openGrossPrice);
@@ -200,7 +199,7 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener {
             return;
         }
 
-        OrderUpdateEvent event = simulation.deal(openOrder, openExchange, limited, closeExchange);
+        OrderUpdateEvent event = DealerHelper.deal(openOrder, openMonitor, limited, closeMonitor);
         if (event != null) {
             log.info("Place {}", event.openedOrder);
             orderUpdater.update(event);
@@ -216,7 +215,7 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener {
         // working on a limited OrderBooks,
         if (evt.getChanges().isEmpty())
             return true;
-        BigDecimal closeAmount = Simulation.getCloseAmount(evt.newOrders, openOrder, monitors.get(closeExchange));
+        BigDecimal closeAmount = DealerHelper.getCloseAmount(evt.newOrders, openOrder, monitors.get(closeExchange));
         return !gt(closeAmount, openOrder.getTradableAmount());
     }
 

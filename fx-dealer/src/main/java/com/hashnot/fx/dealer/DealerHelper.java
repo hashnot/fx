@@ -1,5 +1,6 @@
-package com.hashnot.fx.framework;
+package com.hashnot.fx.dealer;
 
+import com.hashnot.fx.framework.OrderUpdateEvent;
 import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.ext.util.Orders;
 import com.xeiam.xchange.Exchange;
@@ -13,12 +14,9 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import static com.hashnot.xchange.ext.util.Numbers.Price.isFurther;
-import static com.hashnot.xchange.ext.util.Numbers.gt;
-import static com.hashnot.xchange.ext.util.Numbers.lt;
-import static com.hashnot.xchange.ext.util.Numbers.min;
+import static com.hashnot.xchange.ext.util.Numbers.*;
 import static com.hashnot.xchange.ext.util.Orders.*;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
@@ -26,34 +24,27 @@ import static java.math.BigDecimal.ZERO;
 /**
  * @author Rafał Krupiński
  */
-public class Simulation {
-    final private static Logger log = LoggerFactory.getLogger(Simulation.class);
-
-    final private Map<Exchange, IExchangeMonitor> monitors;
+public class DealerHelper {
+    final private static Logger log = LoggerFactory.getLogger(DealerHelper.class);
 
     private static final BigDecimal LOW_LIMIT = new BigDecimal(".001");
 
-    public Simulation(Map<Exchange, IExchangeMonitor> monitors) {
-        this.monitors = monitors;
-    }
-
-    public OrderUpdateEvent deal(LimitOrder openOrder, Exchange openExchange, List<LimitOrder> closeOrders, Exchange closeExchange) {
+    public static OrderUpdateEvent deal(LimitOrder openOrder, IExchangeMonitor openMonitor, List<LimitOrder> closeOrders, IExchangeMonitor closeMonitor) {
 
         //after my open order os closed on the open exchange, this money should disappear
         String openOutgoingCur = outgoingCurrency(openOrder);
 
         String closeOutCur = incomingCurrency(openOrder);
 
-        IExchangeMonitor openMonitor = monitors.get(openExchange);
         BigDecimal openOutGross = openMonitor.getWalletMonitor().getWallet(openOutgoingCur);
         CurrencyPair pair = openOrder.getCurrencyPair();
         BigDecimal openOutNet = applyFeeToWallet(openMonitor, openOutGross, pair);
 
-        IExchangeMonitor closeMonitor = monitors.get(closeExchange);
+
         BigDecimal closeOutGross = closeMonitor.getWalletMonitor().getWallet(closeOutCur);
         BigDecimal closeOutNet = applyFeeToWallet(closeMonitor, closeOutGross, pair);
 
-        log.debug("type: {}, open {}, close {}", openOrder.getType(), openExchange, closeExchange);
+        log.debug("type: {}, open {}, close {}", openOrder.getType(), openMonitor, closeMonitor);
         log.debug("open  {} {} -> {}", openOutgoingCur, openOutGross, openOutNet);
         log.debug("close {} {} -> {}", closeOutCur, closeOutGross, closeOutNet);
 
@@ -86,7 +77,8 @@ public class Simulation {
         }
         log.info("open for {}", openAmountActual);
 
-        return apply(openOrder, openExchange, closeOrders, closeExchange, openAmountActual);
+
+        return apply(openOrder, openMonitor.getExchange(), closeOrders, closeMonitor.getExchange(), openAmountActual);
     }
 
     protected static BigDecimal applyFeeToWallet(IExchangeMonitor openMonitor, BigDecimal openOutGross, CurrencyPair pair) {
@@ -94,7 +86,7 @@ public class Simulation {
         return openOutGross.multiply(ONE.subtract(feeFactor));
     }
 
-    protected boolean checkMinima(BigDecimal openAmountActual, IExchangeMonitor openMonitor, CurrencyPair listing) {
+    protected static boolean checkMinima(BigDecimal openAmountActual, IExchangeMonitor openMonitor, CurrencyPair listing) {
         return !(lt(openAmountActual, LOW_LIMIT)
                 || lt(openAmountActual, openMonitor.getMarketMetadata(listing).getAmountMinimum())
         );
@@ -106,7 +98,7 @@ public class Simulation {
         return Math.min(s1, s2);
     }
 
-    private OrderUpdateEvent apply(LimitOrder openOrderTempl, Exchange openExchange, List<LimitOrder> closeOrders, Exchange closeExchange, BigDecimal openAmount) {
+    private static OrderUpdateEvent apply(LimitOrder openOrderTempl, Exchange openExchange, List<LimitOrder> closeOrders, Exchange closeExchange, BigDecimal openAmount) {
         LimitOrder openOrder = LimitOrder.Builder.from(openOrderTempl).tradableAmount(openAmount).build();
         List<LimitOrder> myCloseOrders = new LinkedList<>();
 
