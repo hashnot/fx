@@ -13,7 +13,7 @@ public class OrderBinding {
     public final Exchange closeExchange;
     public final LimitOrder openedOrder;
     public String openOrderId;
-    public final List<LimitOrder> closingOrders;
+    public List<LimitOrder> closingOrders;
 
     public OrderBinding(Exchange openExchange, Exchange closeExchange, LimitOrder openedOrder, List<LimitOrder> closingOrders) {
         this.openExchange = openExchange;

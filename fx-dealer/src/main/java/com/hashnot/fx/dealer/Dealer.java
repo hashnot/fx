@@ -129,9 +129,11 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener {
 
         closeExchange = newClose;
 
-        MarketSide marketSide = new MarketSide(newClose, listing, side);
-        log.debug("Add OBL to {}", marketSide);
-        orderBookSideMonitor.addOrderBookSideListener(this, marketSide);
+        if (closeExchange != openExchange) {
+            MarketSide marketSide = new MarketSide(newClose, listing, side);
+            log.debug("Add OBL to {}", marketSide);
+            orderBookSideMonitor.addOrderBookSideListener(this, marketSide);
+        }
     }
 
     /**

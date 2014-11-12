@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.List;
 
 import static com.hashnot.xchange.ext.util.Numbers.eq;
 import static com.xeiam.xchange.dto.trade.LimitOrder.Builder.from;
@@ -26,6 +27,15 @@ public class OrderManager implements IUserTradeListener {
 
     public OrderManager(IUserTradeMonitor tradeMonitor) {
         this.tradeMonitor = tradeMonitor;
+    }
+
+    public boolean isActive() {
+        return orderBinding != null;
+    }
+
+    // TODO make closing orders not reverted, revert at closing time
+    public void update(List<LimitOrder> orders) {
+        orderBinding.closingOrders = orders;
     }
 
     /*
@@ -92,8 +102,12 @@ public class OrderManager implements IUserTradeListener {
             return;
         }
 
-        // TODO unregister listener when order is filled
         close(trade.getTradableAmount());
+
+        if (evt.current == null) {
+            tradeMonitor.removeTradeListener(this, orderBinding.openExchange);
+            orderBinding = null;
+        }
     }
 
     private void close(BigDecimal amountLimit) {
