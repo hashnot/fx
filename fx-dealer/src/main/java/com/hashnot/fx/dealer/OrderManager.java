@@ -79,6 +79,10 @@ public class OrderManager implements IUserTradeListener {
     }
 
     public void cancel() {
+        if(!isActive()){
+            log.warn("Cancelling inactive order manager");
+            return;
+        }
         log.info("Cancel @{} {} {}", orderBinding.openExchange, orderBinding.openOrderId, orderBinding.openedOrder);
         try {
             orderBinding.openExchange.getPollingTradeService().cancelOrder(orderBinding.openOrderId);

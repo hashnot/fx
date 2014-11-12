@@ -116,7 +116,7 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener {
             }
         }
 
-        if (dirty)
+        if (dirty && orderManager.isActive())
             orderManager.cancel();
     }
 
@@ -197,7 +197,8 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener {
 
         log.debug("open {} {} {} <=> {} {} close {}profitable", openOrder.getType(), openGrossPrice, openNetPrice, closeOrder.getNetPrice(), closeOrder.getLimitPrice(), profitable ? "" : "not ");
         if (!profitable) {
-            orderManager.cancel();
+            if (orderManager.isActive())
+                orderManager.cancel();
             return;
         }
 
@@ -205,7 +206,7 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener {
         if (event != null) {
             log.info("Place {}", event.openedOrder);
             orderManager.update(event);
-        } else
+        } else if (orderManager.isActive())
             orderManager.cancel();
     }
 
