@@ -105,39 +105,38 @@ public class DealerHelper {
         return getCloseAmount(closeOrders, closeOutNet, openOrder, closeMonitor);
     }
 
-    static BigDecimal getCloseAmount(List<LimitOrder> closeOrders, BigDecimal closeOutNet, LimitOrder openOrder, IExchangeMonitor closeMonitor) {
+    private static BigDecimal getCloseAmount(List<LimitOrder> closeOrders, BigDecimal closeOutNet, LimitOrder openOrder, IExchangeMonitor closeMonitor) {
         if (openOrder.getType() == Order.OrderType.ASK)
             return totalAmountByValue(closeOrders, closeOutNet, openOrder.getNetPrice(), closeMonitor);
         else
             return totalAmountByAmount(closeOrders, closeOutNet, openOrder.getNetPrice(), closeMonitor);
     }
 
-    static BigDecimal totalAmountByAmount(List<LimitOrder> orders, BigDecimal amountLimit, BigDecimal netPriceLimit, IExchangeMonitor x) {
+    private static BigDecimal totalAmountByAmount(List<LimitOrder> orders, BigDecimal amountLimit, BigDecimal netPriceLimit, IExchangeMonitor x) {
         BigDecimal totalValue = ZERO;
         BigDecimal totalAmount = ZERO;
-        Order.OrderType type = revert(orders.get(0).getType());
+        Order.OrderType type = Order.OrderType.ASK;
         for (LimitOrder order : orders) {
+            assert type != order.getType();
+
             BigDecimal netPrice = Orders.getNetPrice(order.getLimitPrice(), type, x.getMarketMetadata(order.getCurrencyPair()).getOrderFeeFactor());
+            log.debug("order {} net {}", order, netPrice);
 
             if (isFurther(netPrice, netPriceLimit, order.getType()))
                 break;
-            log.debug("order {}", order);
             BigDecimal newAmount = totalAmount.add(order.getTradableAmount());
 
             BigDecimal actualAmount;
-            boolean last = false;
-            if (gt(newAmount, amountLimit)) {
+
+            if (!lt(newAmount, amountLimit)) {
                 actualAmount = amountLimit.subtract(totalAmount);
                 totalAmount = totalAmount.add(actualAmount);
-                last = true;
+                break;
             } else {
                 actualAmount = order.getTradableAmount();
                 totalAmount = newAmount;
+                totalValue = totalValue.add(actualAmount.multiply(order.getLimitPrice(), c));
             }
-
-            totalValue = totalValue.add(actualAmount.multiply(order.getLimitPrice(), c));
-            if (last)
-                break;
         }
         return totalAmount;
     }
@@ -145,33 +144,32 @@ public class DealerHelper {
     static BigDecimal totalAmountByValue(List<LimitOrder> orders, BigDecimal valueLimit, BigDecimal netPriceLimit, IExchangeMonitor x) {
         BigDecimal totalValue = ZERO;
         BigDecimal totalAmount = ZERO;
-        Order.OrderType type = revert(orders.get(0).getType());
+        Order.OrderType type = Order.OrderType.BID;
         for (LimitOrder order : orders) {
+            assert type != order.getType();
+
             BigDecimal netPrice = Orders.getNetPrice(order.getLimitPrice(), type, x.getMarketMetadata(order.getCurrencyPair()).getOrderFeeFactor());
+            log.debug("order {} net {}", order, netPrice);
+
             if (isFurther(netPrice, netPriceLimit, order.getType()))
                 break;
-            log.debug("order {}", order);
             BigDecimal curAmount = order.getTradableAmount();
             BigDecimal newAmount = totalAmount.add(curAmount);
 
             BigDecimal curValue = curAmount.multiply(order.getLimitPrice(), c);
             BigDecimal newValue = totalValue.add(curValue);
 
-            boolean last;
             // if >0 then cut amount
             // TODO if =0 then break
             if (!lt(newValue, valueLimit)) {
                 curValue = valueLimit.subtract(totalValue);
                 curAmount = curValue.divide(order.getLimitPrice(), c);
                 totalAmount = totalAmount.add(curAmount);
-                totalValue = totalValue.add(curValue);
-                last = true;
+                break;
             } else {
                 totalAmount = newAmount;
                 totalValue = newValue;
-                last = false;
             }
-            if (last) break;
         }
         return totalAmount;
     }
