@@ -8,12 +8,8 @@ import java.util.Map;
 /**
  * @author Rafał Krupiński
  */
-public interface IOrderTracker {
+public interface IOrderTracker extends IUserTradeMonitor {
     Map<String, LimitOrder> getMonitored(Exchange exchange);
 
     Map<String, LimitOrder> getCurrent(Exchange exchange);
-
-    void addTradeListener(IUserTradeListener listener, Exchange source);
-
-    void removeTradeListener(IUserTradeListener listener, Exchange source);
 }

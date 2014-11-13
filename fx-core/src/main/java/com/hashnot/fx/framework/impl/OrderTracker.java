@@ -25,7 +25,7 @@ import static java.util.Collections.emptyMap;
 /**
  * @author Rafał Krupiński
  */
-public class OrderTracker implements IUserTradesListener, ILimitOrderPlacementListener, IUserTradeMonitor, IOrderTracker {
+public class OrderTracker implements IUserTradesListener, ILimitOrderPlacementListener, IOrderTracker {
     final private static Logger log = LoggerFactory.getLogger(OrderTracker.class);
 
     private final Multimap<Exchange, IUserTradeListener> listeners = Multimaps.newSetMultimap(new HashMap<>(), () -> Collections.newSetFromMap(new ConcurrentHashMap<>()));

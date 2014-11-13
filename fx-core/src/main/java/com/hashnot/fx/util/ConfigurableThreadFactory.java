@@ -17,7 +17,7 @@ public class ConfigurableThreadFactory implements ThreadFactory {
     private String format = FORMAT;
 
     private static AtomicInteger POOL_COUNT = new AtomicInteger();
-    private final int poolCount = POOL_COUNT.incrementAndGet();
+    private final int poolCount = POOL_COUNT.getAndIncrement();
     private AtomicInteger threadCount = new AtomicInteger();
 
     private boolean daemon;
@@ -26,7 +26,7 @@ public class ConfigurableThreadFactory implements ThreadFactory {
     @Nonnull
     public Thread newThread(@Nonnull Runnable r) {
         Thread result = backend.newThread(r);
-        result.setName(String.format(format, poolCount, threadCount.incrementAndGet()));
+        result.setName(String.format(format, poolCount, threadCount.getAndIncrement()));
         result.setUncaughtExceptionHandler((t, e) -> LoggerFactory.getLogger(r.getClass()).warn("Uncaught throwable", e));
         result.setDaemon(daemon);
         return result;

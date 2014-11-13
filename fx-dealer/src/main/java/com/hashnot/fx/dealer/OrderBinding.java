@@ -3,6 +3,7 @@ package com.hashnot.fx.dealer;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -12,8 +13,12 @@ public class OrderBinding {
     public final Exchange openExchange;
     public final Exchange closeExchange;
     public final LimitOrder openedOrder;
+
     public String openOrderId;
     public List<LimitOrder> closingOrders;
+
+    // TODO support order filled
+    public BigDecimal filled = BigDecimal.ZERO;
 
     public OrderBinding(Exchange openExchange, Exchange closeExchange, LimitOrder openedOrder, List<LimitOrder> closingOrders) {
         this.openExchange = openExchange;

@@ -36,9 +36,12 @@ public class TradeService extends AbstractTradeService implements ITradeService 
     @Override
     public boolean cancelOrder(String orderId) throws IOException {
         Exchange x = exchange.get();
+        log.debug("Cancel {}@{}", orderId, this);
         boolean result = x.getPollingTradeService().cancelOrder(orderId);
         if (openOrders.remove(orderId) == null)
             log.info("Unknown order {}", orderId);
+        else if (!result)
+            log.warn("Unsuccessful cancel order {}@{}", orderId, this);
 
         if (result)
             multiplex(listeners, new OrderCancelEvent(orderId, x), (l, e) -> l.orderCanceled(e));
@@ -61,11 +64,10 @@ public class TradeService extends AbstractTradeService implements ITradeService 
 
     // TODO move to OrderTracker
     public void cancelAll() {
+        log.info("Cancel all at shutdown");
         openOrders.forEach((k, v) -> {
-            log.info("Cancel {} at shutdown", k);
             try {
-                if (!cancelOrder(k))
-                    log.warn("Unsuccessful cancel {}@{}", k, this);
+                cancelOrder(k);
             } catch (IOException e) {
                 log.warn("Error while cancelling {}", k, e);
             }
