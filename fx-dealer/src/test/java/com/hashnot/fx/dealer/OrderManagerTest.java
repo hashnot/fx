@@ -1,7 +1,10 @@
-package com.hashnot.fx.framework;
+package com.hashnot.fx.dealer;
 
 import com.hashnot.fx.dealer.OrderBinding;
 import com.hashnot.fx.dealer.OrderManager;
+import com.hashnot.fx.dealer.SimpleOrderCloseStrategy;
+import com.hashnot.fx.framework.IUserTradeMonitor;
+import com.hashnot.fx.framework.UserTradeEvent;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.trade.LimitOrder;
@@ -25,7 +28,7 @@ public class OrderManagerTest {
 
     @Test
     public void testTrade() throws Exception {
-        OrderManager orderManager = new OrderManager(mock(IUserTradeMonitor.class));
+        OrderManager orderManager = new OrderManager(mock(IUserTradeMonitor.class), new SimpleOrderCloseStrategy());
         Exchange openExchange = mock(Exchange.class);
         PollingTradeService openTradeService = mock(PollingTradeService.class);
         when(openExchange.getPollingTradeService()).thenReturn(openTradeService);
@@ -35,16 +38,16 @@ public class OrderManagerTest {
         when(closeExchange.getPollingTradeService()).thenReturn(closeTradeService);
 
         LimitOrder openOrder = new LimitOrder.Builder(ASK, p).limitPrice(ONE).tradableAmount(ONE).build();
-        LimitOrder closeOrder = LimitOrder.Builder.from(openOrder).orderType(BID).build();
 
         when(openTradeService.placeLimitOrder(eq(openOrder))).thenReturn("ID");
 
-        orderManager.update(new OrderBinding(openExchange, closeExchange, openOrder, Arrays.asList(closeOrder)));
+        orderManager.update(new OrderBinding(openExchange, closeExchange, openOrder, Arrays.asList(openOrder)));
 
         verify(openTradeService).placeLimitOrder(eq(openOrder));
 
         orderManager.trade(new UserTradeEvent(openOrder, new UserTrade(ASK, ONE, p, ONE, null, null, "ID", null, null), null, openExchange));
 
+        LimitOrder closeOrder = LimitOrder.Builder.from(openOrder).orderType(BID).build();
         verify(closeTradeService).placeLimitOrder(closeOrder);
     }
 }

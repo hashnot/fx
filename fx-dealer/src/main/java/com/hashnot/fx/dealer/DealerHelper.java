@@ -2,7 +2,6 @@ package com.hashnot.fx.dealer;
 
 import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.ext.util.Orders;
-import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.trade.LimitOrder;
@@ -11,7 +10,6 @@ import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.LinkedList;
 import java.util.List;
 
 import static com.hashnot.xchange.ext.util.Numbers.Price.isFurther;
@@ -28,22 +26,22 @@ public class DealerHelper {
 
     private static final BigDecimal LOW_LIMIT = new BigDecimal(".001");
 
-    public static OrderBinding deal(LimitOrder openOrder, IExchangeMonitor openMonitor, List<LimitOrder> closeOrders, IExchangeMonitor closeMonitor) {
+    public static OrderBinding deal(LimitOrder openOrderTempl, IExchangeMonitor openMonitor, List<LimitOrder> closeOrders, IExchangeMonitor closeMonitor) {
 
         //after my open order os closed on the open exchange, this money should disappear
-        String openOutgoingCur = outgoingCurrency(openOrder);
+        String openOutgoingCur = outgoingCurrency(openOrderTempl);
 
-        String closeOutCur = incomingCurrency(openOrder);
+        String closeOutCur = incomingCurrency(openOrderTempl);
 
         BigDecimal openOutGross = openMonitor.getWalletMonitor().getWallet(openOutgoingCur);
-        CurrencyPair pair = openOrder.getCurrencyPair();
+        CurrencyPair pair = openOrderTempl.getCurrencyPair();
         BigDecimal openOutNet = applyFeeToWallet(openMonitor, openOutGross, pair);
 
 
         BigDecimal closeOutGross = closeMonitor.getWalletMonitor().getWallet(closeOutCur);
         BigDecimal closeOutNet = applyFeeToWallet(closeMonitor, closeOutGross, pair);
 
-        log.debug("type: {}, open {}, close {}", openOrder.getType(), openMonitor, closeMonitor);
+        log.debug("type: {}, open {}, close {}", openOrderTempl.getType(), openMonitor, closeMonitor);
         log.debug("open  {} {} -> {}", openOutgoingCur, openOutGross, openOutNet);
         log.debug("close {} {} -> {}", closeOutCur, closeOutGross, closeOutNet);
 
@@ -60,10 +58,10 @@ public class DealerHelper {
 
 
         BigDecimal openAmount = openOutGross;
-        if (openOrder.getType() == Order.OrderType.BID)
-            openAmount = openOutGross.divide(openOrder.getLimitPrice(), c);
+        if (openOrderTempl.getType() == Order.OrderType.BID)
+            openAmount = openOutGross.divide(openOrderTempl.getLimitPrice(), c);
 
-        BigDecimal closeAmount = getCloseAmount(closeOrders, closeOutNet, openOrder, closeMonitor);
+        BigDecimal closeAmount = getCloseAmount(closeOrders, closeOutNet, openOrderTempl, closeMonitor);
 
         log.debug("open: {}", openAmount);
         log.debug("close: {}", closeAmount);
@@ -77,7 +75,9 @@ public class DealerHelper {
         log.info("open for {}", openAmountActual);
 
 
-        return apply(openOrder, openMonitor.getExchange(), closeOrders, closeMonitor.getExchange(), openAmountActual);
+        LimitOrder openOrder = LimitOrder.Builder.from(openOrderTempl).tradableAmount(openAmountActual).build();
+        Orders.updateNetPrice(openOrder, openMonitor);
+        return new OrderBinding(openMonitor.getExchange(), closeMonitor.getExchange(), openOrder, closeOrders);
     }
 
     protected static BigDecimal applyFeeToWallet(IExchangeMonitor openMonitor, BigDecimal openOutGross, CurrencyPair pair) {
@@ -95,32 +95,6 @@ public class DealerHelper {
         int s1 = e1.getMarketMetadata(pair).getPriceScale();
         int s2 = e2.getMarketMetadata(pair).getPriceScale();
         return Math.min(s1, s2);
-    }
-
-    private static OrderBinding apply(LimitOrder openOrderTempl, Exchange openExchange, List<LimitOrder> closeOrders, Exchange closeExchange, BigDecimal openAmount) {
-        LimitOrder openOrder = LimitOrder.Builder.from(openOrderTempl).tradableAmount(openAmount).build();
-        List<LimitOrder> myCloseOrders = new LinkedList<>();
-
-        BigDecimal total = ZERO;
-        for (LimitOrder closeOrder : closeOrders) {
-            BigDecimal newTotal = total.add(closeOrder.getTradableAmount());
-
-            boolean last = false;
-            BigDecimal amount;
-            if (gt(newTotal, openAmount)) {
-                amount = openAmount.subtract(total);
-                last = true;
-            } else {
-                amount = closeOrder.getTradableAmount();
-                total = newTotal;
-            }
-
-            LimitOrder close = new LimitOrder(revert(openOrderTempl.getType()), amount, openOrderTempl.getCurrencyPair(), null, null, closeOrder.getLimitPrice());
-            myCloseOrders.add(close);
-            if (last) break;
-        }
-
-        return new OrderBinding(openExchange, closeExchange, openOrder, myCloseOrders);
     }
 
     public static BigDecimal getCloseAmount(List<LimitOrder> closeOrders, LimitOrder openOrder, IExchangeMonitor closeMonitor) {

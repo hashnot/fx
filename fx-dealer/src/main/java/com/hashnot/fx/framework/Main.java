@@ -2,6 +2,7 @@ package com.hashnot.fx.framework;
 
 import com.hashnot.fx.dealer.Dealer;
 import com.hashnot.fx.dealer.GaussOrderOpenStrategy;
+import com.hashnot.fx.dealer.SimpleOrderCloseStrategy;
 import com.hashnot.fx.framework.impl.BestOfferMonitor;
 import com.hashnot.fx.framework.impl.OrderTracker;
 import com.hashnot.fx.util.ConfigurableThreadFactory;
@@ -32,7 +33,7 @@ public class Main {
 
     public static void main(String[] args) throws IOException, InterruptedException {
         ThreadFactory tf = new ConfigurableThreadFactory();
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(9, tf);
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(10, tf);
         Runtime.getRuntime().addShutdownHook(new Thread(scheduler::shutdown, "shutdown thread pool"));
 
         Collection<IExchangeMonitor> monitors = load(args[0], scheduler);
@@ -41,25 +42,26 @@ public class Main {
         OrderTracker orderTracker = new OrderTracker(monitorMap);
         BestOfferMonitor bestOfferMonitor = new BestOfferMonitor(monitorMap);
 
-        GaussOrderOpenStrategy orderStrategy = new GaussOrderOpenStrategy();
-        Dealer askDealer = new Dealer(orderTracker, bestOfferMonitor, orderTracker, monitorMap, ASK, pair, orderStrategy);
-        Dealer bidDealer = new Dealer(orderTracker, bestOfferMonitor, orderTracker, monitorMap, BID, pair, orderStrategy);
+        GaussOrderOpenStrategy orderOpenStrategy = new GaussOrderOpenStrategy();
+        SimpleOrderCloseStrategy orderCloseStrategy = new SimpleOrderCloseStrategy();
+
+        Dealer askDealer = new Dealer(bestOfferMonitor, orderTracker, monitorMap, ASK, pair, orderOpenStrategy, orderCloseStrategy);
+        Dealer bidDealer = new Dealer(bestOfferMonitor, orderTracker, monitorMap, BID, pair, orderOpenStrategy, orderCloseStrategy);
 
         for (IExchangeMonitor monitor : monitors) {
-            Exchange exchange = monitor.getExchange();
-            monitorMap.put(exchange, monitor);
+            Exchange x = monitor.getExchange();
+            monitorMap.put(x, monitor);
             monitor.start();
-        }
-
-        for (Map.Entry<Exchange, IExchangeMonitor> e : monitorMap.entrySet()) {
-            Exchange x = e.getKey();
-            IExchangeMonitor monitor = e.getValue();
-
-            final Market market = new Market(x, pair);
-            bestOfferMonitor.addBestOfferListener(askDealer, new MarketSide(market, ASK));
-            bestOfferMonitor.addBestOfferListener(bidDealer, new MarketSide(market, BID));
 
             ITradeService tradeService = (ITradeService) x.getPollingTradeService();
+            Market market = new Market(x, pair);
+
+            bestOfferMonitor.addBestOfferListener(askDealer, new MarketSide(market, ASK));
+            tradeService.addLimitOrderPlacedListener(askDealer);
+
+            bestOfferMonitor.addBestOfferListener(bidDealer, new MarketSide(market, BID));
+            tradeService.addLimitOrderPlacedListener(bidDealer);
+
             tradeService.addLimitOrderPlacedListener(orderTracker);
 
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {

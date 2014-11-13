@@ -26,13 +26,11 @@ import static java.math.BigDecimal.ZERO;
 /**
  * @author Rafał Krupiński
  */
-public class Dealer implements IOrderBookSideListener, IBestOfferListener {
+public class Dealer implements IOrderBookSideListener, IBestOfferListener, ILimitOrderPlacementListener {
     static private final BigDecimal TWO = new BigDecimal(2);
 
     private final OrderManager orderManager;
     final private IOrderBookSideMonitor orderBookSideMonitor;
-
-    final private IOrderTracker orderTracker;
 
     final private Map<Exchange, IExchangeMonitor> monitors;
 
@@ -49,14 +47,13 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener {
 
     final private SimpleOrderOpenStrategy orderStrategy;
 
-    public Dealer(IUserTradeMonitor userTradeMonitor, IOrderBookSideMonitor orderBookSideMonitor, IOrderTracker orderTracker, Map<Exchange, IExchangeMonitor> monitors, OrderType side, CurrencyPair listing, SimpleOrderOpenStrategy orderStrategy) {
+    public Dealer(IOrderBookSideMonitor orderBookSideMonitor, IOrderTracker orderTracker, Map<Exchange, IExchangeMonitor> monitors, OrderType side, CurrencyPair listing, SimpleOrderOpenStrategy orderStrategy, SimpleOrderCloseStrategy orderCloseStrategy) {
         this.orderBookSideMonitor = orderBookSideMonitor;
-        this.orderTracker = orderTracker;
         this.monitors = monitors;
         this.side = side;
         this.listing = listing;
         this.orderStrategy = orderStrategy;
-        this.orderManager = new OrderManager(userTradeMonitor);
+        this.orderManager = new OrderManager(orderTracker, orderCloseStrategy);
     }
 
     /**
@@ -66,8 +63,6 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener {
     public void updateBestOffer(BestOfferEvent evt) {
         assert side == evt.source.side;
         assert listing.equals(evt.source.market.listing);
-
-        log.info("Best offer {}", evt);
 
         Exchange eventExchange = evt.source.market.exchange;
         if (!hasMinimumMoney(eventExchange, evt.price)) {
@@ -85,7 +80,9 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener {
             return;
         }
 
-        if (isMineTop(eventExchange, newPrice)) return;
+        log.info("Best offer {} @{}/{}; mine {}", newPrice, side, eventExchange, orderManager.getOpenOrder());
+
+        if (isMineTop(newPrice)) return;
 
         bestOffers.put(eventExchange, newPrice);
 
@@ -167,12 +164,14 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener {
         // TODO remove net prices
         Orders.updateNetPrices(limited, closeMonitor.getMarketMetadata(listing).getOrderFeeFactor());
 
-        {
+        if (orderManager.isActive()) {
+            orderManager.update(evt.newOrders);
             // return if there is open and profitable order
-            LimitOrder openOrder = getOpenOrder();
-            if (openOrder != null)
-                if (openOrderStillProfitable(openOrder, evt))
-                    return;
+            LimitOrder openOrder = orderManager.getOpenOrder();
+            if (openOrderStillProfitable(openOrder, evt))
+                return;
+            else
+                orderManager.cancel();
         }
 
         LimitOrder closeOrder = Orders.closing(evt.newOrders.get(0), closeMonitor);
@@ -222,18 +221,9 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener {
         return !gt(closeAmount, openOrder.getTradableAmount());
     }
 
-    protected boolean isMineTop(Exchange exchange, BigDecimal newTopPrice) {
-        LimitOrder order = getOpenOrder();
-        log.info("Best offer {}@{}/{}; mine {}", newTopPrice, side, exchange, order);
+    protected boolean isMineTop(BigDecimal newTopPrice) {
+        LimitOrder order = orderManager.getOpenOrder();
         return (order != null && isCloser(order.getLimitPrice(), newTopPrice, side));
-    }
-
-    private LimitOrder getOpenOrder() {
-        // 0 or one iterations
-        for (LimitOrder order : orderTracker.getMonitored(openExchange).values())
-            if (order.getType() == side)
-                return order;
-        return null;
     }
 
     private BigDecimal getOpenNetPrice(BigDecimal openGrossPrice) {
@@ -257,4 +247,18 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener {
 
     private static final Logger log = LoggerFactory.getLogger(Dealer.class);
 
+
+    @Override
+    public void limitOrderPlaced(OrderEvent evt) {
+        LimitOrder order = evt.order;
+        if (evt.source.equals(openExchange) && order.getType() == side) {
+            if (!orderManager.isActive()) {
+                log.warn("Order manager inactive but opened new order {} @{}/{}", order, side, openExchange);
+            }
+        }
+    }
+
+    @Override
+    public void orderCanceled(OrderCancelEvent orderCancelEvent) {
+    }
 }

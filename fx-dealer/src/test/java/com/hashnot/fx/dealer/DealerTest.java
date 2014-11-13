@@ -33,6 +33,9 @@ public class DealerTest {
     protected static final CurrencyPair p = CurrencyPair.BTC_EUR;
     protected static final int SCALE = 5;
 
+    private static SimpleOrderCloseStrategy orderCloseStrategy = new SimpleOrderCloseStrategy();
+    private static SimpleOrderOpenStrategy orderOpenStrategy = new SimpleOrderOpenStrategy();
+
     private Order.OrderType side;
 
     public DealerTest(Order.OrderType side) {
@@ -60,7 +63,7 @@ public class DealerTest {
         IOrderTracker orderTracker = mock(IOrderTracker.class);
         IOrderBookSideMonitor orderBookSideMonitor = mock(IOrderBookSideMonitor.class);
 
-        Dealer dealer = new Dealer(tradeMonitor, orderBookSideMonitor, orderTracker, monitors, side, p, new GaussOrderOpenStrategy());
+        Dealer dealer = new Dealer(orderBookSideMonitor, orderTracker, monitors, side, p, orderOpenStrategy, orderCloseStrategy);
 
 
         // step 1: register first exchange - close
@@ -104,7 +107,7 @@ public class DealerTest {
         BigDecimal closePrice = openPrice.add(priceDiff);
 
 
-        Dealer dealer = new Dealer(tradeMonitor, orderBookSideMonitor, orderTracker, monitors, side, p, new SimpleOrderOpenStrategy());
+        Dealer dealer = new Dealer(orderBookSideMonitor, orderTracker, monitors, side, p, orderOpenStrategy, orderCloseStrategy);
 
         MarketSide closeSide = new MarketSide(closeExchange, p, side);
         dealer.updateBestOffer(new BestOfferEvent(closePrice, closeSide));

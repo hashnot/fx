@@ -1,6 +1,7 @@
 package com.hashnot.fx.dealer;
 
 import com.hashnot.fx.framework.*;
+import com.xeiam.xchange.ExchangeException;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.dto.trade.UserTrade;
 import com.xeiam.xchange.service.polling.PollingTradeService;
@@ -8,12 +9,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.List;
 
 import static com.hashnot.xchange.ext.util.Numbers.eq;
-import static com.xeiam.xchange.dto.trade.LimitOrder.Builder.from;
-import static java.math.BigDecimal.ZERO;
 
 /**
  * @author Rafał Krupiński
@@ -23,17 +21,19 @@ public class OrderManager implements IUserTradeListener {
 
     final private IUserTradeMonitor tradeMonitor;
 
-    private OrderBinding orderBinding;
+    final private SimpleOrderCloseStrategy orderCloseStrategy;
 
-    public OrderManager(IUserTradeMonitor tradeMonitor) {
+    volatile private OrderBinding orderBinding;
+
+    public OrderManager(IUserTradeMonitor tradeMonitor, SimpleOrderCloseStrategy orderCloseStrategy) {
         this.tradeMonitor = tradeMonitor;
+        this.orderCloseStrategy = orderCloseStrategy;
     }
 
     public boolean isActive() {
         return orderBinding != null;
     }
 
-    // TODO make closing orders not reverted, revert at closing time
     public void update(List<LimitOrder> orders) {
         orderBinding.closingOrders = orders;
     }
@@ -74,12 +74,24 @@ public class OrderManager implements IUserTradeListener {
 
         tradeMonitor.addTradeListener(this, update.openExchange);
 
-        update.openOrderId = placeLimitOrder(update.openedOrder, update.openExchange.getPollingTradeService());
+        // Make OrderManager "active" before the order is actually placed.
+        // This prevents another thread to try to activate it while waiting for the response
+
         orderBinding = update;
+        try {
+            update.openOrderId = placeLimitOrder(update.openedOrder, update.openExchange.getPollingTradeService());
+        } catch (ExchangeException | ConnectionException e) {
+            if (update.openOrderId == null) {
+                log.warn("Error from {}", update.openExchange, e);
+                orderBinding = null;
+            } else {
+                log.warn("Error from {} but have order ID {}", update.openExchange, update.openOrderId, e);
+            }
+        }
     }
 
     public void cancel() {
-        if(!isActive()){
+        if (!isActive()) {
             log.warn("Cancelling inactive order manager");
             return;
         }
@@ -106,31 +118,11 @@ public class OrderManager implements IUserTradeListener {
             return;
         }
 
-        close(trade.getTradableAmount());
+        orderCloseStrategy.placeOrder(trade.getTradableAmount(), orderBinding.closingOrders, orderBinding.closeExchange);
 
         if (evt.current == null) {
             tradeMonitor.removeTradeListener(this, orderBinding.openExchange);
             orderBinding = null;
-        }
-    }
-
-    private void close(BigDecimal amountLimit) {
-        PollingTradeService tradeService = orderBinding.closeExchange.getPollingTradeService();
-        BigDecimal totalAmount = ZERO;
-        for (LimitOrder order : orderBinding.closingOrders) {
-            BigDecimal newAmount = totalAmount.add(order.getTradableAmount());
-            int cmp = newAmount.compareTo(amountLimit);
-            if (cmp == 0) {
-                placeLimitOrder(order, tradeService);
-                break;
-            } else if (cmp <= 0) {
-                placeLimitOrder(order, tradeService);
-                totalAmount = newAmount;
-            } else {
-                BigDecimal amount = amountLimit.subtract(totalAmount);
-                placeLimitOrder(from(order).tradableAmount(amount).build(), tradeService);
-                break;
-            }
         }
     }
 
@@ -142,5 +134,9 @@ public class OrderManager implements IUserTradeListener {
         } catch (IOException e) {
             throw new ConnectionException(e);
         }
+    }
+
+    public LimitOrder getOpenOrder() {
+        return orderBinding == null ? null : orderBinding.openedOrder;
     }
 }
