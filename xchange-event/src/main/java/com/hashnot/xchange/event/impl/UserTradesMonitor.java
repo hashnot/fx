@@ -37,6 +37,8 @@ public class UserTradesMonitor extends AbstractPollingMonitor implements IUserTr
     public void run() {
         PollingTradeService tradeService = exchange.getPollingTradeService();
 
+        Date now = new Date();
+
         UserTrades trades;
         try {
             log.debug("Getting trades from {}", exchange);
@@ -51,30 +53,38 @@ public class UserTradesMonitor extends AbstractPollingMonitor implements IUserTr
             return;
         }
 
-        updatePreviousDate(trades);
+        updatePreviousDate(trades, now);
 
         multiplex(listeners, new UserTradesEvent(trades, exchange), (l, e) -> l.trades(e));
     }
 
-    protected void updatePreviousDate(UserTrades trades) {
+    protected void updatePreviousDate(UserTrades trades, Date now) {
         List<UserTrade> tradeList = trades.getUserTrades();
 
         // never empty here
         if (tradeList.size() == 1) {
             UserTrade userTrade = tradeList.get(0);
-            previous = userTrade.getTimestamp() != null ? userTrade.getTimestamp() : new Date();
+            previous = userTrade.getTimestamp() != null ? userTrade.getTimestamp() : now;
         } else {
+            UserTrade first = tradeList.get(0);
             if (Trades.TradeSortType.SortByTimestamp == trades.getTradeSortType()) {
-                UserTrade first = tradeList.get(0);
                 if (first.getTimestamp() == null) {
-                    previous = new Date();
+                    previous = now;
                     return;
                 }
                 UserTrade last = tradeList.get(tradeList.size() - 1);
                 log.debug("first: {}, last: {}", first.getTimestamp(), last.getTimestamp());
                 previous = first.getTimestamp().compareTo(last.getTimestamp()) < 0 ? last.getTimestamp() : first.getTimestamp();
-            } else
-                log.warn("Sorting by ID @", exchange);
+            } else {
+                if (first.getTimestamp() == null)
+                    previous = now;
+                else {
+                    long max = first.getTimestamp().getTime();
+                    for (UserTrade userTrade : tradeList)
+                        max = Math.max(max, userTrade.getTimestamp().getTime());
+                    previous = new Date(max);
+                }
+            }
         }
     }
 

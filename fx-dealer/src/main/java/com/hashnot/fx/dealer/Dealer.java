@@ -102,32 +102,35 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener, ILimi
             }
         }
 
+        Exchange oldClose = closeExchange;
+
         if (!eventExchange.equals(closeExchange)) {
             BigDecimal closeMarketPrice = forNull(side);
             if (closeExchange != null)
                 closeMarketPrice = bestOffers.getOrDefault(closeExchange, closeMarketPrice);
 
             if (isCloser(newPrice, closeMarketPrice, side)) {
-                updateCloseMarket(eventExchange);
+                closeExchange = eventExchange;
                 dirty = true;
             }
         }
 
-        if (dirty && orderManager.isActive())
-            orderManager.cancel();
+        if (dirty) {
+            updateCloseMarket(oldClose);
+            if (orderManager.isActive())
+                orderManager.cancel();
+        }
     }
 
-    private void updateCloseMarket(Exchange newClose) {
-        if (closeExchange != null) {
-            MarketSide oldCloseSide = new MarketSide(closeExchange, listing, side);
+    private void updateCloseMarket(Exchange oldExchange) {
+        if (oldExchange != null && oldExchange != closeExchange) {
+            MarketSide oldCloseSide = new MarketSide(oldExchange, listing, side);
             log.debug("Remove OBL from {}", oldCloseSide);
             orderBookSideMonitor.removeOrderBookSideListener(this, oldCloseSide);
         }
 
-        closeExchange = newClose;
-
         if (closeExchange != openExchange) {
-            MarketSide marketSide = new MarketSide(newClose, listing, side);
+            MarketSide marketSide = new MarketSide(closeExchange, listing, side);
             log.debug("Add OBL to {}", marketSide);
             orderBookSideMonitor.addOrderBookSideListener(this, marketSide);
         }
@@ -168,10 +171,13 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener, ILimi
             orderManager.update(evt.newOrders);
             // return if there is open and profitable order
             LimitOrder openOrder = orderManager.getOpenOrder();
-            if (openOrderStillProfitable(openOrder, evt))
+            if (openOrderStillProfitable(openOrder, evt)) {
+                log.debug("Order still profitable");
                 return;
-            else
+            } else {
+                log.info("Order unprofitable {}", openOrder);
                 orderManager.cancel();
+            }
         }
 
         LimitOrder closeOrder = Orders.closing(evt.newOrders.get(0), closeMonitor);
@@ -218,7 +224,7 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener, ILimi
         if (evt.getChanges().isEmpty())
             return true;
         BigDecimal closeAmount = DealerHelper.getCloseAmount(evt.newOrders, openOrder, monitors.get(closeExchange));
-        return !gt(closeAmount, openOrder.getTradableAmount());
+        return !lt(closeAmount, openOrder.getTradableAmount());
     }
 
     protected boolean isMineTop(BigDecimal newTopPrice) {

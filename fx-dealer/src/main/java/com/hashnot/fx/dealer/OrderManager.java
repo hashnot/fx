@@ -79,7 +79,13 @@ public class OrderManager implements IUserTradeListener {
 
         orderBinding = update;
         try {
-            update.openOrderId = placeLimitOrder(update.openedOrder, update.openExchange.getPollingTradeService());
+            String id = placeLimitOrder(update.openedOrder, update.openExchange.getPollingTradeService());
+
+            // cancel might have been called during placeLimitOrder. If so, orderBinding is null
+            if (orderBinding == null) {
+                cancel(id, update);
+            } else
+                update.openOrderId = id;
         } catch (ExchangeException | ConnectionException e) {
             if (update.openOrderId == null) {
                 log.warn("Error from {}", update.openExchange, e);
@@ -95,17 +101,26 @@ public class OrderManager implements IUserTradeListener {
             log.warn("Cancelling inactive order manager");
             return;
         }
-        log.info("Cancel @{} {} {}", orderBinding.openExchange, orderBinding.openOrderId, orderBinding.openedOrder);
-        try {
-            orderBinding.openExchange.getPollingTradeService().cancelOrder(orderBinding.openOrderId);
-        } catch (IOException e) {
-            throw new ConnectionException(e);
+        if (orderBinding.openOrderId == null) {
+            log.warn("Cancelling order bind while still opening order");
+            orderBinding = null;
+            return;
         }
+        log.info("Cancel @{} {} {}", orderBinding.openExchange, orderBinding.openOrderId, orderBinding.openedOrder);
+        cancel(orderBinding.openOrderId, orderBinding);
         orderBinding = null;
     }
 
+    protected void cancel(String orderId, OrderBinding orderBinding) {
+        try {
+            orderBinding.openExchange.getPollingTradeService().cancelOrder(orderId);
+        } catch (IOException e) {
+            throw new ConnectionException(e);
+        }
+    }
+
     @Override
-    public void trade(UserTradeEvent evt) {
+    public synchronized void trade(UserTradeEvent evt) {
         UserTrade trade = evt.trade;
 
         if (orderBinding == null || !trade.getOrderId().equals(orderBinding.openOrderId)) {
