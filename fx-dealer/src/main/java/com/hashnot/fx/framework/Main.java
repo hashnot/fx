@@ -33,6 +33,7 @@ public class Main {
 
     public static void main(String[] args) throws IOException, InterruptedException {
         ThreadFactory tf = new ConfigurableThreadFactory();
+        Thread.setDefaultUncaughtExceptionHandler(ConfigurableThreadFactory.exceptionHandler);
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(10, tf);
         Runtime.getRuntime().addShutdownHook(new Thread(scheduler::shutdown, "shutdown thread pool"));
 

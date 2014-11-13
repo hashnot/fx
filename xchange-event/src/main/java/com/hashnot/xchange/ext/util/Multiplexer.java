@@ -17,6 +17,9 @@ public class Multiplexer {
                 call.accept(listener, event);
             } catch (RuntimeException x) {
                 log.warn("Error from {}", listener, x);
+            } catch (Throwable x) {
+                log.warn("Error from {}", listener, x);
+                throw x;
             }
         }
     }
