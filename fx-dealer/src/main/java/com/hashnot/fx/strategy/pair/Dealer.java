@@ -1,4 +1,4 @@
-package com.hashnot.fx.dealer;
+package com.hashnot.fx.strategy.pair;
 
 import com.hashnot.fx.framework.*;
 import com.hashnot.fx.util.OrderBooks;

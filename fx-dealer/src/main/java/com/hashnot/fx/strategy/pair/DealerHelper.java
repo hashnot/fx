@@ -1,4 +1,4 @@
-package com.hashnot.fx.dealer;
+package com.hashnot.fx.strategy.pair;
 
 import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.ext.util.Orders;

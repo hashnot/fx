@@ -1,4 +1,4 @@
-package com.hashnot.fx.dealer;
+package com.hashnot.fx.strategy.pair;
 
 import com.hashnot.fx.framework.ConnectionException;
 import com.hashnot.xchange.ext.util.Orders;

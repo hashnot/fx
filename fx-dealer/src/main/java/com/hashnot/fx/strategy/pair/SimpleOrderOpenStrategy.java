@@ -1,4 +1,4 @@
-package com.hashnot.fx.dealer;
+package com.hashnot.fx.strategy.pair;
 
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;

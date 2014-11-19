@@ -1,8 +1,5 @@
-package com.hashnot.fx.dealer;
+package com.hashnot.fx.strategy.pair;
 
-import com.hashnot.fx.dealer.OrderBinding;
-import com.hashnot.fx.dealer.OrderManager;
-import com.hashnot.fx.dealer.SimpleOrderCloseStrategy;
 import com.hashnot.fx.framework.IUserTradeMonitor;
 import com.hashnot.fx.framework.UserTradeEvent;
 import com.xeiam.xchange.Exchange;

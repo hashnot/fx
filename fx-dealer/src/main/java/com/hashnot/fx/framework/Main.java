@@ -1,8 +1,8 @@
 package com.hashnot.fx.framework;
 
-import com.hashnot.fx.dealer.Dealer;
-import com.hashnot.fx.dealer.GaussOrderOpenStrategy;
-import com.hashnot.fx.dealer.SimpleOrderCloseStrategy;
+import com.hashnot.fx.strategy.pair.Dealer;
+import com.hashnot.fx.strategy.pair.GaussOrderOpenStrategy;
+import com.hashnot.fx.strategy.pair.SimpleOrderCloseStrategy;
 import com.hashnot.fx.framework.impl.BestOfferMonitor;
 import com.hashnot.fx.framework.impl.OrderTracker;
 import com.hashnot.fx.util.ConfigurableThreadFactory;

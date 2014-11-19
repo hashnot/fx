@@ -1,4 +1,4 @@
-package com.hashnot.fx.dealer;
+package com.hashnot.fx.strategy.pair;
 
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.trade.LimitOrder;
