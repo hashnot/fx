@@ -11,12 +11,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static com.hashnot.xchange.ext.util.Numbers.Price.*;
-import static com.hashnot.xchange.ext.util.Numbers.*;
+import static com.hashnot.xchange.ext.util.Numbers.eq;
+import static com.hashnot.xchange.ext.util.Numbers.lt;
 import static com.hashnot.xchange.ext.util.Orders.c;
 import static com.hashnot.xchange.ext.util.Orders.revert;
 import static com.xeiam.xchange.dto.Order.OrderType;
@@ -34,12 +34,7 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener, ILimi
 
     final private Map<Exchange, IExchangeMonitor> monitors;
 
-    // side -> map(exchange -> best offer price)
-    final private Map<Exchange, BigDecimal> bestOffers = new HashMap<>();
-
-    private Exchange closeExchange;
-
-    private Exchange openExchange;
+    final private DealerData data;
 
     final private OrderType side;
 
@@ -48,12 +43,17 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener, ILimi
     final private SimpleOrderOpenStrategy orderStrategy;
 
     public Dealer(IOrderBookSideMonitor orderBookSideMonitor, IOrderTracker orderTracker, Map<Exchange, IExchangeMonitor> monitors, OrderType side, CurrencyPair listing, SimpleOrderOpenStrategy orderStrategy, SimpleOrderCloseStrategy orderCloseStrategy) {
+        this(orderBookSideMonitor, new OrderManager(orderTracker, orderCloseStrategy), monitors, side, listing, orderStrategy, new DealerData());
+    }
+
+    public Dealer(IOrderBookSideMonitor orderBookSideMonitor, OrderManager orderManager, Map<Exchange, IExchangeMonitor> monitors, OrderType side, CurrencyPair listing, SimpleOrderOpenStrategy orderStrategy, DealerData data) {
         this.orderBookSideMonitor = orderBookSideMonitor;
         this.monitors = monitors;
         this.side = side;
         this.listing = listing;
         this.orderStrategy = orderStrategy;
-        this.orderManager = new OrderManager(orderTracker, orderCloseStrategy);
+        this.data = data;
+        this.orderManager = orderManager;
     }
 
     /**
@@ -72,7 +72,7 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener, ILimi
 
         BigDecimal newPrice = evt.price;
 
-        BigDecimal oldPrice = bestOffers.get(eventExchange);
+        BigDecimal oldPrice = getBestOffers().get(eventExchange);
 
         // don't update the order if the new 3rd party order is not better
         if (oldPrice != null && eq(newPrice, oldPrice)) {
@@ -84,33 +84,33 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener, ILimi
 
         if (isMineTop(newPrice)) return;
 
-        bestOffers.put(eventExchange, newPrice);
+        getBestOffers().put(eventExchange, newPrice);
 
         // it's important to first update open before close exchange,
         // because we register ourselves as a listener for close order book if close != open
 
         boolean dirty = false;
-        if (!eventExchange.equals(openExchange)) {
+        if (!eventExchange.equals(getOpenExchange())) {
             BigDecimal oldOpenPrice = forNull(revert(side));
-            if (openExchange != null)
-                oldOpenPrice = bestOffers.getOrDefault(openExchange, oldOpenPrice);
+            if (getOpenExchange() != null)
+                oldOpenPrice = getBestOffers().getOrDefault(getOpenExchange(), oldOpenPrice);
 
             // worse is better, because we open between closer and further on the further exchange
             if (isFurther(newPrice, oldOpenPrice, side)) {
-                openExchange = eventExchange;
+                setOpenExchange(eventExchange);
                 dirty = true;
             }
         }
 
-        Exchange oldClose = closeExchange;
+        Exchange oldClose = getCloseExchange();
 
-        if (!eventExchange.equals(closeExchange)) {
+        if (!eventExchange.equals(getCloseExchange())) {
             BigDecimal closeMarketPrice = forNull(side);
-            if (closeExchange != null)
-                closeMarketPrice = bestOffers.getOrDefault(closeExchange, closeMarketPrice);
+            if (getCloseExchange() != null)
+                closeMarketPrice = getBestOffers().getOrDefault(getCloseExchange(), closeMarketPrice);
 
             if (isCloser(newPrice, closeMarketPrice, side)) {
-                closeExchange = eventExchange;
+                setCloseExchange(eventExchange);
                 dirty = true;
             }
         }
@@ -123,14 +123,14 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener, ILimi
     }
 
     private void updateCloseMarket(Exchange oldExchange) {
-        if (oldExchange != null && oldExchange != closeExchange) {
+        if (oldExchange != null && oldExchange != getCloseExchange()) {
             MarketSide oldCloseSide = new MarketSide(oldExchange, listing, side);
             log.debug("Remove OBL from {}", oldCloseSide);
             orderBookSideMonitor.removeOrderBookSideListener(this, oldCloseSide);
         }
 
-        if (closeExchange != openExchange) {
-            MarketSide marketSide = new MarketSide(closeExchange, listing, side);
+        if (getCloseExchange() != getOpenExchange()) {
+            MarketSide marketSide = new MarketSide(getCloseExchange(), listing, side);
             log.debug("Add OBL to {}", marketSide);
             orderBookSideMonitor.addOrderBookSideListener(this, marketSide);
         }
@@ -145,15 +145,15 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener, ILimi
         assert listing.equals(evt.source.market.listing);
 
         // enable when we have at open!=close exchanges before listening to order books
-        // TODO initial state assert !closeExchange.equals(openExchange) : "Didn't find 2 exchanges with sufficient funds " + side;
-        if (closeExchange.equals(openExchange)) {
+        // TODO initial state assert !getCloseExchange().equals(getOpenExchange()) : "Didn't find 2 exchanges with sufficient funds " + side;
+        if (getCloseExchange().equals(getOpenExchange())) {
             log.info("Didn't find 2 exchanges with sufficient funds {}", side);
             return;
         }
 
         log.info("order book from {}", evt.source);
 
-        if (!evt.source.market.exchange.equals(closeExchange)) {
+        if (!evt.source.market.exchange.equals(getCloseExchange())) {
             log.warn("Unexpected OrderBook update from {}", evt.source);
             return;
         }
@@ -161,7 +161,7 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener, ILimi
         //TODO change may mean that we need to change the open order to smaller one
 
         // open or update order
-        IExchangeMonitor closeMonitor = monitors.get(closeExchange);
+        IExchangeMonitor closeMonitor = monitors.get(getCloseExchange());
         List<LimitOrder> limited = OrderBooks.removeOverLimit(evt.newOrders, getLimit(closeMonitor, listing.baseSymbol), getLimit(closeMonitor, listing.counterSymbol));
 
         // TODO remove net prices
@@ -182,14 +182,14 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener, ILimi
 
         LimitOrder closeOrder = Orders.closing(evt.newOrders.get(0), closeMonitor);
 
-        BigDecimal openGrossPrice = bestOffers.get(openExchange);
+        BigDecimal openGrossPrice = getBestOffers().get(getOpenExchange());
         BigDecimal openNetPrice = getOpenNetPrice(openGrossPrice);
         BigDecimal diff = openNetPrice.subtract(closeOrder.getNetPrice());
 
         // ask -> diff > 0
         boolean profitable = isFurther(diff, ZERO, side);
 
-        IExchangeMonitor openMonitor = monitors.get(openExchange);
+        IExchangeMonitor openMonitor = monitors.get(getOpenExchange());
         if (profitable) {
             int scale = openMonitor.getMarketMetadata(listing).getPriceScale();
             // TODO use getAmount
@@ -223,7 +223,7 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener, ILimi
         // working on a limited OrderBooks,
         if (evt.getChanges().isEmpty())
             return true;
-        BigDecimal closeAmount = DealerHelper.getCloseAmount(evt.newOrders, openOrder, monitors.get(closeExchange));
+        BigDecimal closeAmount = DealerHelper.getCloseAmount(evt.newOrders, openOrder, monitors.get(getCloseExchange()));
         return !lt(closeAmount, openOrder.getTradableAmount());
     }
 
@@ -233,7 +233,7 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener, ILimi
     }
 
     private BigDecimal getOpenNetPrice(BigDecimal openGrossPrice) {
-        return Orders.getNetPrice(openGrossPrice, side, monitors.get(openExchange).getMarketMetadata(listing).getOrderFeeFactor());
+        return Orders.getNetPrice(openGrossPrice, side, monitors.get(getOpenExchange()).getMarketMetadata(listing).getOrderFeeFactor());
     }
 
     private boolean hasMinimumMoney(Exchange exchange, BigDecimal price) {
@@ -257,14 +257,34 @@ public class Dealer implements IOrderBookSideListener, IBestOfferListener, ILimi
     @Override
     public void limitOrderPlaced(OrderEvent evt) {
         LimitOrder order = evt.order;
-        if (evt.source.equals(openExchange) && order.getType() == side) {
+        if (evt.source.equals(getOpenExchange()) && order.getType() == side) {
             if (!orderManager.isActive()) {
-                log.warn("Order manager inactive but opened new order {} @{}/{}", order, side, openExchange);
+                log.warn("Order manager inactive but opened new order {} @{}/{}", order, side, getOpenExchange());
             }
         }
     }
 
     @Override
     public void orderCanceled(OrderCancelEvent orderCancelEvent) {
+    }
+    
+    private Map<Exchange, BigDecimal>getBestOffers(){
+        return data.getBestOffers();
+    }
+    
+    private Exchange getOpenExchange(){
+        return data.getOpenExchange();
+    }
+    
+    private Exchange getCloseExchange(){
+        return data.getCloseExchange();
+    }
+    
+    private void setOpenExchange(Exchange exchange){
+        data.setOpenExchange(exchange);
+    }
+    
+    private void setCloseExchange(Exchange exchange){
+        data.setCloseExchange(exchange);
     }
 }
