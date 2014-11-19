@@ -61,7 +61,7 @@ public class DealerHelper {
         if (openOrderTempl.getType() == Order.OrderType.BID)
             openAmount = openOutGross.divide(openOrderTempl.getLimitPrice(), c);
 
-        BigDecimal closeAmount = getCloseAmount(closeOrders, closeOutNet, openOrderTempl, closeMonitor);
+        BigDecimal closeAmount = getCloseAmount(closeOrders, closeOutGross, openOrderTempl, closeMonitor);
 
         log.debug("open: {}", openAmount);
         log.debug("close: {}", closeAmount);
@@ -105,11 +105,11 @@ public class DealerHelper {
         return getCloseAmount(closeOrders, closeOutNet, openOrder, closeMonitor);
     }
 
-    private static BigDecimal getCloseAmount(List<LimitOrder> closeOrders, BigDecimal closeOutNet, LimitOrder openOrder, IExchangeMonitor closeMonitor) {
+    private static BigDecimal getCloseAmount(List<LimitOrder> closeOrders, BigDecimal amountLimit, LimitOrder openOrder, IExchangeMonitor closeMonitor) {
         if (openOrder.getType() == Order.OrderType.ASK)
-            return totalAmountByValue(closeOrders, closeOutNet, openOrder.getNetPrice(), closeMonitor);
+            return totalAmountByValue(closeOrders, amountLimit, openOrder.getNetPrice(), closeMonitor);
         else
-            return totalAmountByAmount(closeOrders, closeOutNet, openOrder.getNetPrice(), closeMonitor);
+            return totalAmountByAmount(closeOrders, amountLimit, openOrder.getNetPrice(), closeMonitor);
     }
 
     private static BigDecimal totalAmountByAmount(List<LimitOrder> orders, BigDecimal amountLimit, BigDecimal netPriceLimit, IExchangeMonitor x) {
