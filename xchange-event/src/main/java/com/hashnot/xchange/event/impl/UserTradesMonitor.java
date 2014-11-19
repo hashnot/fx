@@ -9,7 +9,7 @@ import com.xeiam.xchange.dto.marketdata.Trades;
 import com.xeiam.xchange.dto.trade.UserTrade;
 import com.xeiam.xchange.dto.trade.UserTrades;
 import com.xeiam.xchange.service.polling.PollingTradeService;
-import com.xeiam.xchange.service.polling.trade.TradeHistoryParamsTimeSpanImpl;
+import com.xeiam.xchange.service.polling.trade.DefaultTradeHistoryParamsTimeSpan;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +42,7 @@ public class UserTradesMonitor extends AbstractPollingMonitor implements IUserTr
         UserTrades trades;
         try {
             log.debug("Getting trades from {}", exchange);
-            trades = tradeService.getTradeHistory(new TradeHistoryParamsTimeSpanImpl(previous));
+            trades = tradeService.getTradeHistory(new DefaultTradeHistoryParamsTimeSpan(previous));
             log.debug("User trades {}", trades.getUserTrades().size());
         } catch (IOException e) {
             log.warn("Error from {}", tradeService, e);
