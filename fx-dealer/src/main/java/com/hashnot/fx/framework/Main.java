@@ -1,13 +1,13 @@
 package com.hashnot.fx.framework;
 
-import com.hashnot.fx.strategy.pair.Dealer;
-import com.hashnot.fx.strategy.pair.GaussOrderOpenStrategy;
-import com.hashnot.fx.strategy.pair.SimpleOrderCloseStrategy;
 import com.hashnot.fx.framework.impl.BestOfferMonitor;
 import com.hashnot.fx.framework.impl.OrderTracker;
+import com.hashnot.fx.strategy.pair.Dealer;
+import com.hashnot.fx.strategy.pair.DealerConfig;
+import com.hashnot.fx.strategy.pair.GaussOrderOpenStrategy;
+import com.hashnot.fx.strategy.pair.SimpleOrderCloseStrategy;
 import com.hashnot.fx.util.ConfigurableThreadFactory;
 import com.hashnot.xchange.event.IExchangeMonitor;
-import com.hashnot.xchange.ext.Market;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import groovy.lang.GroovyShell;
@@ -46,8 +46,8 @@ public class Main {
         GaussOrderOpenStrategy orderOpenStrategy = new GaussOrderOpenStrategy();
         SimpleOrderCloseStrategy orderCloseStrategy = new SimpleOrderCloseStrategy();
 
-        Dealer askDealer = new Dealer(bestOfferMonitor, orderTracker, monitorMap, ASK, pair, orderOpenStrategy, orderCloseStrategy);
-        Dealer bidDealer = new Dealer(bestOfferMonitor, orderTracker, monitorMap, BID, pair, orderOpenStrategy, orderCloseStrategy);
+        Dealer askDealer = new Dealer(bestOfferMonitor, orderTracker, monitorMap, new DealerConfig(ASK, pair), orderOpenStrategy, orderCloseStrategy);
+        Dealer bidDealer = new Dealer(bestOfferMonitor, orderTracker, monitorMap, new DealerConfig(BID, pair), orderOpenStrategy, orderCloseStrategy);
 
         for (IExchangeMonitor monitor : monitors) {
             Exchange x = monitor.getExchange();
@@ -55,13 +55,9 @@ public class Main {
             monitor.start();
 
             ITradeService tradeService = (ITradeService) x.getPollingTradeService();
-            Market market = new Market(x, pair);
 
-            bestOfferMonitor.addBestOfferListener(askDealer, new MarketSide(market, ASK));
-            tradeService.addLimitOrderPlacedListener(askDealer);
-
-            bestOfferMonitor.addBestOfferListener(bidDealer, new MarketSide(market, BID));
-            tradeService.addLimitOrderPlacedListener(bidDealer);
+            registerBestOfferListener(bestOfferMonitor, askDealer, x);
+            registerBestOfferListener(bestOfferMonitor, bidDealer, x);
 
             tradeService.addLimitOrderPlacedListener(orderTracker);
 
@@ -71,6 +67,11 @@ public class Main {
             }, x.toString() + "-stop"));
         }
         report(monitors);
+    }
+
+    protected static void registerBestOfferListener(BestOfferMonitor bestOfferMonitor, Dealer dealer, Exchange exchange) {
+        DealerConfig config = dealer.getConfig();
+        bestOfferMonitor.addBestOfferListener(dealer, new MarketSide(exchange, config.listing, config.side));
     }
 
     @SuppressWarnings("unchecked")
