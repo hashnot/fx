@@ -14,11 +14,11 @@ import org.junit.runners.Parameterized;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.hashnot.fx.strategy.pair.DealerTest.orderOpenStrategy;
 import static com.hashnot.fx.strategy.pair.PairTestUtils.*;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
-import static com.xeiam.xchange.dto.Order.OrderType.BID;
 import static com.xeiam.xchange.dto.trade.LimitOrder.Builder.from;
 import static java.math.BigDecimal.ONE;
 import static java.util.Arrays.asList;
@@ -36,7 +36,7 @@ public class PairOrderBookSideListenerTest {
 
     @Parameterized.Parameters
     public static Iterable<Object[]> getParams() {
-        return asList(new Object[]{ASK}, new Object[]{BID});
+        return asList(Order.OrderType.values()).stream().map(t -> new Object[]{t}).collect(Collectors.toList());
     }
 
     @Test
