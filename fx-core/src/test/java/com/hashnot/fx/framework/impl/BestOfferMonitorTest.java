@@ -1,11 +1,11 @@
 package com.hashnot.fx.framework.impl;
 
 import com.hashnot.fx.framework.*;
-import com.hashnot.xchange.event.IOrderBookMonitor;
-import com.hashnot.xchange.event.ITickerMonitor;
-import com.hashnot.xchange.event.OrderBookUpdateEvent;
 import com.hashnot.xchange.event.IExchangeMonitor;
-import com.hashnot.xchange.event.TickerEvent;
+import com.hashnot.xchange.event.market.IOrderBookMonitor;
+import com.hashnot.xchange.event.market.ITickerMonitor;
+import com.hashnot.xchange.event.market.OrderBookUpdateEvent;
+import com.hashnot.xchange.event.market.TickerEvent;
 import com.hashnot.xchange.ext.Market;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;

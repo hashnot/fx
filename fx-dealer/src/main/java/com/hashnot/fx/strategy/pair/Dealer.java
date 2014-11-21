@@ -35,7 +35,7 @@ public class Dealer implements IBestOfferListener {
     final private DealerConfig config;
 
     public Dealer(IOrderBookSideMonitor orderBookSideMonitor, IOrderTracker orderTracker, Map<Exchange, IExchangeMonitor> monitors, DealerConfig config, SimpleOrderOpenStrategy orderStrategy, SimpleOrderCloseStrategy orderCloseStrategy) {
-        this(orderBookSideMonitor, new OrderManager(orderTracker, orderCloseStrategy), monitors, config, orderStrategy, new DealerData());
+        this(orderBookSideMonitor, new OrderManager(orderTracker, orderCloseStrategy, monitors), monitors, config, orderStrategy, new DealerData());
     }
 
     protected Dealer(IOrderBookSideMonitor orderBookSideMonitor, OrderManager orderManager, Map<Exchange, IExchangeMonitor> monitors, DealerConfig config, SimpleOrderOpenStrategy orderStrategy, DealerData data) {

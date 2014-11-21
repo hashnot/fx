@@ -55,7 +55,7 @@ public class DealerTest {
 
         DealerData data = new DealerData();
 
-        Dealer dealer = new Dealer(orderBookSideMonitor, new OrderManager(orderTracker, orderCloseStrategy), monitors, new DealerConfig(side, p), orderOpenStrategy, data);
+        Dealer dealer = new Dealer(orderBookSideMonitor, new OrderManager(orderTracker, orderCloseStrategy, monitors), monitors, new DealerConfig(side, p), orderOpenStrategy, data);
 
         BigDecimal closePrice = new BigDecimal(2);
 
@@ -87,7 +87,7 @@ public class DealerTest {
         BigDecimal closePrice = new BigDecimal(2);
         DealerData data = data(closeExchange, closePrice);
 
-        OrderManager orderManager = new OrderManager(orderTracker, orderCloseStrategy);
+        OrderManager orderManager = new OrderManager(orderTracker, orderCloseStrategy, monitors);
         DealerConfig config = new DealerConfig(side, p);
         PairOrderBookSideListener orderBookSideListener = new PairOrderBookSideListener(config, data, orderManager, orderOpenStrategy, monitors);
         Dealer dealer = new Dealer(orderBookSideMonitor, orderManager, monitors, config, orderBookSideListener, data);
@@ -125,7 +125,7 @@ public class DealerTest {
         BigDecimal closePrice = new BigDecimal(2);
         BigDecimal openPrice = closePrice.add(side == ASK ? ONE : _ONE);
         DealerData data = data(openExchange, openPrice);
-        OrderManager orderManager = new OrderManager(orderTracker, orderCloseStrategy);
+        OrderManager orderManager = new OrderManager(orderTracker, orderCloseStrategy, monitors);
         DealerConfig config = new DealerConfig(side, p);
         PairOrderBookSideListener orderBookSideListener = new PairOrderBookSideListener(config, data, orderManager, orderOpenStrategy, monitors);
         Dealer dealer = new Dealer(orderBookSideMonitor, orderManager, monitors, config, orderBookSideListener, data);

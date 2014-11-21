@@ -1,7 +1,7 @@
 package com.hashnot.fx.strategy.pair;
 
 import com.hashnot.xchange.event.IExchangeMonitor;
-import com.hashnot.xchange.event.IWalletMonitor;
+import com.hashnot.xchange.event.account.IWalletMonitor;
 import com.hashnot.xchange.ext.util.Numbers;
 import com.hashnot.xchange.ext.util.Orders;
 import com.xeiam.xchange.currency.CurrencyPair;

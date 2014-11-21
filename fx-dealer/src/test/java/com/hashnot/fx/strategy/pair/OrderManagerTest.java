@@ -1,7 +1,10 @@
 package com.hashnot.fx.strategy.pair;
 
+import com.google.common.util.concurrent.Futures;
 import com.hashnot.fx.framework.IUserTradeMonitor;
 import com.hashnot.fx.framework.UserTradeEvent;
+import com.hashnot.xchange.async.trade.IAsyncTradeService;
+import com.hashnot.xchange.event.IExchangeMonitor;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.trade.LimitOrder;
@@ -10,14 +13,15 @@ import com.xeiam.xchange.service.polling.PollingTradeService;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.concurrent.Future;
+import java.util.function.Consumer;
 
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
 import static com.xeiam.xchange.dto.Order.OrderType.BID;
 import static java.math.BigDecimal.ONE;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class OrderManagerTest {
 
@@ -25,10 +29,12 @@ public class OrderManagerTest {
 
     @Test
     public void testTrade() throws Exception {
-        OrderManager orderManager = new OrderManager(mock(IUserTradeMonitor.class), new SimpleOrderCloseStrategy());
         Exchange openExchange = mock(Exchange.class);
-        PollingTradeService openTradeService = mock(PollingTradeService.class);
-        when(openExchange.getPollingTradeService()).thenReturn(openTradeService);
+
+        IExchangeMonitor iem = mock(IExchangeMonitor.class);
+        IAsyncTradeService openTradeService = mock(IAsyncTradeService.class);
+        when(iem.getTradeService()).thenReturn(openTradeService);
+        OrderManager orderManager = new OrderManager(mock(IUserTradeMonitor.class), new SimpleOrderCloseStrategy(), PairTestUtils.map(openExchange, iem));
 
         Exchange closeExchange = mock(Exchange.class);
         PollingTradeService closeTradeService = mock(PollingTradeService.class);
@@ -36,11 +42,14 @@ public class OrderManagerTest {
 
         LimitOrder openOrder = new LimitOrder.Builder(ASK, p).limitPrice(ONE).tradableAmount(ONE).build();
 
-        when(openTradeService.placeLimitOrder(eq(openOrder))).thenReturn("ID");
+        doAnswer(invocation -> {
+            ((Consumer<Future<String>>) invocation.getArguments()[1]).accept(Futures.immediateCheckedFuture("ID"));
+            return null;
+        }).when(openTradeService).placeLimitOrder(eq(openOrder), any(Consumer.class));
 
         orderManager.update(new OrderBinding(openExchange, closeExchange, openOrder, Arrays.asList(openOrder)));
 
-        verify(openTradeService).placeLimitOrder(eq(openOrder));
+        verify(openTradeService).placeLimitOrder(eq(openOrder), any(Consumer.class));
 
         orderManager.trade(new UserTradeEvent(openOrder, new UserTrade(ASK, ONE, p, ONE, null, null, "ID", null, null), null, openExchange));
 

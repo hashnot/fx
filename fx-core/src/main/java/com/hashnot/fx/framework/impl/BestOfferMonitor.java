@@ -5,8 +5,8 @@ import com.google.common.collect.Multimaps;
 import com.google.common.collect.SetMultimap;
 import com.hashnot.fx.framework.*;
 import com.hashnot.xchange.event.IExchangeMonitor;
-import com.hashnot.xchange.event.ITickerListener;
-import com.hashnot.xchange.event.TickerEvent;
+import com.hashnot.xchange.event.market.ITickerListener;
+import com.hashnot.xchange.event.market.TickerEvent;
 import com.hashnot.xchange.ext.Market;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.marketdata.Ticker;
@@ -121,7 +121,7 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
 
     protected void notifyBestOfferListeners(BestOfferEvent bestOfferEvent) {
         MarketSide source = bestOfferEvent.source;
-        multiplex(bestOfferListeners.getOrDefault(source.market, EMPTY_MULTIMAP).get(source.side), bestOfferEvent, (l, e) -> l.updateBestOffer(e));
+        multiplex(bestOfferListeners.getOrDefault(source.market, EMPTY_MULTIMAP).get(source.side), bestOfferEvent, IBestOfferListener::updateBestOffer);
     }
 
     @Override

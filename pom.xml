@@ -19,12 +19,13 @@
         <v.logback>1.0.13</v.logback>
         <v.xchange>2.2.0-SNAPSHOT</v.xchange>
         <groupId.xchange>com.hashnot.xchange</groupId.xchange>
+        <v.guava>18.0</v.guava>
     </properties>
 
     <modules>
         <module>fx-core</module>
         <module>fx-dealer</module>
-        <module>xchange-event</module>
+        <module>xchange</module>
         <!--
         <module>fx-currencyfair</module>
         <module>fx-kokos</module>

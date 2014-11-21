@@ -8,8 +8,8 @@ import com.hashnot.fx.framework.MarketSide;
 import com.hashnot.fx.framework.OrderBookSideUpdateEvent;
 import com.hashnot.fx.util.OrderBooks;
 import com.hashnot.xchange.event.IExchangeMonitor;
-import com.hashnot.xchange.event.IOrderBookListener;
-import com.hashnot.xchange.event.OrderBookUpdateEvent;
+import com.hashnot.xchange.event.market.IOrderBookListener;
+import com.hashnot.xchange.event.market.OrderBookUpdateEvent;
 import com.hashnot.xchange.ext.Market;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.marketdata.OrderBook;
@@ -106,7 +106,7 @@ public class OrderBookSideMonitor implements IOrderBookSideMonitor, IOrderBookLi
         }
 
         OrderBookSideUpdateEvent obse = new OrderBookSideUpdateEvent(new MarketSide(market, side), oldOrders, newOrders);
-        multiplex(marketListeners.get(side), obse, (l, e) -> l.orderBookSideChanged(e));
+        multiplex(marketListeners.get(side), obse, IOrderBookSideListener::orderBookSideChanged);
     }
 
     @Override

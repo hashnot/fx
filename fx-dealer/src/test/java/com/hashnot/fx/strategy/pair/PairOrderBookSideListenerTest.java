@@ -53,7 +53,7 @@ public class PairOrderBookSideListenerTest {
 
         IOrderTracker orderTracker = mock(IOrderTracker.class);
         IOrderBookSideMonitor orderBookSideMonitor = mock(IOrderBookSideMonitor.class);
-        OrderManager orderManager = spy(new OrderManager(orderTracker, orderCloseStrategy));
+        OrderManager orderManager = spy(new OrderManager(orderTracker, orderCloseStrategy, monitors));
 
         BigDecimal openPrice = new BigDecimal(2);
         BigDecimal priceDiff = ONE;

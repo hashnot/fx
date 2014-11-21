@@ -1,15 +1,18 @@
 package com.hashnot.fx.strategy.pair;
 
-import com.hashnot.fx.framework.*;
-import com.xeiam.xchange.ExchangeException;
+import com.hashnot.fx.framework.IUserTradeListener;
+import com.hashnot.fx.framework.IUserTradeMonitor;
+import com.hashnot.fx.framework.UserTradeEvent;
+import com.hashnot.xchange.async.trade.IAsyncTradeService;
+import com.hashnot.xchange.event.IExchangeMonitor;
+import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.dto.trade.UserTrade;
-import com.xeiam.xchange.service.polling.PollingTradeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import static com.hashnot.xchange.ext.util.Numbers.eq;
 
@@ -23,11 +26,14 @@ public class OrderManager implements IUserTradeListener {
 
     final private SimpleOrderCloseStrategy orderCloseStrategy;
 
+    final private Map<Exchange, IExchangeMonitor> monitors;
+
     volatile private OrderBinding orderBinding;
 
-    public OrderManager(IUserTradeMonitor tradeMonitor, SimpleOrderCloseStrategy orderCloseStrategy) {
+    public OrderManager(IUserTradeMonitor tradeMonitor, SimpleOrderCloseStrategy orderCloseStrategy, Map<Exchange, IExchangeMonitor> monitors) {
         this.tradeMonitor = tradeMonitor;
         this.orderCloseStrategy = orderCloseStrategy;
+        this.monitors = monitors;
     }
 
     public boolean isActive() {
@@ -78,22 +84,27 @@ public class OrderManager implements IUserTradeListener {
         // This prevents another thread to try to activate it while waiting for the response
 
         orderBinding = update;
-        try {
-            String id = placeLimitOrder(update.openedOrder, update.openExchange.getPollingTradeService());
 
+        IAsyncTradeService tradeService = monitors.get(update.openExchange).getTradeService();
+        tradeService.placeLimitOrder(update.openedOrder, (idf) -> {
+            String id = null;
+            try {
+                id = idf.get();
+            } catch (Exception e) {
+                if (update.openOrderId == null) {
+                    log.warn("Error from {}", update.openExchange, e);
+                    orderBinding = null;
+                } else {
+                    log.warn("Error from {} but have order ID {}", update.openExchange, update.openOrderId, e);
+                }
+            }
             // cancel might have been called during placeLimitOrder. If so, orderBinding is null
             if (orderBinding == null) {
-                cancel(id, update);
+                tradeService.cancelOrder(id, (s) -> {
+                });
             } else
                 update.openOrderId = id;
-        } catch (ExchangeException | ConnectionException e) {
-            if (update.openOrderId == null) {
-                log.warn("Error from {}", update.openExchange, e);
-                orderBinding = null;
-            } else {
-                log.warn("Error from {} but have order ID {}", update.openExchange, update.openOrderId, e);
-            }
-        }
+        });
     }
 
     public void cancel() {
@@ -112,11 +123,9 @@ public class OrderManager implements IUserTradeListener {
     }
 
     protected void cancel(String orderId, OrderBinding orderBinding) {
-        try {
-            orderBinding.openExchange.getPollingTradeService().cancelOrder(orderId);
-        } catch (IOException e) {
-            throw new ConnectionException(e);
-        }
+        IAsyncTradeService tradeService = monitors.get(orderBinding.openExchange).getTradeService();
+        tradeService.cancelOrder(orderId, (success) -> {
+        });
     }
 
     @Override
@@ -138,16 +147,6 @@ public class OrderManager implements IUserTradeListener {
         if (evt.current == null) {
             tradeMonitor.removeTradeListener(this, orderBinding.openExchange);
             orderBinding = null;
-        }
-    }
-
-    protected String placeLimitOrder(LimitOrder order, PollingTradeService tradeService) {
-        try {
-            String id = tradeService.placeLimitOrder(order);
-            log.info("Open {} {} @{}", id, order, tradeService);
-            return id;
-        } catch (IOException e) {
-            throw new ConnectionException(e);
         }
     }
 

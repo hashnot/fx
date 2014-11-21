@@ -1,7 +1,8 @@
 package com.hashnot.fx.strategy.pair;
 
+import com.hashnot.xchange.async.trade.IAsyncTradeService;
 import com.hashnot.xchange.event.IExchangeMonitor;
-import com.hashnot.xchange.event.IWalletMonitor;
+import com.hashnot.xchange.event.account.IWalletMonitor;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.marketdata.BaseMarketMetadata;
@@ -10,9 +11,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.TEN;
-import static java.math.BigDecimal.ZERO;
+import static java.math.BigDecimal.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -34,6 +33,7 @@ public class PairTestUtils {
         when(monitor.getWalletMonitor()).thenReturn(walletMonitor);
         when(monitor.getMarketMetadata(p)).thenReturn(new BaseMarketMetadata(ONE.movePointLeft(SCALE), SCALE, ZERO));
         when(monitor.getExchange()).thenReturn(x);
+        when(monitor.getTradeService()).thenReturn(mock(IAsyncTradeService.class));
         return monitor;
     }
 

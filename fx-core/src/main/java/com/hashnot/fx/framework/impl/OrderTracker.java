@@ -4,9 +4,9 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.hashnot.fx.framework.*;
 import com.hashnot.xchange.event.IExchangeMonitor;
-import com.hashnot.xchange.event.IUserTradesListener;
-import com.hashnot.xchange.event.IUserTradesMonitor;
-import com.hashnot.xchange.event.UserTradesEvent;
+import com.hashnot.xchange.event.trade.IUserTradesListener;
+import com.hashnot.xchange.event.trade.IUserTradesMonitor;
+import com.hashnot.xchange.event.trade.UserTradesEvent;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.dto.trade.UserTrade;
@@ -14,7 +14,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.hashnot.xchange.ext.util.Multiplexer.multiplex;
@@ -73,7 +75,7 @@ public class OrderTracker implements IUserTradesListener, ILimitOrderPlacementLi
                 current.put(orderId, currentOrder);
             }
 
-            multiplex(listeners.get(exchange), new UserTradeEvent(monitoredOrder, trade, currentOrder, exchange), (l, e) -> l.trade(e));
+            multiplex(listeners.get(exchange), new UserTradeEvent(monitoredOrder, trade, currentOrder, exchange), IUserTradeListener::trade);
         }
 
         updateRunning(exchange);
