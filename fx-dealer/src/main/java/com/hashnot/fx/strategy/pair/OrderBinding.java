@@ -27,6 +27,32 @@ public class OrderBinding {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof OrderBinding)) return false;
+
+        OrderBinding that = (OrderBinding) o;
+
+        if (!closeExchange.equals(that.closeExchange)) return false;
+        if (!closingOrders.equals(that.closingOrders)) return false;
+        if (!openExchange.equals(that.openExchange)) return false;
+        if (openOrderId != null ? !openOrderId.equals(that.openOrderId) : that.openOrderId != null) return false;
+        if (!openedOrder.equals(that.openedOrder)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = openExchange.hashCode();
+        result = 31 * result + closeExchange.hashCode();
+        result = 31 * result + openedOrder.hashCode();
+        result = 31 * result + (openOrderId != null ? openOrderId.hashCode() : 0);
+        result = 31 * result + closingOrders.hashCode();
+        return result;
+    }
+
+    @Override
     public String toString() {
         return "OrderUpdateEvent{" +
                 "openExchange=" + openExchange +

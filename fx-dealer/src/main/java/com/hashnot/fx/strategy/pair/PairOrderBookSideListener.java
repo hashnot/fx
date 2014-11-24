@@ -30,10 +30,10 @@ public class PairOrderBookSideListener implements IOrderBookSideListener{
 
     final private DealerConfig config;
     final private DealerData data;
-    final private OrderManager orderManager;
+    final private PairTradeListener orderManager;
     final private SimpleOrderOpenStrategy orderStrategy;
 
-    public PairOrderBookSideListener(DealerConfig config, DealerData data, OrderManager orderManager, SimpleOrderOpenStrategy orderStrategy, Map<Exchange, IExchangeMonitor> monitors) {
+    public PairOrderBookSideListener(DealerConfig config, DealerData data, PairTradeListener orderManager, SimpleOrderOpenStrategy orderStrategy, Map<Exchange, IExchangeMonitor> monitors) {
         this.orderStrategy = orderStrategy;
         this.monitors = monitors;
         this.config = config;

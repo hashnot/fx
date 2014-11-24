@@ -24,7 +24,7 @@ import static com.xeiam.xchange.dto.Order.OrderType.ASK;
 public class Dealer implements IBestOfferListener {
     final private static Logger log = LoggerFactory.getLogger(Dealer.class);
 
-    final private OrderManager orderManager;
+    final private PairTradeListener orderManager;
     final private IOrderBookSideMonitor orderBookSideMonitor;
     final private IOrderBookSideListener orderBookSideListener;
 
@@ -35,14 +35,18 @@ public class Dealer implements IBestOfferListener {
     final private DealerConfig config;
 
     public Dealer(IOrderBookSideMonitor orderBookSideMonitor, IOrderTracker orderTracker, Map<Exchange, IExchangeMonitor> monitors, DealerConfig config, SimpleOrderOpenStrategy orderStrategy, SimpleOrderCloseStrategy orderCloseStrategy) {
-        this(orderBookSideMonitor, new OrderManager(orderTracker, orderCloseStrategy, monitors), monitors, config, orderStrategy, new DealerData());
+        this(orderBookSideMonitor, orderTracker, monitors, config, orderStrategy, orderCloseStrategy,new DealerData());
     }
 
-    protected Dealer(IOrderBookSideMonitor orderBookSideMonitor, OrderManager orderManager, Map<Exchange, IExchangeMonitor> monitors, DealerConfig config, SimpleOrderOpenStrategy orderStrategy, DealerData data) {
+    protected Dealer(IOrderBookSideMonitor orderBookSideMonitor, IOrderTracker orderTracker, Map<Exchange, IExchangeMonitor> monitors, DealerConfig config, SimpleOrderOpenStrategy orderStrategy, SimpleOrderCloseStrategy orderCloseStrategy, DealerData data) {
+        this(orderBookSideMonitor, new PairTradeListener(orderTracker, orderCloseStrategy, monitors, data), monitors, config, orderStrategy, data);
+    }
+
+    protected Dealer(IOrderBookSideMonitor orderBookSideMonitor, PairTradeListener orderManager, Map<Exchange, IExchangeMonitor> monitors, DealerConfig config, SimpleOrderOpenStrategy orderStrategy, DealerData data) {
         this(orderBookSideMonitor, orderManager, monitors, config, new PairOrderBookSideListener(config, data, orderManager, orderStrategy, monitors), data);
     }
 
-    public Dealer(IOrderBookSideMonitor orderBookSideMonitor, OrderManager orderManager, Map<Exchange, IExchangeMonitor> monitors, DealerConfig config, IOrderBookSideListener orderBookSideListener, DealerData data) {
+    public Dealer(IOrderBookSideMonitor orderBookSideMonitor, PairTradeListener orderManager, Map<Exchange, IExchangeMonitor> monitors, DealerConfig config, IOrderBookSideListener orderBookSideListener, DealerData data) {
         this.orderBookSideMonitor = orderBookSideMonitor;
         this.monitors = monitors;
         this.config = config;

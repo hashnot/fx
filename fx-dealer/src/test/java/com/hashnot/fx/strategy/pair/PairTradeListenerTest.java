@@ -23,7 +23,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
-public class OrderManagerTest {
+public class PairTradeListenerTest {
 
     protected static final CurrencyPair p = CurrencyPair.BTC_EUR;
 
@@ -34,7 +34,7 @@ public class OrderManagerTest {
         IExchangeMonitor iem = mock(IExchangeMonitor.class);
         IAsyncTradeService openTradeService = mock(IAsyncTradeService.class);
         when(iem.getTradeService()).thenReturn(openTradeService);
-        OrderManager orderManager = new OrderManager(mock(IUserTradeMonitor.class), new SimpleOrderCloseStrategy(), PairTestUtils.map(openExchange, iem));
+        PairTradeListener orderManager = new PairTradeListener(mock(IUserTradeMonitor.class), new SimpleOrderCloseStrategy(), PairTestUtils.map(openExchange, iem), new DealerData());
 
         Exchange closeExchange = mock(Exchange.class);
         PollingTradeService closeTradeService = mock(PollingTradeService.class);

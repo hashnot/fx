@@ -64,7 +64,7 @@ public class Main {
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 tradeService.cancelAll();
                 monitor.stop();
-            }, x.toString() + "-stop"));
+            }, "stop-" + x));
         }
         report(monitors);
     }

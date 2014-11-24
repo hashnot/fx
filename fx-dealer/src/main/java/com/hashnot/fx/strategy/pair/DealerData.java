@@ -19,6 +19,8 @@ public class DealerData {
 
     private Exchange openExchange;
 
+    volatile public OrderBinding orderBinding;
+
     public DealerData() {
     }
 
@@ -56,7 +58,8 @@ public class DealerData {
     protected boolean equals(DealerData that) {
         return bestOffers.equals(that.bestOffers)
                 && (closeExchange == null ? that.closeExchange == null : closeExchange.equals(that.closeExchange))
-                && (openExchange == null ? that.openExchange == null : openExchange.equals(that.openExchange));
+                && (openExchange == null ? that.openExchange == null : openExchange.equals(that.openExchange))
+                && (orderBinding == null ? that.orderBinding == null : orderBinding.equals(that.orderBinding));
     }
 
     @Override

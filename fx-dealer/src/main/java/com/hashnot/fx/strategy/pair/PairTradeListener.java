@@ -13,14 +13,15 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import static com.hashnot.xchange.ext.util.Numbers.eq;
 
 /**
  * @author Rafał Krupiński
  */
-public class OrderManager implements IUserTradeListener {
-    final private static Logger log = LoggerFactory.getLogger(OrderManager.class);
+public class PairTradeListener implements IUserTradeListener {
+    final private static Logger log = LoggerFactory.getLogger(PairTradeListener.class);
 
     final private IUserTradeMonitor tradeMonitor;
 
@@ -28,32 +29,36 @@ public class OrderManager implements IUserTradeListener {
 
     final private Map<Exchange, IExchangeMonitor> monitors;
 
-    volatile private OrderBinding orderBinding;
+    final private DealerData data;
 
-    public OrderManager(IUserTradeMonitor tradeMonitor, SimpleOrderCloseStrategy orderCloseStrategy, Map<Exchange, IExchangeMonitor> monitors) {
+    public PairTradeListener(IUserTradeMonitor tradeMonitor, SimpleOrderCloseStrategy orderCloseStrategy, Map<Exchange, IExchangeMonitor> monitors, DealerData data) {
         this.tradeMonitor = tradeMonitor;
         this.orderCloseStrategy = orderCloseStrategy;
         this.monitors = monitors;
+        this.data = data;
     }
 
     public boolean isActive() {
-        return orderBinding != null;
+        return data.orderBinding != null;
     }
 
     public void update(List<LimitOrder> orders) {
-        orderBinding.closingOrders = orders;
+        data.orderBinding.closingOrders = orders;
     }
 
     /*
      old value is called self, new - evt
      */
     public void update(OrderBinding evt) {
-        if (orderBinding == null) {
+        if (data.orderBinding == null) {
             open(evt);
-        } else if (!isIgnoreUpdate(orderBinding, evt)) {
-            cancel();
-            // instead of update, cancel and let next iteration opens it again
-            open(evt);
+        } else if (!isIgnoreUpdate(data.orderBinding, evt)) {
+            if (evt.openExchange.equals(data.orderBinding.openExchange)) {
+                updateOrder(evt.openedOrder);
+            } else {
+                cancel();
+                open(evt);
+            }
         } else {
             log.debug("Update order ignored");
         }
@@ -74,18 +79,30 @@ public class OrderManager implements IUserTradeListener {
                 && o1.getTradableAmount().compareTo(o2.getTradableAmount()) <= 0;
     }
 
+    private void updateOrder(LimitOrder order) {
+        getTradeService(data.orderBinding.openExchange).updateOrder(data.orderBinding.openOrderId, order, (idf) -> {
+            try {
+                data.orderBinding.openOrderId = idf.get();
+            } catch (InterruptedException e) {
+                log.warn("Interrupted", e);
+            } catch (ExecutionException e) {
+                log.warn("Error", e.getCause());
+            }
+        });
+    }
+
     protected void open(OrderBinding update) {
-        if (orderBinding != null)
-            throw new IllegalStateException("Seems order already open " + orderBinding.openedOrder.getType());
+        if (data.orderBinding != null)
+            throw new IllegalStateException("Seems order already open " + data.orderBinding.openedOrder.getType());
 
         tradeMonitor.addTradeListener(this, update.openExchange);
 
         // Make OrderManager "active" before the order is actually placed.
         // This prevents another thread to try to activate it while waiting for the response
 
-        orderBinding = update;
+        data.orderBinding = update;
 
-        IAsyncTradeService tradeService = monitors.get(update.openExchange).getTradeService();
+        IAsyncTradeService tradeService = getTradeService(update.openExchange);
         tradeService.placeLimitOrder(update.openedOrder, (idf) -> {
             String id = null;
             try {
@@ -93,13 +110,13 @@ public class OrderManager implements IUserTradeListener {
             } catch (Exception e) {
                 if (update.openOrderId == null) {
                     log.warn("Error from {}", update.openExchange, e);
-                    orderBinding = null;
+                    data.orderBinding = null;
                 } else {
                     log.warn("Error from {} but have order ID {}", update.openExchange, update.openOrderId, e);
                 }
             }
             // cancel might have been called during placeLimitOrder. If so, orderBinding is null
-            if (orderBinding == null) {
+            if (data.orderBinding == null) {
                 tradeService.cancelOrder(id, (s) -> {
                 });
             } else
@@ -107,50 +124,47 @@ public class OrderManager implements IUserTradeListener {
         });
     }
 
+    private IAsyncTradeService getTradeService(Exchange exchange) {
+        return monitors.get(exchange).getTradeService();
+    }
+
     public void cancel() {
         if (!isActive()) {
             log.warn("Cancelling inactive order manager");
             return;
         }
-        if (orderBinding.openOrderId == null) {
+        if (data.orderBinding.openOrderId == null) {
             log.warn("Cancelling order bind while still opening order");
-            orderBinding = null;
+            data.orderBinding = null;
             return;
         }
-        log.info("Cancel @{} {} {}", orderBinding.openExchange, orderBinding.openOrderId, orderBinding.openedOrder);
-        cancel(orderBinding.openOrderId, orderBinding);
-        orderBinding = null;
-    }
-
-    protected void cancel(String orderId, OrderBinding orderBinding) {
-        IAsyncTradeService tradeService = monitors.get(orderBinding.openExchange).getTradeService();
-        tradeService.cancelOrder(orderId, (success) -> {
-        });
+        log.info("Cancel @{} {} {}", data.orderBinding.openExchange, data.orderBinding.openOrderId, data.orderBinding.openedOrder);
+        getTradeService(data.orderBinding.openExchange).cancelOrder(data.orderBinding.openOrderId, (success) -> data.orderBinding = null);
     }
 
     @Override
     public synchronized void trade(UserTradeEvent evt) {
         UserTrade trade = evt.trade;
 
-        if (orderBinding == null || !trade.getOrderId().equals(orderBinding.openOrderId)) {
+        if (data.orderBinding == null || !trade.getOrderId().equals(data.orderBinding.openOrderId)) {
             log.debug("Trade of an unknown order {} @{}", trade, evt.source);
             return;
         }
 
-        if (!evt.source.equals(orderBinding.openExchange)) {
+        if (!evt.source.equals(data.orderBinding.openExchange)) {
             log.warn("Trade of untracked exchange {}@{}", trade, evt.source);
             return;
         }
 
-        orderCloseStrategy.placeOrder(trade.getTradableAmount(), orderBinding.closingOrders, orderBinding.closeExchange);
+        orderCloseStrategy.placeOrder(trade.getTradableAmount(), data.orderBinding.closingOrders, data.orderBinding.closeExchange);
 
         if (evt.current == null) {
-            tradeMonitor.removeTradeListener(this, orderBinding.openExchange);
-            orderBinding = null;
+            tradeMonitor.removeTradeListener(this, data.orderBinding.openExchange);
+            data.orderBinding = null;
         }
     }
 
     public LimitOrder getOpenOrder() {
-        return orderBinding == null ? null : orderBinding.openedOrder;
+        return data.orderBinding == null ? null : data.orderBinding.openedOrder;
     }
 }
