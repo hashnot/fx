@@ -1,4 +1,4 @@
-package com.hashnot.fx.framework.impl;
+package com.hashnot.xchange.ext.trade;
 
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;

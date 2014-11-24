@@ -1,7 +1,11 @@
 package com.hashnot.fx.strategy.pair;
 
-import com.hashnot.fx.framework.*;
+import com.hashnot.fx.framework.IOrderBookSideMonitor;
+import com.hashnot.fx.framework.IOrderTracker;
+import com.hashnot.fx.framework.MarketSide;
+import com.hashnot.fx.framework.OrderBookSideUpdateEvent;
 import com.hashnot.xchange.event.IExchangeMonitor;
+import com.hashnot.xchange.ext.trade.ITradeService;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.trade.LimitOrder;

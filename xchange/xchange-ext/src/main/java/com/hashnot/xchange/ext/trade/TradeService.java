@@ -1,9 +1,5 @@
-package com.hashnot.fx.framework.impl;
+package com.hashnot.xchange.ext.trade;
 
-import com.hashnot.fx.framework.ILimitOrderPlacementListener;
-import com.hashnot.fx.framework.ITradeService;
-import com.hashnot.fx.framework.OrderCancelEvent;
-import com.hashnot.fx.framework.OrderEvent;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.service.polling.PollingTradeService;

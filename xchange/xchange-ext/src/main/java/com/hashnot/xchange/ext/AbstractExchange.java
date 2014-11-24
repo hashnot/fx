@@ -1,7 +1,7 @@
-package com.hashnot.fx.xchange.ext;
+package com.hashnot.xchange.ext;
 
-import com.hashnot.fx.framework.ITradeService;
-import com.hashnot.fx.framework.impl.TradeService;
+import com.hashnot.xchange.ext.trade.ITradeService;
+import com.hashnot.xchange.ext.trade.TradeService;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.ExchangeSpecification;
 import com.xeiam.xchange.service.polling.MarketMetadataService;

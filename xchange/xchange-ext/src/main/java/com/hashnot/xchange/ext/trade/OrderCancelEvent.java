@@ -1,6 +1,6 @@
-package com.hashnot.fx.framework;
+package com.hashnot.xchange.ext.trade;
 
-import com.hashnot.xchange.event.Event;
+import com.hashnot.xchange.ext.event.Event;
 import com.xeiam.xchange.Exchange;
 
 /**

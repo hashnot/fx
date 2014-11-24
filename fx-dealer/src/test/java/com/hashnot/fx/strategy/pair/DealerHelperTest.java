@@ -2,8 +2,8 @@ package com.hashnot.fx.strategy.pair;
 
 import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.event.account.IWalletMonitor;
+import com.hashnot.xchange.event.util.NetPrice;
 import com.hashnot.xchange.ext.util.Numbers;
-import com.hashnot.xchange.ext.util.Orders;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.marketdata.BaseMarketMetadata;
 import com.xeiam.xchange.dto.trade.LimitOrder;
@@ -121,7 +121,7 @@ public class DealerHelperTest {
 
     protected static LimitOrder order(OrderType type, BigDecimal tradableAmount, CurrencyPair pair, BigDecimal limitPrice, IExchangeMonitor m) {
         LimitOrder order = new LimitOrder(type, tradableAmount, pair, null, null, limitPrice);
-        Orders.updateNetPrice(order, m);
+        NetPrice.updateNetPrice(order, m);
         return order;
     }
 

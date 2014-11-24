@@ -1,6 +1,6 @@
 package com.hashnot.xchange.event.account;
 
-import com.hashnot.xchange.event.Event;
+import com.hashnot.xchange.ext.event.Event;
 import com.xeiam.xchange.Exchange;
 
 import java.math.BigDecimal;

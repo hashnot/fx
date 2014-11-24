@@ -1,6 +1,7 @@
 package com.hashnot.fx.strategy.pair;
 
 import com.hashnot.xchange.event.IExchangeMonitor;
+import com.hashnot.xchange.event.util.NetPrice;
 import com.hashnot.xchange.ext.util.Orders;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
@@ -13,7 +14,8 @@ import java.math.RoundingMode;
 import java.util.List;
 
 import static com.hashnot.xchange.ext.util.Numbers.Price.isFurther;
-import static com.hashnot.xchange.ext.util.Numbers.*;
+import static com.hashnot.xchange.ext.util.Numbers.lt;
+import static com.hashnot.xchange.ext.util.Numbers.min;
 import static com.hashnot.xchange.ext.util.Orders.*;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
@@ -76,7 +78,7 @@ public class DealerHelper {
 
 
         LimitOrder openOrder = LimitOrder.Builder.from(openOrderTempl).tradableAmount(openAmountActual).build();
-        Orders.updateNetPrice(openOrder, openMonitor);
+        NetPrice.updateNetPrice(openOrder, openMonitor);
         return new OrderBinding(openMonitor.getExchange(), closeMonitor.getExchange(), openOrder, closeOrders);
     }
 

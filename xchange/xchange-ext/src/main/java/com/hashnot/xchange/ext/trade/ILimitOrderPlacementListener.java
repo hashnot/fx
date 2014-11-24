@@ -1,4 +1,4 @@
-package com.hashnot.fx.framework;
+package com.hashnot.xchange.ext.trade;
 
 /**
  * @author Rafał Krupiński

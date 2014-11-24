@@ -1,4 +1,4 @@
-package com.hashnot.fx.xchange.ext;
+package com.hashnot.xchange.ext;
 
 import com.xeiam.xchange.Exchange;
 

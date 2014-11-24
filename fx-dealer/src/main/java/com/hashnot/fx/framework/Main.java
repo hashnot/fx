@@ -8,6 +8,7 @@ import com.hashnot.fx.strategy.pair.GaussOrderOpenStrategy;
 import com.hashnot.fx.strategy.pair.SimpleOrderCloseStrategy;
 import com.hashnot.fx.util.ConfigurableThreadFactory;
 import com.hashnot.xchange.event.IExchangeMonitor;
+import com.hashnot.xchange.ext.trade.ITradeService;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import groovy.lang.GroovyShell;

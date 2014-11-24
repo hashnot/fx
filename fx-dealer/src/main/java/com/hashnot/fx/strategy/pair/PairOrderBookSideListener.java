@@ -4,6 +4,7 @@ import com.hashnot.fx.framework.IOrderBookSideListener;
 import com.hashnot.fx.framework.OrderBookSideUpdateEvent;
 import com.hashnot.fx.util.OrderBooks;
 import com.hashnot.xchange.event.IExchangeMonitor;
+import com.hashnot.xchange.event.util.NetPrice;
 import com.hashnot.xchange.ext.util.Orders;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.trade.LimitOrder;
@@ -85,7 +86,7 @@ public class PairOrderBookSideListener implements IOrderBookSideListener{
             }
         }
 
-        LimitOrder closeOrder = Orders.closing(evt.newOrders.get(0), closeMonitor);
+        LimitOrder closeOrder = NetPrice.closing(evt.newOrders.get(0), closeMonitor);
 
         BigDecimal openGrossPrice = data.getBestOffers().get(data.getOpenExchange());
         BigDecimal openNetPrice = getOpenNetPrice(openGrossPrice);

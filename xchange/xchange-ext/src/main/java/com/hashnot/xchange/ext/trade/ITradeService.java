@@ -1,4 +1,4 @@
-package com.hashnot.fx.framework;
+package com.hashnot.xchange.ext.trade;
 
 import com.xeiam.xchange.service.polling.PollingTradeService;
 
