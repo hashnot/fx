@@ -1,13 +1,13 @@
 package com.hashnot.fx.framework;
 
 import com.hashnot.fx.framework.impl.BestOfferMonitor;
-import com.hashnot.fx.framework.impl.OrderTracker;
 import com.hashnot.fx.strategy.pair.Dealer;
 import com.hashnot.fx.strategy.pair.DealerConfig;
 import com.hashnot.fx.strategy.pair.GaussOrderOpenStrategy;
 import com.hashnot.fx.strategy.pair.SimpleOrderCloseStrategy;
 import com.hashnot.fx.util.ConfigurableThreadFactory;
 import com.hashnot.xchange.event.IExchangeMonitor;
+import com.hashnot.xchange.event.trade.impl.OrderTracker;
 import com.hashnot.xchange.ext.trade.ITradeService;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;

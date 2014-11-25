@@ -2,9 +2,9 @@ package com.hashnot.fx.strategy.pair;
 
 import com.hashnot.fx.framework.BestOfferEvent;
 import com.hashnot.fx.framework.IOrderBookSideMonitor;
-import com.hashnot.fx.framework.IOrderTracker;
 import com.hashnot.fx.framework.MarketSide;
 import com.hashnot.xchange.event.IExchangeMonitor;
+import com.hashnot.xchange.event.trade.IOrderTracker;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.Order;
 import org.junit.Test;

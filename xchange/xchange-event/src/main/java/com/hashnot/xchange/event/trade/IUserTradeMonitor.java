@@ -1,4 +1,4 @@
-package com.hashnot.fx.framework;
+package com.hashnot.xchange.event.trade;
 
 import com.xeiam.xchange.Exchange;
 

@@ -2,6 +2,7 @@ package com.hashnot.xchange.ext.trade;
 
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.trade.LimitOrder;
+import com.xeiam.xchange.dto.trade.MarketOrder;
 import com.xeiam.xchange.service.polling.PollingTradeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +24,7 @@ public class TradeService extends AbstractTradeService implements ITradeService 
 
     final private Map<String, LimitOrder> openOrders = new ConcurrentHashMap<>();
 
-    private Set<ILimitOrderPlacementListener> listeners = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    private Set<IOrderPlacementListener> listeners = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     public TradeService(Supplier<Exchange> backend) {
         super(backend);
@@ -40,7 +41,7 @@ public class TradeService extends AbstractTradeService implements ITradeService 
             log.warn("Unsuccessful cancel order {}@{}", orderId, this);
 
         if (result)
-            multiplex(listeners, new OrderCancelEvent(orderId, x), ILimitOrderPlacementListener::orderCanceled);
+            multiplex(listeners, new OrderCancelEvent(orderId, x), IOrderPlacementListener::orderCanceled);
 
         return result;
     }
@@ -53,7 +54,17 @@ public class TradeService extends AbstractTradeService implements ITradeService 
             log.warn("ID {} present @{}", id, exchange);
         openOrders.put(id, limitOrder);
 
-        multiplex(listeners, new OrderEvent(id, limitOrder, exchange), ILimitOrderPlacementListener::limitOrderPlaced);
+        multiplex(listeners, new OrderEvent<>(id, limitOrder, exchange), IOrderPlacementListener::limitOrderPlaced);
+
+        return id;
+    }
+
+    @Override
+    public String placeMarketOrder(MarketOrder marketOrder) throws IOException {
+        Exchange exchange = this.exchange.get();
+        String id = exchange.getPollingTradeService().placeMarketOrder(marketOrder);
+
+        multiplex(listeners, new OrderEvent<>(id, marketOrder, exchange), IOrderPlacementListener::marketOrderPlaced);
 
         return id;
     }
@@ -71,12 +82,12 @@ public class TradeService extends AbstractTradeService implements ITradeService 
     }
 
     @Override
-    public void addLimitOrderPlacedListener(ILimitOrderPlacementListener listener) {
+    public void addLimitOrderPlacedListener(IOrderPlacementListener listener) {
         listeners.add(listener);
     }
 
     @Override
-    public void removeLimitOrderPlacedListener(ILimitOrderPlacementListener listener) {
+    public void removeLimitOrderPlacedListener(IOrderPlacementListener listener) {
         listeners.remove(listener);
     }
 

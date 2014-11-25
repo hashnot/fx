@@ -6,9 +6,9 @@ import com.xeiam.xchange.service.polling.PollingTradeService;
  * @author Rafał Krupiński
  */
 public interface ITradeService extends PollingTradeService {
-    void addLimitOrderPlacedListener(ILimitOrderPlacementListener listener);
+    void addLimitOrderPlacedListener(IOrderPlacementListener listener);
 
-    void removeLimitOrderPlacedListener(ILimitOrderPlacementListener listener);
+    void removeLimitOrderPlacedListener(IOrderPlacementListener listener);
 
     void cancelAll();
 }

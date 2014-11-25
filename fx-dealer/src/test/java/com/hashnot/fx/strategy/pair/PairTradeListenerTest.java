@@ -1,10 +1,10 @@
 package com.hashnot.fx.strategy.pair;
 
 import com.google.common.util.concurrent.Futures;
-import com.hashnot.fx.framework.IUserTradeMonitor;
-import com.hashnot.fx.framework.UserTradeEvent;
 import com.hashnot.xchange.async.trade.IAsyncTradeService;
 import com.hashnot.xchange.event.IExchangeMonitor;
+import com.hashnot.xchange.event.trade.IUserTradeMonitor;
+import com.hashnot.xchange.event.trade.UserTradeEvent;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.trade.LimitOrder;

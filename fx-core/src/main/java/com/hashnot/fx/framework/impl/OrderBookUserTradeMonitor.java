@@ -1,11 +1,16 @@
 package com.hashnot.fx.framework.impl;
 
-import com.hashnot.fx.framework.*;
-import com.hashnot.xchange.ext.trade.ILimitOrderPlacementListener;
+import com.hashnot.fx.framework.IOrderBookSideListener;
+import com.hashnot.fx.framework.OrderBookSideUpdateEvent;
+import com.hashnot.xchange.event.trade.IUserTradeListener;
+import com.hashnot.xchange.event.trade.IUserTradeMonitor;
+import com.hashnot.xchange.event.trade.UserTradeEvent;
+import com.hashnot.xchange.ext.trade.IOrderPlacementListener;
 import com.hashnot.xchange.ext.trade.OrderCancelEvent;
 import com.hashnot.xchange.ext.trade.OrderEvent;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.trade.LimitOrder;
+import com.xeiam.xchange.dto.trade.MarketOrder;
 import com.xeiam.xchange.dto.trade.UserTrade;
 import com.xeiam.xchange.service.polling.PollingTradeService;
 import org.slf4j.Logger;
@@ -41,7 +46,7 @@ import static com.hashnot.xchange.ext.util.Numbers.eq;
  *
  * @author Rafał Krupiński
  */
-public class OrderBookUserTradeMonitor implements IOrderBookSideListener, ILimitOrderPlacementListener, IUserTradeMonitor {
+public class OrderBookUserTradeMonitor implements IOrderBookSideListener, IOrderPlacementListener, IUserTradeMonitor {
     final private static Logger log = LoggerFactory.getLogger(OrderBookUserTradeMonitor.class);
 
     /**
@@ -72,8 +77,13 @@ public class OrderBookUserTradeMonitor implements IOrderBookSideListener, ILimit
     }
 
     @Override
-    public void limitOrderPlaced(OrderEvent evt) {
+    public void limitOrderPlaced(OrderEvent<LimitOrder> evt) {
         openOrders.put(evt.order.getLimitPrice(), evt.order);
+    }
+
+    @Override
+    public void marketOrderPlaced(OrderEvent<MarketOrder> orderEvent) {
+
     }
 
     @Override

@@ -6,7 +6,7 @@ import com.hashnot.xchange.async.RoundRobinScheduler;
 import com.hashnot.xchange.async.trade.AsyncTradeService;
 import com.hashnot.xchange.async.trade.IAsyncTradeService;
 import com.hashnot.xchange.event.account.IWalletMonitor;
-import com.hashnot.xchange.event.account.impl.WalletMonitor;
+import com.hashnot.xchange.event.account.WalletMonitor;
 import com.hashnot.xchange.event.market.IOrderBookMonitor;
 import com.hashnot.xchange.event.market.ITickerMonitor;
 import com.hashnot.xchange.event.market.impl.OrderBookMonitor;

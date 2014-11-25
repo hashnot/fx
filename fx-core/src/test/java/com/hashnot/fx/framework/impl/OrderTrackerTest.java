@@ -1,10 +1,11 @@
 package com.hashnot.fx.framework.impl;
 
-import com.hashnot.fx.framework.IUserTradeListener;
-import com.hashnot.fx.framework.UserTradeEvent;
 import com.hashnot.xchange.event.IExchangeMonitor;
+import com.hashnot.xchange.event.trade.IUserTradeListener;
 import com.hashnot.xchange.event.trade.IUserTradesMonitor;
+import com.hashnot.xchange.event.trade.UserTradeEvent;
 import com.hashnot.xchange.event.trade.UserTradesEvent;
+import com.hashnot.xchange.event.trade.impl.OrderTracker;
 import com.hashnot.xchange.ext.trade.OrderEvent;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;

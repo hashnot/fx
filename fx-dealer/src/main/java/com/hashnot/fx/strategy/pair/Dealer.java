@@ -2,6 +2,7 @@ package com.hashnot.fx.strategy.pair;
 
 import com.hashnot.fx.framework.*;
 import com.hashnot.xchange.event.IExchangeMonitor;
+import com.hashnot.xchange.event.trade.IOrderTracker;
 import com.hashnot.xchange.ext.util.Orders;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.trade.LimitOrder;

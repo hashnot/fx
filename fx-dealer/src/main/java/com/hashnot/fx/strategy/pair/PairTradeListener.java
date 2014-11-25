@@ -1,10 +1,10 @@
 package com.hashnot.fx.strategy.pair;
 
-import com.hashnot.fx.framework.IUserTradeListener;
-import com.hashnot.fx.framework.IUserTradeMonitor;
-import com.hashnot.fx.framework.UserTradeEvent;
 import com.hashnot.xchange.async.trade.IAsyncTradeService;
 import com.hashnot.xchange.event.IExchangeMonitor;
+import com.hashnot.xchange.event.trade.IUserTradeListener;
+import com.hashnot.xchange.event.trade.IUserTradeMonitor;
+import com.hashnot.xchange.event.trade.UserTradeEvent;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.dto.trade.UserTrade;

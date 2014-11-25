@@ -1,19 +1,15 @@
-package com.hashnot.fx.framework.impl;
+package com.hashnot.xchange.event.trade.impl;
 
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
-import com.hashnot.fx.framework.IOrderTracker;
-import com.hashnot.fx.framework.IUserTradeListener;
-import com.hashnot.fx.framework.UserTradeEvent;
 import com.hashnot.xchange.event.IExchangeMonitor;
-import com.hashnot.xchange.event.trade.IUserTradesListener;
-import com.hashnot.xchange.event.trade.IUserTradesMonitor;
-import com.hashnot.xchange.event.trade.UserTradesEvent;
-import com.hashnot.xchange.ext.trade.ILimitOrderPlacementListener;
+import com.hashnot.xchange.event.trade.*;
+import com.hashnot.xchange.ext.trade.IOrderPlacementListener;
 import com.hashnot.xchange.ext.trade.OrderCancelEvent;
 import com.hashnot.xchange.ext.trade.OrderEvent;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.trade.LimitOrder;
+import com.xeiam.xchange.dto.trade.MarketOrder;
 import com.xeiam.xchange.dto.trade.UserTrade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +28,7 @@ import static java.util.Collections.emptyMap;
 /**
  * @author Rafał Krupiński
  */
-public class OrderTracker implements IUserTradesListener, ILimitOrderPlacementListener, IOrderTracker {
+public class OrderTracker implements IUserTradesListener, IOrderPlacementListener, IOrderTracker {
     final private static Logger log = LoggerFactory.getLogger(OrderTracker.class);
 
     private final Multimap<Exchange, IUserTradeListener> listeners = Multimaps.newSetMultimap(new HashMap<>(), () -> Collections.newSetFromMap(new ConcurrentHashMap<>()));
@@ -97,7 +93,7 @@ public class OrderTracker implements IUserTradesListener, ILimitOrderPlacementLi
     }
 
     @Override
-    public void limitOrderPlaced(OrderEvent evt) {
+    public void limitOrderPlaced(OrderEvent<LimitOrder> evt) {
         String id = evt.id;
 
         // add ID
@@ -114,6 +110,11 @@ public class OrderTracker implements IUserTradesListener, ILimitOrderPlacementLi
 
         Map<String, LimitOrder> current = this.current.computeIfAbsent(source, (k) -> new HashMap<>());
         current.put(id, limitOrder);
+    }
+
+    @Override
+    public void marketOrderPlaced(OrderEvent<MarketOrder> orderEvent) {
+
     }
 
     @Override

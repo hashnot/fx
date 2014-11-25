@@ -1,10 +1,7 @@
-package com.hashnot.xchange.event.account.impl;
+package com.hashnot.xchange.event.account;
 
 import com.hashnot.xchange.async.RunnableScheduler;
 import com.hashnot.xchange.event.AbstractParametrizedMonitor;
-import com.hashnot.xchange.event.account.IWalletListener;
-import com.hashnot.xchange.event.account.IWalletMonitor;
-import com.hashnot.xchange.event.account.WalletUpdateEvent;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.ExchangeException;
 import com.xeiam.xchange.dto.account.AccountInfo;
