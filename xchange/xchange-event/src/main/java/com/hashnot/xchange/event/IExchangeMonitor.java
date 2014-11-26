@@ -6,7 +6,7 @@ import com.hashnot.xchange.event.market.IOrderBookMonitor;
 import com.hashnot.xchange.event.market.ITickerMonitor;
 import com.hashnot.xchange.event.trade.IOpenOrdersMonitor;
 import com.hashnot.xchange.event.trade.IUserTradesMonitor;
-import com.xeiam.xchange.Exchange;
+import com.hashnot.xchange.ext.IExchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.marketdata.MarketMetadata;
 
@@ -33,5 +33,5 @@ public interface IExchangeMonitor {
 
     void stop();
 
-    Exchange getExchange();
+    IExchange getExchange();
 }

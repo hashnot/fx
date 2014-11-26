@@ -15,7 +15,7 @@ import com.hashnot.xchange.event.trade.IOpenOrdersMonitor;
 import com.hashnot.xchange.event.trade.IUserTradesMonitor;
 import com.hashnot.xchange.event.trade.impl.OpenOrdersMonitor;
 import com.hashnot.xchange.event.trade.impl.UserTradesMonitor;
-import com.xeiam.xchange.Exchange;
+import com.hashnot.xchange.ext.IExchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.marketdata.MarketMetadata;
 import org.slf4j.Logger;
@@ -35,7 +35,7 @@ public class ExchangeMonitor implements IExchangeMonitor {
     final protected IExecutorStrategy executor;
     final protected RoundRobinScheduler runnableScheduler = new RoundRobinScheduler();
 
-    final private Exchange exchange;
+    final protected IExchange exchange;
 
     final protected IOrderBookMonitor orderBookMonitor;
     final protected IUserTradesMonitor userTradesMonitor;
@@ -46,7 +46,7 @@ public class ExchangeMonitor implements IExchangeMonitor {
 
     protected final Map<CurrencyPair, MarketMetadata> metadata = new HashMap<>();
 
-    public ExchangeMonitor(Exchange parent, IExecutorStrategyFactory executorStrategyFactory) {
+    public ExchangeMonitor(IExchange parent, IExecutorStrategyFactory executorStrategyFactory) {
         this.exchange = parent;
         executor = executorStrategyFactory.create(runnableScheduler);
 
@@ -111,7 +111,7 @@ public class ExchangeMonitor implements IExchangeMonitor {
     }
 
     @Override
-    public Exchange getExchange() {
+    public IExchange getExchange() {
         return exchange;
     }
 

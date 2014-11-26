@@ -5,6 +5,7 @@ import com.hashnot.fx.framework.MarketSide;
 import com.hashnot.fx.framework.OrderBookSideUpdateEvent;
 import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.event.trade.IOrderTracker;
+import com.hashnot.xchange.ext.IExchange;
 import com.hashnot.xchange.ext.trade.ITradeService;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.Order;
@@ -47,11 +48,11 @@ public class PairOrderBookSideListenerTest {
     public void testOrderBookSideChanged() throws Exception {
         ITradeService tradeService = mock(ITradeService.class);
 
-        Exchange openExchange = mock(Exchange.class);
+        IExchange openExchange = mock(IExchange.class);
         when(openExchange.getPollingTradeService()).thenReturn(tradeService);
 
         IExchangeMonitor openMonitor = getExchangeMonitor(openExchange);
-        Exchange closeExchange = mock(Exchange.class);
+        IExchange closeExchange = mock(IExchange.class);
         IExchangeMonitor closeMonitor = getExchangeMonitor(closeExchange);
         Map<Exchange, IExchangeMonitor> monitors = map(openExchange, openMonitor, closeExchange, closeMonitor);
 

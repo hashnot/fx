@@ -3,6 +3,7 @@ package com.hashnot.fx.strategy.pair;
 import com.hashnot.xchange.async.trade.IAsyncTradeService;
 import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.event.account.IWalletMonitor;
+import com.hashnot.xchange.ext.IExchange;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.marketdata.BaseMarketMetadata;
@@ -24,7 +25,7 @@ public class PairTestUtils {
     protected static final int SCALE = 5;
     protected static SimpleOrderCloseStrategy orderCloseStrategy = new SimpleOrderCloseStrategy();
 
-    protected static IExchangeMonitor getExchangeMonitor(Exchange x) {
+    protected static IExchangeMonitor getExchangeMonitor(IExchange x) {
         IExchangeMonitor monitor = mock(IExchangeMonitor.class);
 
         IWalletMonitor walletMonitor = mock(IWalletMonitor.class);

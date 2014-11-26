@@ -5,6 +5,7 @@ import com.hashnot.fx.framework.IOrderBookSideMonitor;
 import com.hashnot.fx.framework.MarketSide;
 import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.event.trade.IOrderTracker;
+import com.hashnot.xchange.ext.IExchange;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.Order;
 import org.junit.Test;
@@ -12,7 +13,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -46,7 +46,7 @@ public class DealerTest {
      */
     @Test
     public void testUpdateBestOffer() throws Exception {
-        Exchange closeExchange = mock(Exchange.class);
+        IExchange closeExchange = mock(IExchange.class);
         IExchangeMonitor closeMonitor = getExchangeMonitor(closeExchange);
         Map<Exchange, IExchangeMonitor> monitors = map(closeExchange, closeMonitor);
 
@@ -77,10 +77,10 @@ public class DealerTest {
         IOrderTracker orderTracker = mock(IOrderTracker.class);
         IOrderBookSideMonitor orderBookSideMonitor = mock(IOrderBookSideMonitor.class);
 
-        Exchange openExchange = mock(Exchange.class);
+        IExchange openExchange = mock(IExchange.class);
         IExchangeMonitor openMonitor = getExchangeMonitor(openExchange);
 
-        Exchange closeExchange = mock(Exchange.class);
+        IExchange closeExchange = mock(IExchange.class);
         IExchangeMonitor closeMonitor = getExchangeMonitor(closeExchange);
         Map<Exchange, IExchangeMonitor> monitors = map(openExchange, openMonitor, closeExchange, closeMonitor);
 
@@ -108,14 +108,12 @@ public class DealerTest {
 
     @Test
     public void testUpdateBestOfferBothReverse() throws Exception {
-        Map<Exchange, IExchangeMonitor> monitors = new HashMap<>();
-        Exchange openExchange = mock(Exchange.class);
+        IExchange openExchange = mock(IExchange.class);
         IExchangeMonitor openMonitor = getExchangeMonitor(openExchange);
-        monitors.put(openExchange, openMonitor);
 
-        Exchange closeExchange = mock(Exchange.class);
+        IExchange closeExchange = mock(IExchange.class);
         IExchangeMonitor closeMonitor = getExchangeMonitor(closeExchange);
-        monitors.put(closeExchange, closeMonitor);
+        Map<Exchange, IExchangeMonitor> monitors = map(openExchange, openMonitor, closeExchange, closeMonitor);
 
         IOrderTracker orderTracker = mock(IOrderTracker.class);
         IOrderBookSideMonitor orderBookSideMonitor = mock(IOrderBookSideMonitor.class);
