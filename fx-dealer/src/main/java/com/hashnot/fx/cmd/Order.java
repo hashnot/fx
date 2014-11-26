@@ -8,7 +8,6 @@ import com.hashnot.xchange.event.trade.IUserTradeListener;
 import com.hashnot.xchange.event.trade.UserTradeEvent;
 import com.hashnot.xchange.event.trade.impl.OrderTracker;
 import com.hashnot.xchange.ext.util.Orders;
-import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.service.polling.PollingTradeService;
@@ -18,9 +17,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -76,9 +73,7 @@ public class Order {
         Dealer dealer = new Dealer(x, new LimitOrder(type, amount, pair, null, null, null), value);
 
         x.getOrderBookMonitor().addOrderBookListener(dealer, pair);
-        Map<Exchange, IExchangeMonitor> monitorMap = new HashMap<>();
-        monitorMap.put(x.getExchange(), x);
-        new OrderTracker(monitorMap).addTradeListener(dealer, x.getExchange());
+        new OrderTracker(x.getUserTradesMonitor()).addTradeListener(dealer);
 
         return dealer.get();
     }

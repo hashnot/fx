@@ -12,8 +12,10 @@ import com.hashnot.xchange.event.market.ITickerMonitor;
 import com.hashnot.xchange.event.market.impl.OrderBookMonitor;
 import com.hashnot.xchange.event.market.impl.TickerMonitor;
 import com.hashnot.xchange.event.trade.IOpenOrdersMonitor;
+import com.hashnot.xchange.event.trade.IOrderTracker;
 import com.hashnot.xchange.event.trade.IUserTradesMonitor;
 import com.hashnot.xchange.event.trade.impl.OpenOrdersMonitor;
+import com.hashnot.xchange.event.trade.impl.OrderTracker;
 import com.hashnot.xchange.event.trade.impl.UserTradesMonitor;
 import com.hashnot.xchange.ext.IExchange;
 import com.xeiam.xchange.currency.CurrencyPair;
@@ -43,6 +45,7 @@ public class ExchangeMonitor implements IExchangeMonitor {
     final protected IOpenOrdersMonitor openOrdersMonitor;
     final protected IWalletMonitor walletMonitor;
     final protected IAsyncTradeService tradeService;
+    final protected OrderTracker orderTracker;
 
     protected final Map<CurrencyPair, MarketMetadata> metadata = new HashMap<>();
 
@@ -57,6 +60,10 @@ public class ExchangeMonitor implements IExchangeMonitor {
         openOrdersMonitor = new OpenOrdersMonitor(exchange, runnableScheduler);
         walletMonitor = new WalletMonitor(exchange, runnableScheduler, _executor);
         tradeService = new AsyncTradeService(runnableScheduler, exchange.getPollingTradeService());
+
+        orderTracker = new OrderTracker(userTradesMonitor);
+
+        exchange.getPollingTradeService().addLimitOrderPlacedListener(orderTracker);
     }
 
     public MarketMetadata getMarketMetadata(CurrencyPair pair) {
@@ -117,6 +124,11 @@ public class ExchangeMonitor implements IExchangeMonitor {
 
     public IAsyncTradeService getTradeService() {
         return tradeService;
+    }
+
+    @Override
+    public IOrderTracker getOrderTracker() {
+        return orderTracker;
     }
 
 }

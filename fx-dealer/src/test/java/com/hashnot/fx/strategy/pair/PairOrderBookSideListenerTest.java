@@ -52,6 +52,9 @@ public class PairOrderBookSideListenerTest {
         when(openExchange.getPollingTradeService()).thenReturn(tradeService);
 
         IExchangeMonitor openMonitor = getExchangeMonitor(openExchange);
+        IOrderTracker orderTracker = mock(IOrderTracker.class);
+        when(openMonitor.getOrderTracker()).thenReturn(orderTracker);
+
         IExchange closeExchange = mock(IExchange.class);
         IExchangeMonitor closeMonitor = getExchangeMonitor(closeExchange);
         Map<Exchange, IExchangeMonitor> monitors = map(openExchange, openMonitor, closeExchange, closeMonitor);
@@ -63,9 +66,8 @@ public class PairOrderBookSideListenerTest {
         BigDecimal closePrice = openPrice.add(priceDiff);
         DealerData data = data(openExchange, openPrice, closeExchange, closePrice);
 
-        IOrderTracker orderTracker = mock(IOrderTracker.class);
         IOrderBookSideMonitor orderBookSideMonitor = mock(IOrderBookSideMonitor.class);
-        PairTradeListener orderManager = spy(new PairTradeListener(orderTracker, orderCloseStrategy, monitors, data));
+        PairTradeListener orderManager = spy(new PairTradeListener(orderCloseStrategy, monitors, data));
 
         DealerConfig config = new DealerConfig(side, p);
         PairOrderBookSideListener orderBookSideListener = new PairOrderBookSideListener(config, data, orderManager, orderOpenStrategy, monitors);

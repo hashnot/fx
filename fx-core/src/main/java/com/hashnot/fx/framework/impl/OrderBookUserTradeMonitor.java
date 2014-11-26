@@ -180,12 +180,12 @@ public class OrderBookUserTradeMonitor implements IOrderBookSideListener, IOrder
     }
 
     @Override
-    public void addTradeListener(IUserTradeListener orderListener, Exchange exchange) {
+    public void addTradeListener(IUserTradeListener orderListener) {
         tradeListeners.add(orderListener);
     }
 
     @Override
-    public void removeTradeListener(IUserTradeListener orderListener, Exchange exchange) {
+    public void removeTradeListener(IUserTradeListener orderListener) {
         tradeListeners.remove(orderListener);
     }
 }

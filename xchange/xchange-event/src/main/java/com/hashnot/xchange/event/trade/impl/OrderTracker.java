@@ -1,8 +1,6 @@
 package com.hashnot.xchange.event.trade.impl;
 
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
-import com.hashnot.xchange.event.IExchangeMonitor;
+import com.google.common.collect.Sets;
 import com.hashnot.xchange.event.trade.*;
 import com.hashnot.xchange.ext.trade.IOrderPlacementListener;
 import com.hashnot.xchange.ext.trade.OrderCancelEvent;
@@ -18,12 +16,11 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Set;
 
 import static com.hashnot.xchange.ext.util.Multiplexer.multiplex;
 import static com.xeiam.xchange.dto.trade.LimitOrder.Builder.from;
 import static java.math.BigDecimal.ZERO;
-import static java.util.Collections.emptyMap;
 
 /**
  * @author Rafał Krupiński
@@ -31,31 +28,28 @@ import static java.util.Collections.emptyMap;
 public class OrderTracker implements IUserTradesListener, IOrderPlacementListener, IOrderTracker {
     final private static Logger log = LoggerFactory.getLogger(OrderTracker.class);
 
-    private final Multimap<Exchange, IUserTradeListener> listeners = Multimaps.newSetMultimap(new HashMap<>(), () -> Collections.newSetFromMap(new ConcurrentHashMap<>()));
+    final private Set<IUserTradeListener> listeners = Sets.newConcurrentHashSet();
 
-    final private Map<Exchange, IExchangeMonitor> monitors;
+    final private IUserTradesMonitor userTradesMonitor;
 
-    final private Map<Exchange, Map<String, LimitOrder>> monitored = new HashMap<>();
-    final private Map<Exchange, Map<String, LimitOrder>> monitoredView = Collections.unmodifiableMap(monitored);
+    final private Map<String, LimitOrder> monitored = new HashMap<>();
+    final private Map<String, LimitOrder> monitoredView = Collections.unmodifiableMap(monitored);
 
-    final private Map<Exchange, Map<String, LimitOrder>> current = new HashMap<>();
-    final private Map<Exchange, Map<String, LimitOrder>> currentView = Collections.unmodifiableMap(current);
+    final private Map<String, LimitOrder> current = new HashMap<>();
+    final private Map<String, LimitOrder> currentView = Collections.unmodifiableMap(current);
 
     @Override
     public void trades(UserTradesEvent evt) {
         Exchange exchange = evt.source;
-        Map<String, LimitOrder> monitored = this.monitored.getOrDefault(exchange, emptyMap());
         if (monitored.isEmpty()) {
             log.warn("Received user trades from exchange {} where no orders are registered", exchange);
             return;
         }
 
-        Map<String, LimitOrder> current = this.current.get(exchange);
-
         for (UserTrade trade : evt.userTrades.getUserTrades()) {
             String orderId = trade.getOrderId();
             LimitOrder monitoredOrder = monitored.get(orderId);
-            if (current == null) {
+            if (monitoredOrder == null) {
                 log.warn("Trade on an unknown order {}", orderId);
                 continue;
             }
@@ -76,17 +70,15 @@ public class OrderTracker implements IUserTradesListener, IOrderPlacementListene
                 current.put(orderId, currentOrder);
             }
 
-            multiplex(listeners.get(exchange), new UserTradeEvent(monitoredOrder, trade, currentOrder, exchange), IUserTradeListener::trade);
+            multiplex(listeners, new UserTradeEvent(monitoredOrder, trade, currentOrder, exchange), IUserTradeListener::trade);
         }
 
-        updateRunning(exchange);
+        updateRunning();
     }
 
-    private void updateRunning(Exchange exchange) {
-        IUserTradesMonitor userTradesMonitor = monitors.get(exchange).getUserTradesMonitor();
-
+    private void updateRunning() {
         // listen only if we have registered orders
-        if (monitored.getOrDefault(exchange, emptyMap()).isEmpty())
+        if (monitored.isEmpty())
             userTradesMonitor.removeTradesListener(this);
         else
             userTradesMonitor.addTradesListener(this);
@@ -99,8 +91,6 @@ public class OrderTracker implements IUserTradesListener, IOrderPlacementListene
         // add ID
         LimitOrder limitOrder = from(evt.order).id(id).build();
 
-        Exchange source = evt.source;
-        Map<String, LimitOrder> monitored = this.monitored.computeIfAbsent(source, (k) -> new HashMap<>());
         LimitOrder old = monitored.put(id, limitOrder);
         if (old != null) {
             log.warn("Order {} already monitored", id);
@@ -108,13 +98,12 @@ public class OrderTracker implements IUserTradesListener, IOrderPlacementListene
         } else
             log.info("Tracking {}", id);
 
-        Map<String, LimitOrder> current = this.current.computeIfAbsent(source, (k) -> new HashMap<>());
         current.put(id, limitOrder);
     }
 
     @Override
     public void marketOrderPlaced(OrderEvent<MarketOrder> orderEvent) {
-
+        // nothing to do, only limit orders can be tracked
     }
 
     @Override
@@ -122,42 +111,41 @@ public class OrderTracker implements IUserTradesListener, IOrderPlacementListene
         Exchange x = evt.source;
         String id = evt.id;
 
-        Map<String, LimitOrder> current = this.current.getOrDefault(x, emptyMap());
         LimitOrder limitOrder = current.get(id);
         if (limitOrder == null)
             log.warn("Cancelled unknown order {}@{}", id, x);
         else {
             log.info("Removing {}@{}", id, x);
-            this.monitored.getOrDefault(x, emptyMap()).remove(id);
+            monitored.remove(id);
             current.remove(id);
         }
     }
 
-    public OrderTracker(Map<Exchange, IExchangeMonitor> monitors) {
-        this.monitors = monitors;
+    public OrderTracker(IUserTradesMonitor userTradesMonitor) {
+        this.userTradesMonitor = userTradesMonitor;
     }
 
     @Override
-    public Map<String, LimitOrder> getMonitored(Exchange exchange) {
-        return monitoredView.getOrDefault(exchange, emptyMap());
+    public Map<String, LimitOrder> getMonitored() {
+        return monitoredView;
     }
 
     @Override
-    public Map<String, LimitOrder> getCurrent(Exchange exchange) {
-        return currentView.getOrDefault(exchange, emptyMap());
+    public Map<String, LimitOrder> getCurrent() {
+        return currentView;
     }
 
     @Override
-    public void addTradeListener(IUserTradeListener listener, Exchange exchange) {
-        listeners.put(exchange, listener);
-        monitors.get(exchange).getUserTradesMonitor().addTradesListener(this);
+    public void addTradeListener(IUserTradeListener listener) {
+        listeners.add(listener);
+        userTradesMonitor.addTradesListener(this);
     }
 
     @Override
-    public void removeTradeListener(IUserTradeListener listener, Exchange exchange) {
-        listeners.remove(exchange, listener);
-        if (!listeners.containsKey(exchange))
-            monitors.get(exchange).getUserTradesMonitor().removeTradesListener(this);
+    public void removeTradeListener(IUserTradeListener listener) {
+        listeners.remove(listener);
+        if (listeners.isEmpty())
+            userTradesMonitor.removeTradesListener(this);
     }
 }
 

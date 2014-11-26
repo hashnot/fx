@@ -55,7 +55,7 @@ public class DealerTest {
 
         DealerData data = new DealerData();
 
-        Dealer dealer = new Dealer(orderBookSideMonitor, new PairTradeListener(orderTracker, orderCloseStrategy, monitors, data), monitors, new DealerConfig(side, p), orderOpenStrategy, data);
+        Dealer dealer = new Dealer(orderBookSideMonitor, new PairTradeListener(orderCloseStrategy, monitors, data), monitors, new DealerConfig(side, p), orderOpenStrategy, data);
 
         BigDecimal closePrice = new BigDecimal(2);
 
@@ -64,7 +64,7 @@ public class DealerTest {
         MarketSide closeSide = new MarketSide(closeExchange, p, side);
         dealer.updateBestOffer(new BestOfferEvent(closePrice, closeSide));
 
-        verify(orderTracker, never()).addTradeListener(any(), any());
+        verify(orderTracker, never()).addTradeListener(any());
         verifyZeroInteractions(orderBookSideMonitor);
         assertEquals(new DealerData(closeExchange, closeExchange, map(closeExchange, closePrice)), data);
     }
@@ -87,7 +87,7 @@ public class DealerTest {
         BigDecimal closePrice = new BigDecimal(2);
         DealerData data = data(closeExchange, closePrice);
 
-        PairTradeListener orderManager = new PairTradeListener(orderTracker, orderCloseStrategy, monitors, data);
+        PairTradeListener orderManager = new PairTradeListener(orderCloseStrategy, monitors, data);
         DealerConfig config = new DealerConfig(side, p);
         PairOrderBookSideListener orderBookSideListener = new PairOrderBookSideListener(config, data, orderManager, orderOpenStrategy, monitors);
         Dealer dealer = new Dealer(orderBookSideMonitor, orderManager, monitors, config, orderBookSideListener, data);
@@ -99,7 +99,7 @@ public class DealerTest {
         BigDecimal openPrice = closePrice.add(side == ASK ? ONE : _ONE);
         dealer.updateBestOffer(new BestOfferEvent(openPrice, openSide));
 
-        verify(orderTracker, never()).addTradeListener(any(), any());
+        verify(orderTracker, never()).addTradeListener(any());
 
         verify(orderBookSideMonitor).addOrderBookSideListener(eq(orderBookSideListener), eq(new MarketSide(closeExchange, p, side)));
         verifyNoMoreInteractions(orderBookSideMonitor);
@@ -123,7 +123,7 @@ public class DealerTest {
         BigDecimal closePrice = new BigDecimal(2);
         BigDecimal openPrice = closePrice.add(side == ASK ? ONE : _ONE);
         DealerData data = data(openExchange, openPrice);
-        PairTradeListener orderManager = new PairTradeListener(orderTracker, orderCloseStrategy, monitors, data);
+        PairTradeListener orderManager = new PairTradeListener(orderCloseStrategy, monitors, data);
         DealerConfig config = new DealerConfig(side, p);
         PairOrderBookSideListener orderBookSideListener = new PairOrderBookSideListener(config, data, orderManager, orderOpenStrategy, monitors);
         Dealer dealer = new Dealer(orderBookSideMonitor, orderManager, monitors, config, orderBookSideListener, data);
@@ -133,7 +133,7 @@ public class DealerTest {
         MarketSide closeSide = new MarketSide(closeExchange, p, side);
         dealer.updateBestOffer(new BestOfferEvent(closePrice, closeSide));
 
-        verify(orderTracker, never()).addTradeListener(any(), any());
+        verify(orderTracker, never()).addTradeListener(any());
         verify(orderBookSideMonitor).addOrderBookSideListener(eq(orderBookSideListener), eq(closeSide));
         assertEquals(new DealerData(openExchange, closeExchange, map(openExchange, openPrice, closeExchange, closePrice)), data);
     }

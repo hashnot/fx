@@ -2,7 +2,6 @@ package com.hashnot.fx.strategy.pair;
 
 import com.hashnot.fx.framework.*;
 import com.hashnot.xchange.event.IExchangeMonitor;
-import com.hashnot.xchange.event.trade.IOrderTracker;
 import com.hashnot.xchange.ext.util.Orders;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.trade.LimitOrder;
@@ -35,12 +34,12 @@ public class Dealer implements IBestOfferListener {
 
     final private DealerConfig config;
 
-    public Dealer(IOrderBookSideMonitor orderBookSideMonitor, IOrderTracker orderTracker, Map<Exchange, IExchangeMonitor> monitors, DealerConfig config, SimpleOrderOpenStrategy orderStrategy, SimpleOrderCloseStrategy orderCloseStrategy) {
-        this(orderBookSideMonitor, orderTracker, monitors, config, orderStrategy, orderCloseStrategy,new DealerData());
+    public Dealer(IOrderBookSideMonitor orderBookSideMonitor, Map<Exchange, IExchangeMonitor> monitors, DealerConfig config, SimpleOrderOpenStrategy orderStrategy, SimpleOrderCloseStrategy orderCloseStrategy) {
+        this(orderBookSideMonitor, monitors, config, orderStrategy, orderCloseStrategy,new DealerData());
     }
 
-    protected Dealer(IOrderBookSideMonitor orderBookSideMonitor, IOrderTracker orderTracker, Map<Exchange, IExchangeMonitor> monitors, DealerConfig config, SimpleOrderOpenStrategy orderStrategy, SimpleOrderCloseStrategy orderCloseStrategy, DealerData data) {
-        this(orderBookSideMonitor, new PairTradeListener(orderTracker, orderCloseStrategy, monitors, data), monitors, config, orderStrategy, data);
+    protected Dealer(IOrderBookSideMonitor orderBookSideMonitor, Map<Exchange, IExchangeMonitor> monitors, DealerConfig config, SimpleOrderOpenStrategy orderStrategy, SimpleOrderCloseStrategy orderCloseStrategy, DealerData data) {
+        this(orderBookSideMonitor, new PairTradeListener(orderCloseStrategy, monitors, data), monitors, config, orderStrategy, data);
     }
 
     protected Dealer(IOrderBookSideMonitor orderBookSideMonitor, PairTradeListener orderManager, Map<Exchange, IExchangeMonitor> monitors, DealerConfig config, SimpleOrderOpenStrategy orderStrategy, DealerData data) {

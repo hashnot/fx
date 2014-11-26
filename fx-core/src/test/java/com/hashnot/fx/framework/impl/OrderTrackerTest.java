@@ -1,6 +1,5 @@
 package com.hashnot.fx.framework.impl;
 
-import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.event.trade.IUserTradeListener;
 import com.hashnot.xchange.event.trade.IUserTradesMonitor;
 import com.hashnot.xchange.event.trade.UserTradeEvent;
@@ -17,8 +16,6 @@ import com.xeiam.xchange.dto.trade.UserTrades;
 import org.junit.Test;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
 
 import static com.xeiam.xchange.currency.CurrencyPair.BTC_EUR;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
@@ -31,25 +28,17 @@ public class OrderTrackerTest {
     private static final BigDecimal TWO = new BigDecimal(2);
     private static Exchange source = mock(Exchange.class);
 
-    private static Map<Exchange, IExchangeMonitor> monitors(IUserTradesMonitor userTradesMonitor) {
-        HashMap<Exchange, IExchangeMonitor> result = new HashMap<>();
-        IExchangeMonitor monitor = mock(IExchangeMonitor.class);
-        when(monitor.getUserTradesMonitor()).thenReturn(userTradesMonitor);
-        result.put(source, monitor);
-        return result;
-    }
-
     @Test
     public void testLimitOrderPlaced() throws Exception {
         IUserTradeListener orderListener = mock(IUserTradeListener.class);
 
         IUserTradesMonitor tradesMonitor = mock(IUserTradesMonitor.class);
-        OrderTracker trackingTradesMonitor = new OrderTracker(monitors(tradesMonitor));
-        trackingTradesMonitor.addTradeListener(orderListener, source);
+        OrderTracker trackingTradesMonitor = new OrderTracker(tradesMonitor);
+        trackingTradesMonitor.addTradeListener(orderListener);
 
         String id = "ID";
         LimitOrder order = new LimitOrder(ASK, ONE, BTC_EUR, id, null, ONE);
-        trackingTradesMonitor.limitOrderPlaced(new OrderEvent(id, order, source));
+        trackingTradesMonitor.limitOrderPlaced(new OrderEvent<>(id, order, source));
 
         UserTrade trade = trade(ASK, ONE, BTC_EUR, ONE, "id", id);
         trackingTradesMonitor.trades(new UserTradesEvent(new UserTrades(asList(trade), 0l, Trades.TradeSortType.SortByID), source));
@@ -61,12 +50,12 @@ public class OrderTrackerTest {
         IUserTradeListener orderListener = mock(IUserTradeListener.class);
 
         IUserTradesMonitor tradesMonitor = mock(IUserTradesMonitor.class);
-        OrderTracker trackingTradesMonitor = new OrderTracker(monitors(tradesMonitor));
-        trackingTradesMonitor.addTradeListener(orderListener, source);
+        OrderTracker trackingTradesMonitor = new OrderTracker(tradesMonitor);
+        trackingTradesMonitor.addTradeListener(orderListener);
 
         String id = "ID";
         LimitOrder order = new LimitOrder(ASK, TWO, BTC_EUR, id, null, ONE);
-        trackingTradesMonitor.limitOrderPlaced(new OrderEvent(id, order, source));
+        trackingTradesMonitor.limitOrderPlaced(new OrderEvent<>(id, order, source));
 
         UserTrade t1 = trade(ASK, ONE, BTC_EUR, ONE, "t1", id);
         UserTrade t2 = trade(ASK, ONE, BTC_EUR, ONE, "t2", id);
@@ -80,12 +69,12 @@ public class OrderTrackerTest {
         IUserTradeListener orderListener = mock(IUserTradeListener.class);
 
         IUserTradesMonitor tradesMonitor = mock(IUserTradesMonitor.class);
-        OrderTracker trackingTradesMonitor = new OrderTracker(monitors(tradesMonitor));
-        trackingTradesMonitor.addTradeListener(orderListener, source);
+        OrderTracker trackingTradesMonitor = new OrderTracker(tradesMonitor);
+        trackingTradesMonitor.addTradeListener(orderListener);
 
         String id = "ID";
         LimitOrder order = new LimitOrder(ASK, TWO, BTC_EUR, id, null, ONE);
-        trackingTradesMonitor.limitOrderPlaced(new OrderEvent(id, order, source));
+        trackingTradesMonitor.limitOrderPlaced(new OrderEvent<>(id, order, source));
 
         UserTrade t1 = trade(ASK, ONE, BTC_EUR, ONE, "t1", id);
         UserTrade t2 = trade(ASK, ONE, BTC_EUR, ONE, "t2", id);

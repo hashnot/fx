@@ -7,7 +7,6 @@ import com.hashnot.fx.strategy.pair.GaussOrderOpenStrategy;
 import com.hashnot.fx.strategy.pair.SimpleOrderCloseStrategy;
 import com.hashnot.fx.util.ConfigurableThreadFactory;
 import com.hashnot.xchange.event.IExchangeMonitor;
-import com.hashnot.xchange.event.trade.impl.OrderTracker;
 import com.hashnot.xchange.ext.trade.ITradeService;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
@@ -41,14 +40,13 @@ public class Main {
         Collection<IExchangeMonitor> monitors = load(args[0], scheduler);
         Map<Exchange, IExchangeMonitor> monitorMap = new HashMap<>();
 
-        OrderTracker orderTracker = new OrderTracker(monitorMap);
         BestOfferMonitor bestOfferMonitor = new BestOfferMonitor(monitorMap);
 
         GaussOrderOpenStrategy orderOpenStrategy = new GaussOrderOpenStrategy();
         SimpleOrderCloseStrategy orderCloseStrategy = new SimpleOrderCloseStrategy();
 
-        Dealer askDealer = new Dealer(bestOfferMonitor, orderTracker, monitorMap, new DealerConfig(ASK, pair), orderOpenStrategy, orderCloseStrategy);
-        Dealer bidDealer = new Dealer(bestOfferMonitor, orderTracker, monitorMap, new DealerConfig(BID, pair), orderOpenStrategy, orderCloseStrategy);
+        Dealer askDealer = new Dealer(bestOfferMonitor, monitorMap, new DealerConfig(ASK, pair), orderOpenStrategy, orderCloseStrategy);
+        Dealer bidDealer = new Dealer(bestOfferMonitor, monitorMap, new DealerConfig(BID, pair), orderOpenStrategy, orderCloseStrategy);
 
         for (IExchangeMonitor monitor : monitors) {
             Exchange x = monitor.getExchange();
@@ -59,8 +57,6 @@ public class Main {
 
             registerBestOfferListener(bestOfferMonitor, askDealer, x);
             registerBestOfferListener(bestOfferMonitor, bidDealer, x);
-
-            tradeService.addLimitOrderPlacedListener(orderTracker);
 
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 tradeService.cancelAll();

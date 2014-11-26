@@ -38,7 +38,7 @@ public class OrderBookTrackingTradesMonitorTest {
 
         OrderBookUserTradeMonitor mon = new OrderBookUserTradeMonitor(tradeService);
 
-        mon.addTradeListener(orderListener, x);
+        mon.addTradeListener(orderListener);
 
 
         LimitOrder one = new LimitOrder(Order.OrderType.ASK, ONE, m.listing, null, null, ONE);
@@ -62,7 +62,7 @@ public class OrderBookTrackingTradesMonitorTest {
         IUserTradeListener orderListener = mock(IUserTradeListener.class);
 
         OrderBookUserTradeMonitor mon = new OrderBookUserTradeMonitor(tradeService);
-        mon.addTradeListener(orderListener, x);
+        mon.addTradeListener(orderListener);
 
 
         LimitOrder one = new LimitOrder(Order.OrderType.ASK, ONE, P, "o1", null, ONE);
@@ -87,7 +87,7 @@ public class OrderBookTrackingTradesMonitorTest {
         IUserTradeListener orderListener = mock(IUserTradeListener.class);
 
         OrderBookUserTradeMonitor mon = new OrderBookUserTradeMonitor(tradeService);
-        mon.addTradeListener(orderListener, x);
+        mon.addTradeListener(orderListener);
 
 
         List<LimitOrder> stage0 = emptyList();

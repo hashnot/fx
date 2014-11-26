@@ -23,16 +23,13 @@ import static com.hashnot.xchange.ext.util.Numbers.eq;
 public class PairTradeListener implements IUserTradeListener {
     final private static Logger log = LoggerFactory.getLogger(PairTradeListener.class);
 
-    final private IUserTradeMonitor tradeMonitor;
-
     final private SimpleOrderCloseStrategy orderCloseStrategy;
 
     final private Map<Exchange, IExchangeMonitor> monitors;
 
     final private DealerData data;
 
-    public PairTradeListener(IUserTradeMonitor tradeMonitor, SimpleOrderCloseStrategy orderCloseStrategy, Map<Exchange, IExchangeMonitor> monitors, DealerData data) {
-        this.tradeMonitor = tradeMonitor;
+    public PairTradeListener(SimpleOrderCloseStrategy orderCloseStrategy, Map<Exchange, IExchangeMonitor> monitors, DealerData data) {
         this.orderCloseStrategy = orderCloseStrategy;
         this.monitors = monitors;
         this.data = data;
@@ -95,7 +92,7 @@ public class PairTradeListener implements IUserTradeListener {
         if (data.orderBinding != null)
             throw new IllegalStateException("Seems order already open " + data.orderBinding.openedOrder.getType());
 
-        tradeMonitor.addTradeListener(this, update.openExchange);
+        getTradeMonitor(update.openExchange).addTradeListener(this);
 
         // Make OrderManager "active" before the order is actually placed.
         // This prevents another thread to try to activate it while waiting for the response
@@ -122,10 +119,6 @@ public class PairTradeListener implements IUserTradeListener {
             } else
                 update.openOrderId = id;
         });
-    }
-
-    private IAsyncTradeService getTradeService(Exchange exchange) {
-        return monitors.get(exchange).getTradeService();
     }
 
     public void cancel() {
@@ -159,7 +152,7 @@ public class PairTradeListener implements IUserTradeListener {
         orderCloseStrategy.placeOrder(trade.getTradableAmount(), data.orderBinding.closingOrders, data.orderBinding.closeExchange);
 
         if (evt.current == null) {
-            tradeMonitor.removeTradeListener(this, data.orderBinding.openExchange);
+            getTradeMonitor(data.orderBinding.openExchange).removeTradeListener(this);
             data.orderBinding = null;
         }
     }
@@ -167,4 +160,13 @@ public class PairTradeListener implements IUserTradeListener {
     public LimitOrder getOpenOrder() {
         return data.orderBinding == null ? null : data.orderBinding.openedOrder;
     }
+
+    private IUserTradeMonitor getTradeMonitor(Exchange exchange) {
+        return monitors.get(exchange).getOrderTracker();
+    }
+
+    private IAsyncTradeService getTradeService(Exchange exchange) {
+        return monitors.get(exchange).getTradeService();
+    }
+
 }
