@@ -6,7 +6,9 @@ import com.hashnot.xchange.async.IExecutorStrategyFactory;
 import com.hashnot.xchange.async.RoundRobinScheduler;
 import com.hashnot.xchange.async.account.AsyncAccountService;
 import com.hashnot.xchange.async.account.IAsyncAccountService;
+import com.hashnot.xchange.async.market.AsyncMarketDataService;
 import com.hashnot.xchange.async.market.AsyncMarketMetadataService;
+import com.hashnot.xchange.async.market.IAsyncMarketDataService;
 import com.hashnot.xchange.async.market.IAsyncMarketMetadataService;
 import com.hashnot.xchange.async.trade.AsyncTradeService;
 import com.hashnot.xchange.async.trade.IAsyncTradeService;
@@ -55,6 +57,7 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange {
     final protected IAsyncTradeService tradeService;
     final protected IAsyncAccountService accountService;
     final protected IAsyncMarketMetadataService metadataService;
+    final protected AsyncMarketDataService marketDataService;
 
     protected final Map<CurrencyPair, MarketMetadata> metadata = new HashMap<>();
 
@@ -76,6 +79,8 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange {
 
         IWalletMonitor walletMonitor = new WalletMonitor(exchange, runnableScheduler, _executor, accountService);
         walletTracker = new WalletTracker(orderTracker, walletMonitor);
+
+        marketDataService = new AsyncMarketDataService(runnableScheduler, exchange.getPollingMarketDataService());
     }
 
     public MarketMetadata getMarketMetadata(CurrencyPair pair) {
@@ -165,5 +170,10 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange {
     @Override
     public IAsyncMarketMetadataService getMetadataService() {
         return metadataService;
+    }
+
+    @Override
+    public IAsyncMarketDataService getMarketDataService() {
+        return marketDataService;
     }
 }

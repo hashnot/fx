@@ -1,6 +1,7 @@
 package com.hashnot.xchange.async;
 
 import com.hashnot.xchange.async.account.IAsyncAccountService;
+import com.hashnot.xchange.async.market.IAsyncMarketDataService;
 import com.hashnot.xchange.async.market.IAsyncMarketMetadataService;
 import com.hashnot.xchange.async.trade.IAsyncTradeService;
 
@@ -13,4 +14,6 @@ public interface IAsyncExchange {
     IAsyncAccountService getAccountService();
 
     IAsyncMarketMetadataService getMetadataService();
+
+    IAsyncMarketDataService getMarketDataService();
 }
