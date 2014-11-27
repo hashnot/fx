@@ -13,7 +13,7 @@ import com.xeiam.xchange.service.streaming.StreamingExchangeService;
 /**
  * @author Rafał Krupiński
  */
-public abstract class AbstractExchange implements Exchange {
+public abstract class AbstractExchange implements IExchange {
     protected abstract Exchange getExchange();
 
     /**

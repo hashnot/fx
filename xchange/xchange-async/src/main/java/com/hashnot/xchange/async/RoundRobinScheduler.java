@@ -18,14 +18,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class RoundRobinScheduler implements Runnable, RunnableScheduler {
     private final BlockingQueue<Runnable> priorityQueue = new LinkedBlockingQueue<>();
 
-    private Set<Runnable> runnables = Collections.newSetFromMap(new ConcurrentHashMap<>());
-    private Iterator<Runnable> iterator = Iterators.cycle(runnables);
+    private final Set<Runnable> runnables = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    private final Iterator<Runnable> iterator = Iterators.cycle(runnables);
 
     private final AtomicBoolean skipPriorityQueue = new AtomicBoolean(false);
 
     @Override
     public void run() {
-        if (skipPriorityQueue.compareAndSet(false, false)) {
+        if (!skipPriorityQueue.compareAndSet(true, false)) {
             Runnable priority = priorityQueue.poll();
             if (priority != null) {
                 priority.run();
@@ -51,7 +51,7 @@ public class RoundRobinScheduler implements Runnable, RunnableScheduler {
         runnables.remove(r);
     }
 
-    public void priority(Runnable r) {
+    public void execute(Runnable r) {
         priorityQueue.add(r);
     }
 }

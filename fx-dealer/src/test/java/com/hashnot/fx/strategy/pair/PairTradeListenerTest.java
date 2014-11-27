@@ -1,6 +1,7 @@
 package com.hashnot.fx.strategy.pair;
 
 import com.google.common.util.concurrent.Futures;
+import com.hashnot.xchange.async.IAsyncExchange;
 import com.hashnot.xchange.async.trade.IAsyncTradeService;
 import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.event.trade.IOrderTracker;
@@ -32,8 +33,10 @@ public class PairTradeListenerTest {
         Exchange openExchange = mock(Exchange.class);
 
         IExchangeMonitor iem = mock(IExchangeMonitor.class);
+        IAsyncExchange ax = mock(IAsyncExchange.class);
         IAsyncTradeService openTradeService = mock(IAsyncTradeService.class);
-        when(iem.getTradeService()).thenReturn(openTradeService);
+        when(iem.getAsyncExchange()).thenReturn(ax);
+        when(ax.getTradeService()).thenReturn(openTradeService);
         when(iem.getOrderTracker()).thenReturn(mock(IOrderTracker.class));
         PairTradeListener orderManager = new PairTradeListener(new SimpleOrderCloseStrategy(), PairTestUtils.map(openExchange, iem), new DealerData());
 

@@ -1,12 +1,18 @@
 package com.hashnot.xchange.event;
 
+import com.hashnot.xchange.async.IAsyncExchange;
 import com.hashnot.xchange.async.IExecutorStrategy;
 import com.hashnot.xchange.async.IExecutorStrategyFactory;
 import com.hashnot.xchange.async.RoundRobinScheduler;
+import com.hashnot.xchange.async.account.AsyncAccountService;
+import com.hashnot.xchange.async.account.IAsyncAccountService;
+import com.hashnot.xchange.async.market.AsyncMarketMetadataService;
+import com.hashnot.xchange.async.market.IAsyncMarketMetadataService;
 import com.hashnot.xchange.async.trade.AsyncTradeService;
 import com.hashnot.xchange.async.trade.IAsyncTradeService;
 import com.hashnot.xchange.event.account.IWalletMonitor;
 import com.hashnot.xchange.event.account.WalletMonitor;
+import com.hashnot.xchange.event.account.WalletTracker;
 import com.hashnot.xchange.event.market.IOrderBookMonitor;
 import com.hashnot.xchange.event.market.ITickerMonitor;
 import com.hashnot.xchange.event.market.impl.OrderBookMonitor;
@@ -23,15 +29,16 @@ import com.xeiam.xchange.dto.marketdata.MarketMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
 /**
  * @author Rafał Krupiński
  */
-public class ExchangeMonitor implements IExchangeMonitor {
+public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange {
     final private static Logger log = LoggerFactory.getLogger(ExchangeMonitor.class);
 
     final protected IExecutorStrategy executor;
@@ -43,9 +50,11 @@ public class ExchangeMonitor implements IExchangeMonitor {
     final protected IUserTradesMonitor userTradesMonitor;
     final protected ITickerMonitor tickerMonitor;
     final protected IOpenOrdersMonitor openOrdersMonitor;
-    final protected IWalletMonitor walletMonitor;
-    final protected IAsyncTradeService tradeService;
+    final protected IWalletMonitor walletTracker;
     final protected OrderTracker orderTracker;
+    final protected IAsyncTradeService tradeService;
+    final protected IAsyncAccountService accountService;
+    final protected IAsyncMarketMetadataService metadataService;
 
     protected final Map<CurrencyPair, MarketMetadata> metadata = new HashMap<>();
 
@@ -55,23 +64,35 @@ public class ExchangeMonitor implements IExchangeMonitor {
 
         Executor _executor = executor.getExecutor();
         orderBookMonitor = new OrderBookMonitor(exchange, runnableScheduler, _executor);
-        userTradesMonitor = new UserTradesMonitor(exchange, runnableScheduler);
         tickerMonitor = new TickerMonitor(exchange, runnableScheduler, _executor);
         openOrdersMonitor = new OpenOrdersMonitor(exchange, runnableScheduler);
-        walletMonitor = new WalletMonitor(exchange, runnableScheduler, _executor);
         tradeService = new AsyncTradeService(runnableScheduler, exchange.getPollingTradeService());
+        userTradesMonitor = new UserTradesMonitor(exchange, tradeService, runnableScheduler);
+        accountService = new AsyncAccountService(runnableScheduler, exchange.getPollingAccountService());
+        metadataService = new AsyncMarketMetadataService(runnableScheduler, exchange.getMarketMetadataService());
 
         orderTracker = new OrderTracker(userTradesMonitor);
-
         exchange.getPollingTradeService().addLimitOrderPlacedListener(orderTracker);
+
+        IWalletMonitor walletMonitor = new WalletMonitor(exchange, runnableScheduler, _executor, accountService);
+        walletTracker = new WalletTracker(orderTracker, walletMonitor);
     }
 
     public MarketMetadata getMarketMetadata(CurrencyPair pair) {
         return metadata.computeIfAbsent(pair, (p) -> {
             try {
-                return getExchange().getMarketMetadataService().getMarketMetadata(p);
-            } catch (IOException e) {
-                throw new IllegalStateException(e);
+                return metadataService.getMarketMetadata(p, null).get();
+            } catch (InterruptedException e) {
+                log.warn("Interrupted!", e);
+                return null;
+            } catch (ExecutionException e) {
+                try {
+                    throw e.getCause();
+                } catch (Error | RuntimeException r) {
+                    throw r;
+                } catch (Throwable throwable) {
+                    throw new IllegalStateException(throwable);
+                }
             }
         });
     }
@@ -88,7 +109,7 @@ public class ExchangeMonitor implements IExchangeMonitor {
 
     @Override
     public void start() {
-        getWalletMonitor().update();
+        getWalletMonitor().update(Collections.emptyList());
         executor.start();
     }
 
@@ -114,12 +135,17 @@ public class ExchangeMonitor implements IExchangeMonitor {
 
     @Override
     public IWalletMonitor getWalletMonitor() {
-        return walletMonitor;
+        return walletTracker;
     }
 
     @Override
     public IExchange getExchange() {
         return exchange;
+    }
+
+    @Override
+    public IAsyncExchange getAsyncExchange() {
+        return this;
     }
 
     public IAsyncTradeService getTradeService() {
@@ -131,4 +157,13 @@ public class ExchangeMonitor implements IExchangeMonitor {
         return orderTracker;
     }
 
+    @Override
+    public IAsyncAccountService getAccountService() {
+        return accountService;
+    }
+
+    @Override
+    public IAsyncMarketMetadataService getMetadataService() {
+        return metadataService;
+    }
 }

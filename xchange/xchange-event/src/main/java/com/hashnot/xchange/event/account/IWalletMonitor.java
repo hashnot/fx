@@ -9,9 +9,14 @@ import java.util.Map;
 public interface IWalletMonitor {
     BigDecimal getWallet(String currency);
 
-    Map<String, BigDecimal>getWallet();
+    Map<String, BigDecimal> getWallet();
 
-    void update();
+    /**
+     * Force update the wallet, and call all the listeners, including ad-hoc passed as the parameter.
+     *
+     * @param listeners list of ad-hoc listeners
+     */
+    void update(Iterable<IWalletListener> listeners);
 
     void addWalletListener(IWalletListener listener, String currency);
 

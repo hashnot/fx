@@ -1,5 +1,6 @@
 package com.hashnot.fx.strategy.pair;
 
+import com.hashnot.xchange.async.IAsyncExchange;
 import com.hashnot.xchange.async.trade.IAsyncTradeService;
 import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.event.account.IWalletMonitor;
@@ -34,7 +35,10 @@ public class PairTestUtils {
         when(monitor.getWalletMonitor()).thenReturn(walletMonitor);
         when(monitor.getMarketMetadata(p)).thenReturn(new BaseMarketMetadata(ONE.movePointLeft(SCALE), SCALE, ZERO));
         when(monitor.getExchange()).thenReturn(x);
-        when(monitor.getTradeService()).thenReturn(mock(IAsyncTradeService.class));
+
+        IAsyncExchange ax = mock(IAsyncExchange.class);
+        when(monitor.getAsyncExchange()).thenReturn(ax);
+        when(ax.getTradeService()).thenReturn(mock(IAsyncTradeService.class));
         return monitor;
     }
 

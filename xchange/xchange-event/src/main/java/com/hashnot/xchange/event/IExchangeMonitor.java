@@ -1,6 +1,6 @@
 package com.hashnot.xchange.event;
 
-import com.hashnot.xchange.async.trade.IAsyncTradeService;
+import com.hashnot.xchange.async.IAsyncExchange;
 import com.hashnot.xchange.event.account.IWalletMonitor;
 import com.hashnot.xchange.event.market.IOrderBookMonitor;
 import com.hashnot.xchange.event.market.ITickerMonitor;
@@ -26,8 +26,6 @@ public interface IExchangeMonitor {
 
     IWalletMonitor getWalletMonitor();
 
-    IAsyncTradeService getTradeService();
-
     IOrderTracker getOrderTracker();
 
     MarketMetadata getMarketMetadata(CurrencyPair pair);
@@ -37,4 +35,6 @@ public interface IExchangeMonitor {
     void stop();
 
     IExchange getExchange();
+
+    IAsyncExchange getAsyncExchange();
 }

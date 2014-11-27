@@ -1,7 +1,7 @@
 package com.hashnot.xchange.async.trade;
 
 import com.google.common.util.concurrent.SettableFuture;
-import com.hashnot.xchange.async.RunnableScheduler;
+import com.hashnot.xchange.async.AbstractAsyncService;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.dto.trade.MarketOrder;
@@ -10,99 +10,50 @@ import com.xeiam.xchange.dto.trade.UserTrades;
 import com.xeiam.xchange.service.polling.PollingTradeService;
 import com.xeiam.xchange.service.polling.trade.TradeHistoryParams;
 
-import java.io.IOException;
 import java.util.Collection;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
 /**
  * @author Rafał Krupiński
  */
-public class AsyncTradeService implements IAsyncTradeService {
-    final private RunnableScheduler scheduler;
+public class AsyncTradeService extends AbstractAsyncService implements IAsyncTradeService {
     final private PollingTradeService service;
 
-    public AsyncTradeService(RunnableScheduler scheduler, PollingTradeService pollingTradeService) {
-        this.scheduler = scheduler;
+    public AsyncTradeService(Executor executor, PollingTradeService pollingTradeService) {
+        super(executor);
         service = pollingTradeService;
     }
 
     @Override
     public void getOpenOrders(Consumer<Future<OpenOrders>> consumer) {
-        scheduler.priority(() -> {
-            SettableFuture<OpenOrders> result = SettableFuture.create();
-            try {
-                result.set(service.getOpenOrders());
-            } catch (IOException e) {
-                result.setException(e);
-            }
-            consumer.accept(result);
-        });
+        call(service::getOpenOrders, consumer);
     }
 
     @Override
     public void placeMarketOrder(MarketOrder marketOrder, Consumer<Future<String>> consumer) {
-        scheduler.priority(() -> {
-            SettableFuture<String> result = SettableFuture.create();
-            try {
-                result.set(service.placeMarketOrder(marketOrder));
-            } catch (IOException e) {
-                result.setException(e);
-            }
-            consumer.accept(result);
-        });
+        call(() -> service.placeMarketOrder(marketOrder), consumer);
     }
 
     @Override
     public void placeLimitOrder(LimitOrder limitOrder, Consumer<Future<String>> consumer) {
-        scheduler.priority(() -> {
-            SettableFuture<String> result = SettableFuture.create();
-            try {
-                result.set(service.placeLimitOrder(limitOrder));
-            } catch (IOException e) {
-                result.setException(e);
-            }
-            consumer.accept(result);
-        });
+        call(() -> service.placeLimitOrder(limitOrder), consumer);
     }
 
     @Override
     public void cancelOrder(String orderId, Consumer<Future<Boolean>> consumer) {
-        scheduler.priority(() -> {
-            SettableFuture<Boolean> result = SettableFuture.create();
-            try {
-                result.set(service.cancelOrder(orderId));
-            } catch (IOException e) {
-                result.setException(e);
-            }
-            consumer.accept(result);
-        });
+        call(() -> service.cancelOrder(orderId), consumer);
     }
 
     @Override
     public void getTradeHistory(Consumer<Future<UserTrades>> consumer, Object... arguments) {
-        scheduler.priority(() -> {
-            SettableFuture<UserTrades> result = SettableFuture.create();
-            try {
-                result.set(service.getTradeHistory(arguments));
-            } catch (IOException e) {
-                result.setException(e);
-            }
-            consumer.accept(result);
-        });
+        call(() -> service.getTradeHistory(arguments), consumer);
     }
 
     @Override
     public void getTradeHistory(TradeHistoryParams params, Consumer<Future<UserTrades>> consumer) {
-        scheduler.priority(() -> {
-            SettableFuture<UserTrades> result = SettableFuture.create();
-            try {
-                result.set(service.getTradeHistory(params));
-            } catch (IOException e) {
-                result.setException(e);
-            }
-            consumer.accept(result);
-        });
+        call(() -> service.getTradeHistory(params), consumer);
     }
 
     @Override
@@ -112,21 +63,11 @@ public class AsyncTradeService implements IAsyncTradeService {
 
     @Override
     public void getExchangeSymbols(Consumer<Future<Collection<CurrencyPair>>> consumer) {
-        scheduler.priority(() -> {
-            SettableFuture<Collection<CurrencyPair>> result = SettableFuture.create();
-            try {
-                result.set(service.getExchangeSymbols());
-            } catch (IOException e) {
-                result.setException(e);
-            }
-            consumer.accept(result);
-        });
+        call(service::getExchangeSymbols, consumer);
     }
 
     /**
      * Update existing LimitOrder with a new one
-     * <p>
-     * TODO support exchanges with update operation
      *
      * @param orderId  orderOd of the existing order
      * @param order    new order

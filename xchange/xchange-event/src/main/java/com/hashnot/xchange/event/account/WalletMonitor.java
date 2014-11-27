@@ -1,6 +1,8 @@
 package com.hashnot.xchange.event.account;
 
+import com.google.common.collect.Iterables;
 import com.hashnot.xchange.async.RunnableScheduler;
+import com.hashnot.xchange.async.account.IAsyncAccountService;
 import com.hashnot.xchange.event.AbstractParametrizedMonitor;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.ExchangeException;
@@ -12,8 +14,10 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
+import static com.hashnot.xchange.ext.util.Multiplexer.multiplex;
 import static com.hashnot.xchange.ext.util.Numbers.BigDecimal.isZero;
 import static com.hashnot.xchange.ext.util.Numbers.eq;
 
@@ -25,14 +29,11 @@ public class WalletMonitor extends AbstractParametrizedMonitor<String, IWalletLi
     private final Map<String, BigDecimal> walletView = Collections.unmodifiableMap(wallet);
 
     private final Exchange exchange;
+    final private IAsyncAccountService accountService;
 
     @Override
     public void run() {
-        try {
-            doUpdate();
-        } catch (IOException e) {
-            log.warn("Error from {}", exchange, e);
-        }
+        update(Collections.emptyList());
     }
 
     @Override
@@ -45,30 +46,26 @@ public class WalletMonitor extends AbstractParametrizedMonitor<String, IWalletLi
         return walletView;
     }
 
-    @Override
-    public void update() throws ExchangeException {
-        try {
-            doUpdate();
-        } catch (IOException e) {
-            throw new ExchangeException("Error", e);
-        }
+    public void update(Iterable<IWalletListener> adHocListeners) throws ExchangeException {
+        accountService.getAccountInfo((future) -> {
+            try {
+                AccountInfo accountInfo = future.get();
+                for (Wallet wallet : accountInfo.getWallets()) {
+                    BigDecimal current = wallet.getBalance();
+                    String currency = wallet.getCurrency();
+                    BigDecimal previous = this.wallet.put(currency, current);
+                    if ((previous == null && !isZero(current)) || !eq(current, previous))
+                        multiplex(Iterables.concat(listeners.get(currency), adHocListeners), new WalletUpdateEvent(current, currency, exchange), IWalletListener::walletUpdate);
+                }
+            } catch (InterruptedException e) {
+                log.warn("Interrupted!", e);
+            } catch (ExecutionException e) {
+                log.warn("Error from {}", exchange, e.getCause());
+            } catch (RuntimeException e) {
+                log.warn("Error from {}", exchange, e);
+            }
+        });
     }
-
-    protected void doUpdate() throws IOException {
-        AccountInfo accountInfo = exchange.getPollingAccountService().getAccountInfo();
-        for (Wallet wallet : accountInfo.getWallets()) {
-            BigDecimal current = wallet.getBalance();
-            String currency = wallet.getCurrency();
-            BigDecimal previous;
-            if (isZero(current))
-                previous = this.wallet.remove(currency);
-            else
-                previous = this.wallet.put(currency, current);
-            if ((previous == null && !isZero(current)) || !eq(current, previous))
-                callListeners(new WalletUpdateEvent(current, currency, exchange), listeners.get(currency));
-        }
-    }
-
 
     @Override
     protected void callListener(IWalletListener listener, WalletUpdateEvent data) {
@@ -85,9 +82,10 @@ public class WalletMonitor extends AbstractParametrizedMonitor<String, IWalletLi
         addListener(listener, currency);
     }
 
-    public WalletMonitor(Exchange exchange, RunnableScheduler scheduler, Executor executor) {
+    public WalletMonitor(Exchange exchange, RunnableScheduler scheduler, Executor executor, IAsyncAccountService accountService) {
         super(scheduler, executor);
         this.exchange = exchange;
+        this.accountService = accountService;
     }
 
     @Override

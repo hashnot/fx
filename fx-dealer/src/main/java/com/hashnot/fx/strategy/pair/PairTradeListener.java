@@ -166,7 +166,7 @@ public class PairTradeListener implements IUserTradeListener {
     }
 
     private IAsyncTradeService getTradeService(Exchange exchange) {
-        return monitors.get(exchange).getTradeService();
+        return monitors.get(exchange).getAsyncExchange().getTradeService();
     }
 
 }

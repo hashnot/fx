@@ -30,7 +30,7 @@ public class RoundRobinSchedulerTest {
         sched.addTask(task);
 
         Runnable priority = mock(Runnable.class);
-        sched.priority(priority);
+        sched.execute(priority);
 
         sched.run();
         verify(priority).run();
