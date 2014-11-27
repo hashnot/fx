@@ -1,6 +1,6 @@
 package com.hashnot.fx.cmd;
 
-import com.hashnot.fx.framework.Main;
+import com.hashnot.fx.framework.Setup;
 import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.event.market.IOrderBookListener;
 import com.hashnot.xchange.event.market.OrderBookUpdateEvent;
@@ -43,7 +43,7 @@ public class Order {
      * price or delta or auto (default)
      */
     public static void main(String[] args) throws Exception {
-        Collection<IExchangeMonitor> exchanges = Main.load(args[0], Executors.newScheduledThreadPool(10));
+        Collection<IExchangeMonitor> exchanges = Setup.load(args[0], Executors.newScheduledThreadPool(10));
         IExchangeMonitor x = find(exchanges, args[1]);
         x.start();
         order(x, args[2], args[3], args[4], args.length == 6 ? args[5] : null);

@@ -10,9 +10,7 @@ import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.ext.trade.ITradeService;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
-import groovy.lang.GroovyShell;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -37,7 +35,7 @@ public class Main {
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(10, tf);
         Runtime.getRuntime().addShutdownHook(new Thread(scheduler::shutdown, "shutdown thread pool"));
 
-        Collection<IExchangeMonitor> monitors = load(args[0], scheduler);
+        Collection<IExchangeMonitor> monitors = Setup.load(args[0], scheduler);
         Map<Exchange, IExchangeMonitor> monitorMap = new HashMap<>();
 
         BestOfferMonitor bestOfferMonitor = new BestOfferMonitor(monitorMap);
@@ -69,18 +67,6 @@ public class Main {
     protected static void registerBestOfferListener(BestOfferMonitor bestOfferMonitor, Dealer dealer, Exchange exchange) {
         DealerConfig config = dealer.getConfig();
         bestOfferMonitor.addBestOfferListener(dealer, new MarketSide(exchange, config.listing, config.side));
-    }
-
-    @SuppressWarnings("unchecked")
-    public static Collection<IExchangeMonitor> load(String path, ScheduledExecutorService scheduler) {
-        GroovyShell sh = new GroovyShell();
-        sh.setVariable("executor", scheduler);
-        try {
-            return (Collection<IExchangeMonitor>) sh.evaluate(new File(path));
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Could not load setup script", e);
-        }
-
     }
 
 }
