@@ -2,9 +2,8 @@ package com.hashnot.fx.cmd;
 
 import com.google.common.collect.Table;
 import com.google.common.collect.Tables;
+import com.hashnot.fx.framework.IStrategy;
 import com.hashnot.fx.framework.MarketSide;
-import com.hashnot.fx.framework.Setup;
-import com.hashnot.fx.util.ConfigurableThreadFactory;
 import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.ext.IExchange;
 import com.xeiam.xchange.currency.CurrencyPair;
@@ -14,7 +13,9 @@ import com.xeiam.xchange.dto.trade.LimitOrder;
 
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 
 import static com.hashnot.xchange.ext.util.Numbers.lt;
 import static java.lang.System.out;
@@ -23,7 +24,7 @@ import static java.math.BigDecimal.*;
 /**
  * @author Rafał Krupiński
  */
-public class Profitability {
+public class Profitability implements IStrategy {
 
     static BigDecimal[] amounts = new BigDecimal[]{
             ONE.movePointLeft(2),
@@ -37,14 +38,8 @@ public class Profitability {
             ONE.movePointRight(2)
     };
 
-    public static void main(String[] args) throws InterruptedException {
-        ThreadFactory tf = new ConfigurableThreadFactory();
-        Thread.setDefaultUncaughtExceptionHandler(ConfigurableThreadFactory.exceptionHandler);
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(10, tf);
-        Runtime.getRuntime().addShutdownHook(new Thread(scheduler::shutdown, "shutdown thread pool"));
-
-        Collection<IExchangeMonitor> monitors = Setup.load(args[0], scheduler);
-
+    @Override
+    public void init(Collection<IExchangeMonitor> monitors, Iterable<CurrencyPair> pairs, Runnable exitHook) throws InterruptedException {
         Map<IExchangeMonitor, OrderBook> books = new ConcurrentHashMap<>();
 
         CountDownLatch count = new CountDownLatch(monitors.size());
@@ -86,12 +81,11 @@ public class Profitability {
             }
             out.print(e.getKey() + ";");
             for (Map.Entry<MarketSide, BigDecimal> f : e.getValue().entrySet()) {
-                out.print(f.getValue().divide(e.getKey(), 5, ROUND_HALF_EVEN)+";");
+                out.print(f.getValue().divide(e.getKey(), 5, ROUND_HALF_EVEN) + ";");
             }
             out.println();
         }
-
-        scheduler.shutdown();
+        exitHook.run();
     }
 
     protected static void getValues(Table<BigDecimal, MarketSide, BigDecimal> values, Order.OrderType type, OrderBook orderBook, IExchange exchange) {

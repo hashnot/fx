@@ -44,7 +44,8 @@ public class SchedulerExecutor implements IExecutorStrategy, Runnable {
 
     @Override
     public synchronized void stop() {
-        future.cancel(false);
+        if (future != null)
+            future.cancel(false);
         future = null;
     }
 

@@ -25,7 +25,9 @@ public class RoundRobinScheduler implements Runnable, RunnableScheduler {
 
     @Override
     public void run() {
+        // unless skipPriorityQueue was set (when we run a task from it in the previous run)
         if (!skipPriorityQueue.compareAndSet(true, false)) {
+            // try running a priority task
             Runnable priority = priorityQueue.poll();
             if (priority != null) {
                 priority.run();
