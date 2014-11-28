@@ -1,5 +1,8 @@
 package com.hashnot.fx.framework;
 
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import com.hashnot.fx.util.ConfigurableThreadFactory;
 import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.ext.trade.ITradeService;
@@ -30,6 +33,14 @@ public class Main {
 
         String strategyName = args.length > 1 ? args[1] : DEFAULT_STRATEGY;
         IStrategy strategy = getPairStrategy(strategyName);
+
+        Injector injector = Guice.createInjector(new AbstractModule() {
+            @Override
+            protected void configure() {
+                bind(ScheduledExecutorService.class).toInstance(scheduler);
+            }
+        });
+        injector.injectMembers(strategy);
 
         Main framework = new Main(strategy, monitors, scheduler);
         framework.start();
