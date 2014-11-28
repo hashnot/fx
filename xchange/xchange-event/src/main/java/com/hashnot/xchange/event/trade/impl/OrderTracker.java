@@ -50,7 +50,7 @@ public class OrderTracker implements IUserTradesListener, IOrderPlacementListene
             String orderId = trade.getOrderId();
             LimitOrder monitoredOrder = monitored.get(orderId);
             if (monitoredOrder == null) {
-                log.warn("Trade on an unknown order {}", orderId);
+                log.warn("Trade on an unknown order {}", trade);
                 continue;
             }
 

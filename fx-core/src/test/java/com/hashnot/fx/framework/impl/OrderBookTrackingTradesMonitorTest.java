@@ -2,6 +2,7 @@ package com.hashnot.fx.framework.impl;
 
 import com.hashnot.fx.framework.MarketSide;
 import com.hashnot.fx.framework.OrderBookSideUpdateEvent;
+import com.hashnot.xchange.async.trade.IAsyncTradeService;
 import com.hashnot.xchange.event.trade.IUserTradeListener;
 import com.hashnot.xchange.event.trade.UserTradeEvent;
 import com.hashnot.xchange.ext.Market;
@@ -10,7 +11,6 @@ import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.trade.LimitOrder;
-import com.xeiam.xchange.service.polling.PollingTradeService;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -33,7 +33,7 @@ public class OrderBookTrackingTradesMonitorTest {
     @Test
     public void testBasicChange() {
 
-        PollingTradeService tradeService = mock(PollingTradeService.class);
+        IAsyncTradeService tradeService = mock(IAsyncTradeService.class);
         IUserTradeListener orderListener = mock(IUserTradeListener.class);
 
         OrderBookUserTradeMonitor mon = new OrderBookUserTradeMonitor(tradeService);
@@ -58,7 +58,7 @@ public class OrderBookTrackingTradesMonitorTest {
     @Ignore
     @Test
     public void testExtraOrder() {
-        PollingTradeService tradeService = mock(PollingTradeService.class);
+        IAsyncTradeService tradeService = mock(IAsyncTradeService.class);
         IUserTradeListener orderListener = mock(IUserTradeListener.class);
 
         OrderBookUserTradeMonitor mon = new OrderBookUserTradeMonitor(tradeService);
@@ -83,7 +83,7 @@ public class OrderBookTrackingTradesMonitorTest {
 
     @Test
     public void testTwoMonitored() {
-        PollingTradeService tradeService = mock(PollingTradeService.class);
+        IAsyncTradeService tradeService = mock(IAsyncTradeService.class);
         IUserTradeListener orderListener = mock(IUserTradeListener.class);
 
         OrderBookUserTradeMonitor mon = new OrderBookUserTradeMonitor(tradeService);

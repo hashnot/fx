@@ -38,7 +38,7 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
 
     final private Map<Market, Multimap<OrderType, IBestOfferListener>> bestOfferListeners = new HashMap<>();
 
-    final private Multimap<MarketSide, IOrderBookSideListener> orderBookListeners = Multimaps.newSetMultimap(new HashMap<>(), HashSet::new);
+    final private Multimap<MarketSide, IOrderBookSideListener> orderBookListeners = Multimaps.newSetMultimap(new HashMap<>(), LinkedHashSet::new);
 
     // (exchange, currencyPair, OrderType) -> best offer price
     final private Map<MarketSide, BigDecimal> cache = new HashMap<>();
@@ -117,7 +117,7 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
         return value;
     }
 
-    private static final SetMultimap<OrderType, IBestOfferListener> EMPTY_MULTIMAP = Multimaps.newSetMultimap(new EnumMap<>(OrderType.class), HashSet::new);
+    private static final SetMultimap<OrderType, IBestOfferListener> EMPTY_MULTIMAP = Multimaps.newSetMultimap(new EnumMap<>(OrderType.class), LinkedHashSet::new);
 
     protected void notifyBestOfferListeners(BestOfferEvent bestOfferEvent) {
         MarketSide source = bestOfferEvent.source;
@@ -126,7 +126,7 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
 
     @Override
     public void addBestOfferListener(IBestOfferListener listener, MarketSide source) {
-        boolean listen = bestOfferListeners.computeIfAbsent(source.market, (k) -> Multimaps.newSetMultimap(new EnumMap<>(OrderType.class), HashSet::new)).put(source.side, listener);
+        boolean listen = bestOfferListeners.computeIfAbsent(source.market, (k) -> Multimaps.newSetMultimap(new EnumMap<>(OrderType.class), LinkedHashSet::new)).put(source.side, listener);
         if (!listen)
             return;
 

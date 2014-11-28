@@ -1,6 +1,8 @@
 package com.hashnot.xchange.async;
 
 import com.google.common.collect.Iterators;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -16,6 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author Rafał Krupiński
  */
 public class RoundRobinScheduler implements Runnable, RunnableScheduler {
+    final private static Logger log = LoggerFactory.getLogger(RoundRobinScheduler.class);
     private final BlockingQueue<Runnable> priorityQueue = new LinkedBlockingQueue<>();
 
     private final Set<Runnable> runnables = Collections.newSetFromMap(new ConcurrentHashMap<>());
@@ -25,27 +28,41 @@ public class RoundRobinScheduler implements Runnable, RunnableScheduler {
 
     @Override
     public void run() {
-        // unless skipPriorityQueue was set (when we run a task from it in the previous run)
-        if (!skipPriorityQueue.compareAndSet(true, false)) {
-            // try running a priority task
-            Runnable priority = priorityQueue.poll();
-            if (priority != null) {
-                priority.run();
-                skipPriorityQueue.set(true);
-                return;
+        try {
+            // unless skipPriorityQueue was set (when we run a task from it in the previous run)
+            if (!skipPriorityQueue.compareAndSet(true, false)) {
+                // try running a priority task
+                if (runPriority()) return;
             }
+            if (!runTask()) {
+                runPriority();
+            }
+        } catch (Throwable e) {
+            log.warn("Error", e);
         }
-        Runnable task;
-        synchronized (this) {
-            if (iterator.hasNext())
-                task = iterator.next();
-            else
-                return;
+    }
+
+    protected boolean runTask() {
+        if (!iterator.hasNext()) {
+            return false;
         }
+        Runnable task = iterator.next();
         task.run();
+        return true;
+    }
+
+    protected boolean runPriority() {
+        Runnable priority = priorityQueue.poll();
+        if (priority == null) {
+            return false;
+        }
+        skipPriorityQueue.set(true);
+        priority.run();
+        return true;
     }
 
     public synchronized void addTask(Runnable r) {
+        assert r != null;
         runnables.add(r);
     }
 
@@ -54,6 +71,7 @@ public class RoundRobinScheduler implements Runnable, RunnableScheduler {
     }
 
     public void execute(Runnable r) {
+        assert r != null;
         priorityQueue.add(r);
     }
 }

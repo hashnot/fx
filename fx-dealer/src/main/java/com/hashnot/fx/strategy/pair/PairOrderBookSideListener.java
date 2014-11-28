@@ -57,7 +57,7 @@ public class PairOrderBookSideListener implements IOrderBookSideListener{
             return;
         }
 
-        log.info("order book from {}", evt.source);
+        log.debug("order book from {}", evt.source);
 
         if (!evt.source.market.exchange.equals(data.getCloseExchange())) {
             log.warn("Unexpected OrderBook update from {}", evt.source);
@@ -106,7 +106,7 @@ public class PairOrderBookSideListener implements IOrderBookSideListener{
         openOrder.setNetPrice(openNetPrice);
 
 
-        log.debug("open {} {} {} <=> {} {} close {}profitable", openOrder.getType(), openGrossPrice, openNetPrice, closeOrder.getNetPrice(), closeOrder.getLimitPrice(), profitable ? "" : "not ");
+        log.info("open {} {} {} <=> {} {} close {}profitable", openOrder.getType(), openGrossPrice, openNetPrice, closeOrder.getNetPrice(), closeOrder.getLimitPrice(), profitable ? "" : "not ");
         if (!profitable) {
             if (orderManager.isActive())
                 orderManager.cancel();

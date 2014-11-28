@@ -11,22 +11,25 @@ import java.util.function.Consumer;
  * @author Rafał Krupiński
  */
 public class AbstractAsyncService {
-    final private Executor executor;
+    final private Executor remoteExecutor;
+    final private Executor consumerExecutor;
 
-    public AbstractAsyncService(Executor executor) {
-        this.executor = executor;
+    public AbstractAsyncService(Executor remoteExecutor, Executor consumerExecutor) {
+        this.remoteExecutor = remoteExecutor;
+        this.consumerExecutor = consumerExecutor;
     }
 
     protected <T> Future<T> call(RemoteCall<T> call, Consumer<Future<T>> consumer) {
         SettableFuture<T> future = SettableFuture.create();
-        executor.execute(() -> {
+        remoteExecutor.execute(() -> {
             try {
-                future.set(call.call());
+                T result = call.call();
+                future.set(result);
             } catch (RuntimeException | IOException e) {
                 future.setException(e);
             }
             if (consumer != null)
-                consumer.accept(future);
+                consumerExecutor.execute(() -> consumer.accept(future));
         });
         return future;
     }

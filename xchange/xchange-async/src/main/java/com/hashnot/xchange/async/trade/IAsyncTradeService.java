@@ -5,7 +5,6 @@ import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.dto.trade.MarketOrder;
 import com.xeiam.xchange.dto.trade.OpenOrders;
 import com.xeiam.xchange.dto.trade.UserTrades;
-import com.xeiam.xchange.service.polling.PollingTradeService;
 import com.xeiam.xchange.service.polling.trade.TradeHistoryParams;
 
 import java.util.Collection;
@@ -13,7 +12,7 @@ import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
 /**
- * Asynchronous flavour of {@link PollingTradeService}.
+ * Asynchronous flavour of {@link com.xeiam.xchange.service.polling.PollingTradeService}.
  *
  * @author Rafał Krupiński
  */

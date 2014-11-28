@@ -6,13 +6,12 @@ import com.hashnot.xchange.async.RunnableScheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 
 import static com.hashnot.xchange.ext.util.Multiplexer.multiplex;
 
@@ -20,38 +19,32 @@ import static com.hashnot.xchange.ext.util.Multiplexer.multiplex;
  * @author Rafał Krupiński
  */
 public abstract class AbstractParametrizedMonitor<P, L, R> extends AbstractPollingMonitor {
+    final protected Logger log = LoggerFactory.getLogger(getClass());
+
+    final protected Executor executor;
+
+    final protected Multimap<P, L> listeners = Multimaps.newSetMultimap(new HashMap<>(), LinkedHashSet::new);
+
     public AbstractParametrizedMonitor(RunnableScheduler scheduler, Executor executor) {
         super(scheduler);
         this.executor = executor;
     }
 
-    protected Executor executor;
-
-    final protected Multimap<P, L> listeners = Multimaps.newSetMultimap(new HashMap<>(), () -> Collections.newSetFromMap(new ConcurrentHashMap<>()));
-
-    final protected Logger log = LoggerFactory.getLogger(getClass());
-
     @Override
     public void run() {
         for (Map.Entry<P, Collection<L>> e : listeners.asMap().entrySet()) {
-
-            try {
-                R data = getData(e.getKey());
+            getData(e.getKey(), (data) -> {
                 if (data == null)
-                    return;
+                    log.warn("Null result from {}", this);
 
                 callListeners(data, e.getValue());
-            } catch (IOException x) {
-                log.warn("Error from {}", this, x);
-                return;
-            }
-
+            });
         }
     }
 
-    protected void callListeners(R data, Collection<L> listeners) {
-        if (!listeners.isEmpty())
-            executor.execute(new ListenerNotifier(data, listeners));
+    protected void callListeners(R data, Iterable<L> listeners) {
+        // must use executor, all calls on an exchange are made in single thread
+        executor.execute(() -> multiplex(listeners, data, this::callListener));
     }
 
     protected void addListener(L listener, P param) {
@@ -75,22 +68,7 @@ public abstract class AbstractParametrizedMonitor<P, L, R> extends AbstractPolli
         }
     }
 
-    private class ListenerNotifier implements Runnable {
-        protected R data;
-        protected Collection<L> listeners;
-
-        private ListenerNotifier(R data, Collection<L> listeners) {
-            this.data = data;
-            this.listeners = listeners;
-        }
-
-        @Override
-        public void run() {
-            multiplex(listeners, data, AbstractParametrizedMonitor.this::callListener);
-        }
-    }
-
     abstract protected void callListener(L listener, R data);
 
-    abstract protected R getData(P param) throws IOException;
+    abstract protected void getData(P param, Consumer<R> consumer);
 }

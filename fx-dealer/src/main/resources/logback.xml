@@ -20,7 +20,7 @@
     <logger name="com.hashnot.fx" level="debug" />
     <logger name="com.hashnot.fx.kokos.to" level="warn" />
 
-    <logger name="com.hashnot.xchange" level="debug" />
+    <logger name="com.hashnot.xchange" level="info" />
     <logger name="com.hashnot.xchangec.event.impl.TickerMonitor" level="info" />
 
     <logger name="com.gargoylesoftware.htmlunit.IncorrectnessListenerImpl" level="off" />

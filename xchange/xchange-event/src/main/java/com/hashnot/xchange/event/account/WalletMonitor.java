@@ -5,19 +5,17 @@ import com.hashnot.xchange.async.RunnableScheduler;
 import com.hashnot.xchange.async.account.IAsyncAccountService;
 import com.hashnot.xchange.event.AbstractParametrizedMonitor;
 import com.xeiam.xchange.Exchange;
-import com.xeiam.xchange.ExchangeException;
 import com.xeiam.xchange.dto.account.AccountInfo;
 import com.xeiam.xchange.dto.trade.Wallet;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 
-import static com.hashnot.xchange.ext.util.Multiplexer.multiplex;
 import static com.hashnot.xchange.ext.util.Numbers.BigDecimal.isZero;
 import static com.hashnot.xchange.ext.util.Numbers.eq;
 
@@ -46,7 +44,7 @@ public class WalletMonitor extends AbstractParametrizedMonitor<String, IWalletLi
         return walletView;
     }
 
-    public void update(Iterable<IWalletListener> adHocListeners) throws ExchangeException {
+    public void update(Iterable<IWalletListener> adHocListeners) {
         accountService.getAccountInfo((future) -> {
             try {
                 AccountInfo accountInfo = future.get();
@@ -54,15 +52,16 @@ public class WalletMonitor extends AbstractParametrizedMonitor<String, IWalletLi
                     BigDecimal current = wallet.getBalance();
                     String currency = wallet.getCurrency();
                     BigDecimal previous = this.wallet.put(currency, current);
-                    if ((previous == null && !isZero(current)) || !eq(current, previous))
-                        multiplex(Iterables.concat(listeners.get(currency), adHocListeners), new WalletUpdateEvent(current, currency, exchange), IWalletListener::walletUpdate);
+
+                    if ((previous == null && !isZero(current)) || !eq(current, previous)) {
+                        WalletUpdateEvent evt = new WalletUpdateEvent(current, currency, exchange);
+                        callListeners(evt, Iterables.concat(listeners.get(currency), adHocListeners));
+                    }
                 }
             } catch (InterruptedException e) {
                 log.warn("Interrupted!", e);
             } catch (ExecutionException e) {
                 log.warn("Error from {}", exchange, e.getCause());
-            } catch (RuntimeException e) {
-                log.warn("Error from {}", exchange, e);
             }
         });
     }
@@ -89,7 +88,6 @@ public class WalletMonitor extends AbstractParametrizedMonitor<String, IWalletLi
     }
 
     @Override
-    protected WalletUpdateEvent getData(String param) throws IOException {
-        return null;
+    protected void getData(String param, Consumer<WalletUpdateEvent> consumer) {
     }
 }

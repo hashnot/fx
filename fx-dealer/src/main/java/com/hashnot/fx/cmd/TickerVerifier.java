@@ -38,7 +38,7 @@ public class TickerVerifier implements IStrategy, ITickerListener, IOrderBookLis
     private Map<MarketSide, Long> diffStartTime = new HashMap<>();
 
     @Override
-    public void init(Collection<IExchangeMonitor> exchangeMonitors, Iterable<CurrencyPair> pairs, Runnable exitHook) throws Exception {
+    public void init(Collection<IExchangeMonitor> exchangeMonitors, Collection<CurrencyPair> pairs, Runnable exitHook) throws Exception {
         executor.schedule(exitHook::run, 1, TimeUnit.MINUTES);
         for (CurrencyPair pair : pairs) {
             for (IExchangeMonitor monitor : exchangeMonitors) {

@@ -17,8 +17,8 @@ import java.util.function.Consumer;
 public class AsyncMarketDataService extends AbstractAsyncService implements IAsyncMarketDataService {
     final private PollingMarketDataService service;
 
-    public AsyncMarketDataService(Executor executor, PollingMarketDataService service) {
-        super(executor);
+    public AsyncMarketDataService(Executor remoteExecutor, PollingMarketDataService service, Executor consumerExecutor) {
+        super(remoteExecutor, consumerExecutor);
         this.service = service;
     }
 

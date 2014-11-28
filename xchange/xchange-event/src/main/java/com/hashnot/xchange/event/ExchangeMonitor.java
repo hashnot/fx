@@ -1,8 +1,6 @@
 package com.hashnot.xchange.event;
 
 import com.hashnot.xchange.async.IAsyncExchange;
-import com.hashnot.xchange.async.IExecutorStrategy;
-import com.hashnot.xchange.async.IExecutorStrategyFactory;
 import com.hashnot.xchange.async.RoundRobinScheduler;
 import com.hashnot.xchange.async.account.AsyncAccountService;
 import com.hashnot.xchange.async.account.IAsyncAccountService;
@@ -34,8 +32,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
+import java.util.concurrent.*;
 
 /**
  * @author Rafał Krupiński
@@ -43,10 +40,12 @@ import java.util.concurrent.Executor;
 public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange {
     final private static Logger log = LoggerFactory.getLogger(ExchangeMonitor.class);
 
-    final protected IExecutorStrategy executor;
+    protected ScheduledFuture<?> future;
     final protected RoundRobinScheduler runnableScheduler = new RoundRobinScheduler();
 
     final protected IExchange exchange;
+    private ScheduledExecutorService executor;
+    private long rate;
 
     final protected IOrderBookMonitor orderBookMonitor;
     final protected IUserTradesMonitor userTradesMonitor;
@@ -57,36 +56,37 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange {
     final protected IAsyncTradeService tradeService;
     final protected IAsyncAccountService accountService;
     final protected IAsyncMarketMetadataService metadataService;
-    final protected AsyncMarketDataService marketDataService;
+    final protected IAsyncMarketDataService marketDataService;
 
     protected final Map<CurrencyPair, MarketMetadata> metadata = new HashMap<>();
 
-    public ExchangeMonitor(IExchange parent, IExecutorStrategyFactory executorStrategyFactory) {
+    public ExchangeMonitor(IExchange parent, ScheduledExecutorService executor, long rate) {
         this.exchange = parent;
-        executor = executorStrategyFactory.create(runnableScheduler);
+        this.executor = executor;
+        this.rate = rate;
 
-        Executor _executor = executor.getExecutor();
-        orderBookMonitor = new OrderBookMonitor(exchange, runnableScheduler, _executor);
-        tickerMonitor = new TickerMonitor(exchange, runnableScheduler, _executor);
         openOrdersMonitor = new OpenOrdersMonitor(exchange, runnableScheduler);
-        tradeService = new AsyncTradeService(runnableScheduler, exchange.getPollingTradeService());
+        tradeService = new AsyncTradeService(runnableScheduler, exchange.getPollingTradeService(), executor);
         userTradesMonitor = new UserTradesMonitor(exchange, tradeService, runnableScheduler);
-        accountService = new AsyncAccountService(runnableScheduler, exchange.getPollingAccountService());
-        metadataService = new AsyncMarketMetadataService(runnableScheduler, exchange.getMarketMetadataService());
+        accountService = new AsyncAccountService(runnableScheduler, exchange.getPollingAccountService(), executor);
+        metadataService = new AsyncMarketMetadataService(runnableScheduler, exchange.getMarketMetadataService(), executor);
 
         orderTracker = new OrderTracker(userTradesMonitor);
         exchange.getPollingTradeService().addLimitOrderPlacedListener(orderTracker);
 
-        IWalletMonitor walletMonitor = new WalletMonitor(exchange, runnableScheduler, _executor, accountService);
+        IWalletMonitor walletMonitor = new WalletMonitor(exchange, runnableScheduler, executor, accountService);
         walletTracker = new WalletTracker(orderTracker, walletMonitor);
 
-        marketDataService = new AsyncMarketDataService(runnableScheduler, exchange.getPollingMarketDataService());
+        marketDataService = new AsyncMarketDataService(runnableScheduler, exchange.getPollingMarketDataService(), executor);
+        tickerMonitor = new TickerMonitor(marketDataService, exchange, runnableScheduler, executor);
+        orderBookMonitor = new OrderBookMonitor(exchange, runnableScheduler, executor, marketDataService);
     }
 
     public MarketMetadata getMarketMetadata(CurrencyPair pair) {
         return metadata.computeIfAbsent(pair, (p) -> {
             try {
-                return metadataService.getMarketMetadata(p, null).get();
+                Future<MarketMetadata> future = metadataService.getMarketMetadata(p, null);
+                return future.get();
             } catch (InterruptedException e) {
                 log.warn("Interrupted!", e);
                 return null;
@@ -109,13 +109,14 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange {
 
     @Override
     public void stop() {
-        executor.stop();
+        log.info("Stopping monitor: {}", exchange);
+        future.cancel(false);
     }
 
     @Override
     public void start() {
+        future = executor.scheduleAtFixedRate(runnableScheduler, 0, rate, TimeUnit.MILLISECONDS);
         getWalletMonitor().update(Collections.emptyList());
-        executor.start();
     }
 
     @Override

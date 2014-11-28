@@ -149,7 +149,7 @@ public class PairTradeListener implements IUserTradeListener {
             return;
         }
 
-        orderCloseStrategy.placeOrder(trade.getTradableAmount(), data.orderBinding.closingOrders, data.orderBinding.closeExchange);
+        orderCloseStrategy.placeOrder(trade.getTradableAmount(), data.orderBinding.closingOrders, monitors.get(data.orderBinding.closeExchange).getAsyncExchange().getTradeService());
 
         if (evt.current == null) {
             getTradeMonitor(data.orderBinding.openExchange).removeTradeListener(this);

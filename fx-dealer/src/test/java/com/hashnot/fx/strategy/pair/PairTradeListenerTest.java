@@ -10,7 +10,6 @@ import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.dto.trade.UserTrade;
-import com.xeiam.xchange.service.polling.PollingTradeService;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -33,16 +32,20 @@ public class PairTradeListenerTest {
         Exchange openExchange = mock(Exchange.class);
 
         IExchangeMonitor iem = mock(IExchangeMonitor.class);
-        IAsyncExchange ax = mock(IAsyncExchange.class);
+        IAsyncExchange ox = mock(IAsyncExchange.class);
         IAsyncTradeService openTradeService = mock(IAsyncTradeService.class);
-        when(iem.getAsyncExchange()).thenReturn(ax);
-        when(ax.getTradeService()).thenReturn(openTradeService);
+        when(iem.getAsyncExchange()).thenReturn(ox);
+        when(ox.getTradeService()).thenReturn(openTradeService);
         when(iem.getOrderTracker()).thenReturn(mock(IOrderTracker.class));
-        PairTradeListener orderManager = new PairTradeListener(new SimpleOrderCloseStrategy(), PairTestUtils.map(openExchange, iem), new DealerData());
 
+        IExchangeMonitor closeMonitor = mock(IExchangeMonitor.class);
         Exchange closeExchange = mock(Exchange.class);
-        PollingTradeService closeTradeService = mock(PollingTradeService.class);
-        when(closeExchange.getPollingTradeService()).thenReturn(closeTradeService);
+        IAsyncTradeService closeTradeService = mock(IAsyncTradeService.class);
+        IAsyncExchange cx = mock(IAsyncExchange.class);
+        when(closeMonitor.getAsyncExchange()).thenReturn(cx);
+        when(cx.getTradeService()).thenReturn(closeTradeService);
+
+        PairTradeListener orderManager = new PairTradeListener(new SimpleOrderCloseStrategy(), PairTestUtils.map(openExchange, iem, closeExchange, closeMonitor), new DealerData());
 
         LimitOrder openOrder = new LimitOrder.Builder(ASK, p).limitPrice(ONE).tradableAmount(ONE).build();
 
@@ -58,6 +61,6 @@ public class PairTradeListenerTest {
         orderManager.trade(new UserTradeEvent(openOrder, new UserTrade(ASK, ONE, p, ONE, null, null, "ID", null, null), null, openExchange));
 
         LimitOrder closeOrder = LimitOrder.Builder.from(openOrder).orderType(BID).build();
-        verify(closeTradeService).placeLimitOrder(closeOrder);
+        verify(closeTradeService).placeLimitOrder(eq(closeOrder), any(Consumer.class));
     }
 }

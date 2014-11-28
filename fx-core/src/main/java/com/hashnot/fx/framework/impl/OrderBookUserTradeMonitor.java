@@ -2,6 +2,7 @@ package com.hashnot.fx.framework.impl;
 
 import com.hashnot.fx.framework.IOrderBookSideListener;
 import com.hashnot.fx.framework.OrderBookSideUpdateEvent;
+import com.hashnot.xchange.async.trade.IAsyncTradeService;
 import com.hashnot.xchange.event.trade.IUserTradeListener;
 import com.hashnot.xchange.event.trade.IUserTradeMonitor;
 import com.hashnot.xchange.event.trade.UserTradeEvent;
@@ -12,7 +13,6 @@ import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.dto.trade.MarketOrder;
 import com.xeiam.xchange.dto.trade.UserTrade;
-import com.xeiam.xchange.service.polling.PollingTradeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,9 +70,9 @@ public class OrderBookUserTradeMonitor implements IOrderBookSideListener, IOrder
     protected final Set<String> notMonitorable = new HashSet<>();
 
 
-    protected final PollingTradeService tradeService;
+    protected final IAsyncTradeService tradeService;
 
-    public OrderBookUserTradeMonitor(PollingTradeService tradeService) {
+    public OrderBookUserTradeMonitor(IAsyncTradeService tradeService) {
         this.tradeService = tradeService;
     }
 

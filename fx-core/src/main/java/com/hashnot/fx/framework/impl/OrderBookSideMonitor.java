@@ -18,7 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -45,7 +45,7 @@ public class OrderBookSideMonitor implements IOrderBookSideMonitor, IOrderBookLi
     @Override
     public void addOrderBookSideListener(IOrderBookSideListener listener, MarketSide source) {
         Market market = source.market;
-        Multimap<OrderType, IOrderBookSideListener> marketListeners = listeners.computeIfAbsent(market, k -> Multimaps.newSetMultimap(new HashMap<>(), HashSet::new));
+        Multimap<OrderType, IOrderBookSideListener> marketListeners = listeners.computeIfAbsent(market, k -> Multimaps.newSetMultimap(new HashMap<>(), LinkedHashSet::new));
 
         // avoid race condition, we could get an order book between registration as listener and putting our listener in map
         boolean listen = marketListeners.isEmpty();
