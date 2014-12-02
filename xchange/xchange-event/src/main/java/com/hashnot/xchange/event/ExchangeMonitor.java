@@ -41,7 +41,7 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange {
     final private static Logger log = LoggerFactory.getLogger(ExchangeMonitor.class);
 
     protected ScheduledFuture<?> future;
-    final protected RoundRobinScheduler runnableScheduler = new RoundRobinScheduler();
+    final protected RoundRobinScheduler runnableScheduler;
 
     final protected IExchange exchange;
     private ScheduledExecutorService executor;
@@ -65,6 +65,7 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange {
         this.executor = executor;
         this.rate = rate;
 
+        runnableScheduler = new RoundRobinScheduler(exchange.getExchangeSpecification().getExchangeName());
         openOrdersMonitor = new OpenOrdersMonitor(exchange, runnableScheduler);
         tradeService = new AsyncTradeService(runnableScheduler, exchange.getPollingTradeService(), executor);
         userTradesMonitor = new UserTradesMonitor(exchange, tradeService, runnableScheduler);

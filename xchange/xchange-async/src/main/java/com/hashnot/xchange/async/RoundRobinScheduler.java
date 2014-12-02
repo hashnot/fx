@@ -3,6 +3,7 @@ package com.hashnot.xchange.async;
 import com.google.common.collect.Iterators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -17,7 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  * @author Rafał Krupiński
  */
-public class RoundRobinScheduler implements Runnable, RunnableScheduler {
+final public class RoundRobinScheduler implements Runnable, RunnableScheduler {
     final private static Logger log = LoggerFactory.getLogger(RoundRobinScheduler.class);
     private final BlockingQueue<Runnable> priorityQueue = new LinkedBlockingQueue<>();
 
@@ -26,8 +27,15 @@ public class RoundRobinScheduler implements Runnable, RunnableScheduler {
 
     private final AtomicBoolean skipPriorityQueue = new AtomicBoolean(false);
 
+    final private String name;
+
+    public RoundRobinScheduler(String name) {
+        this.name = name;
+    }
+
     @Override
     public void run() {
+        MDC.put("name", name);
         try {
             // unless skipPriorityQueue was set (when we run a task from it in the previous run)
             if (!skipPriorityQueue.compareAndSet(true, false)) {
@@ -39,6 +47,8 @@ public class RoundRobinScheduler implements Runnable, RunnableScheduler {
             }
         } catch (Throwable e) {
             log.warn("Error", e);
+        } finally {
+            MDC.clear();
         }
     }
 

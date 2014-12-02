@@ -3,9 +3,11 @@ package com.hashnot.fx.framework;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.name.Names;
 import com.hashnot.fx.util.ConfigurableThreadFactory;
 import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.ext.trade.ITradeService;
+import com.hashnot.xchange.ext.util.MDCRunnable;
 import com.xeiam.xchange.currency.CurrencyPair;
 import groovy.lang.GroovyShell;
 
@@ -13,8 +15,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 
 /**
@@ -34,21 +36,27 @@ public class Main {
         String strategyName = args.length > 1 ? args[1] : DEFAULT_STRATEGY;
         IStrategy strategy = getPairStrategy(strategyName);
 
+        Main framework = new Main(strategy, monitors, scheduler);
         Injector injector = Guice.createInjector(new AbstractModule() {
             @Override
             protected void configure() {
                 bind(ScheduledExecutorService.class).toInstance(scheduler);
+                bind(Runnable.class).annotatedWith(Names.named("exitHook")).toInstance(framework::stop);
             }
         });
         injector.injectMembers(strategy);
 
-        Main framework = new Main(strategy, monitors, scheduler);
         framework.start();
     }
 
     protected static ScheduledExecutorService scheduler() {
         ThreadFactory tf = new ConfigurableThreadFactory();
-        return Executors.newScheduledThreadPool(10, tf);
+        return new ScheduledThreadPoolExecutor(10, tf) {
+            @Override
+            public void execute(Runnable command) {
+                super.execute(new MDCRunnable(command));
+            }
+        };
     }
 
     private Collection<IExchangeMonitor> monitors;
@@ -68,7 +76,7 @@ public class Main {
             monitor.start();
         }
         try {
-            strategy.init(monitors, Arrays.asList(pair), this::stop);
+            strategy.init(monitors, Arrays.asList(pair));
         } catch (Exception e) {
             stop();
         }

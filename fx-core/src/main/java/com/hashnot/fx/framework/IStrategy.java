@@ -9,5 +9,5 @@ import java.util.Collection;
  * @author Rafał Krupiński
  */
 public interface IStrategy {
-    void init(Collection<IExchangeMonitor> exchangeMonitors, Collection<CurrencyPair> pairs, Runnable exitHook) throws Exception;
+    void init(Collection<IExchangeMonitor> exchangeMonitors, Collection<CurrencyPair> pairs) throws Exception;
 }

@@ -19,7 +19,7 @@ import static com.xeiam.xchange.dto.Order.OrderType.BID;
  */
 public class PairStrategy implements IStrategy {
     @Override
-    public void init(Collection<IExchangeMonitor> exchangeMonitors, Collection<CurrencyPair> pairs, Runnable exitHook) {
+    public void init(Collection<IExchangeMonitor> exchangeMonitors, Collection<CurrencyPair> pairs) {
         Map<Exchange, IExchangeMonitor> monitorMap = map(exchangeMonitors);
 
         BestOfferMonitor bestOfferMonitor = new BestOfferMonitor(monitorMap);

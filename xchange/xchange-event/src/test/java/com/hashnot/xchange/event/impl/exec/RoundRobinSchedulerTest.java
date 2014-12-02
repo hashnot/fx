@@ -9,7 +9,7 @@ public class RoundRobinSchedulerTest {
 
     @Test
     public void testRun() throws Exception {
-        RoundRobinScheduler sched = new RoundRobinScheduler();
+        RoundRobinScheduler sched = new RoundRobinScheduler("test");
 
         Runnable runnable = mock(Runnable.class);
         sched.addTask(runnable);
@@ -24,7 +24,7 @@ public class RoundRobinSchedulerTest {
 
     @Test
     public void testRunPriority() throws Exception {
-        RoundRobinScheduler sched = new RoundRobinScheduler();
+        RoundRobinScheduler sched = new RoundRobinScheduler("test");
 
         Runnable task = mock(Runnable.class);
         sched.addTask(task);

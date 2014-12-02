@@ -10,18 +10,18 @@ import com.hashnot.xchange.event.market.TickerEvent;
 import com.hashnot.xchange.ext.util.Numbers;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
-import com.xeiam.xchange.dto.marketdata.Ticker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
+import static com.hashnot.xchange.ext.util.Tickers.getPrice;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
 import static com.xeiam.xchange.dto.Order.OrderType.BID;
 
@@ -30,16 +30,20 @@ import static com.xeiam.xchange.dto.Order.OrderType.BID;
  */
 public class TickerVerifier implements IStrategy, ITickerListener, IOrderBookListener {
     final private static Logger log = LoggerFactory.getLogger(TickerVerifier.class);
+
     @Inject
     private ScheduledExecutorService executor;
+
+    @Inject
+    @Named("exitHook")
+    private Runnable exitHook;
 
     private Map<MarketSide, BigDecimal> ticker = new HashMap<>();
     private Map<MarketSide, BigDecimal> best = new HashMap<>();
     private Map<MarketSide, Long> diffStartTime = new HashMap<>();
 
     @Override
-    public void init(Collection<IExchangeMonitor> exchangeMonitors, Collection<CurrencyPair> pairs, Runnable exitHook) throws Exception {
-        executor.schedule(exitHook::run, 1, TimeUnit.MINUTES);
+    public void init(Collection<IExchangeMonitor> exchangeMonitors, Collection<CurrencyPair> pairs) throws Exception {
         for (CurrencyPair pair : pairs) {
             for (IExchangeMonitor monitor : exchangeMonitors) {
                 monitor.getTickerMonitor().addTickerListener(this, pair);
@@ -56,12 +60,8 @@ public class TickerVerifier implements IStrategy, ITickerListener, IOrderBookLis
 
     protected void ticker(TickerEvent evt, Order.OrderType type) {
         MarketSide key = new MarketSide(evt.source, evt.ticker.getCurrencyPair(), type);
-        ticker.put(key, get(evt.ticker, type));
+        ticker.put(key, getPrice(evt.ticker, type));
         verify(key);
-    }
-
-    protected BigDecimal get(Ticker ticker, Order.OrderType type) {
-        return type == ASK ? ticker.getAsk() : ticker.getBid();
     }
 
     @Override

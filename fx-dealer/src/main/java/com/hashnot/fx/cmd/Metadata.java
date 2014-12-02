@@ -3,7 +3,11 @@ package com.hashnot.fx.cmd;
 import com.hashnot.fx.framework.IStrategy;
 import com.hashnot.xchange.event.IExchangeMonitor;
 import com.xeiam.xchange.currency.CurrencyPair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -12,17 +16,23 @@ import java.util.concurrent.ExecutionException;
  * @author Rafał Krupiński
  */
 public class Metadata implements IStrategy {
+    final private static Logger log = LoggerFactory.getLogger(Metadata.class);
+
+    @Inject
+    @Named("exitHook")
+    private Runnable exitHook;
+
     @Override
-    public void init(Collection<IExchangeMonitor> exchangeMonitors, Collection<CurrencyPair> pairs, Runnable exitHook) throws Exception {
+    public void init(Collection<IExchangeMonitor> exchangeMonitors, Collection<CurrencyPair> pairs) throws Exception {
         CountDownLatch count = new CountDownLatch(exchangeMonitors.size() * pairs.size());
         for (IExchangeMonitor monitor : exchangeMonitors) {
             for (CurrencyPair pair : pairs) {
                 monitor.getAsyncExchange().getMetadataService().getMarketMetadata(pair, (future) -> {
                     count.countDown();
                     try {
-                        System.out.println(future.get());
+                        log.info("{}", future.get());
                     } catch (InterruptedException | ExecutionException e) {
-                        System.out.println(e);
+                        log.error("Error", e);
                     }
                 });
 

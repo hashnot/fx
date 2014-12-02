@@ -11,6 +11,8 @@ import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.marketdata.OrderBook;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,8 +40,12 @@ public class Profitability implements IStrategy {
             ONE.movePointRight(2)
     };
 
+    @Inject
+    @Named("exitHook")
+    private Runnable exitHook;
+
     @Override
-    public void init(Collection<IExchangeMonitor> monitors, Collection<CurrencyPair> pairs, Runnable exitHook) throws InterruptedException {
+    public void init(Collection<IExchangeMonitor> monitors, Collection<CurrencyPair> pairs) throws InterruptedException {
         Map<IExchangeMonitor, OrderBook> books = new ConcurrentHashMap<>();
 
         CountDownLatch count = new CountDownLatch(monitors.size());

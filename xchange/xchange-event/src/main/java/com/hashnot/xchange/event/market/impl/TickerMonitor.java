@@ -6,7 +6,6 @@ import com.hashnot.xchange.event.AbstractParametrizedMonitor;
 import com.hashnot.xchange.event.market.ITickerListener;
 import com.hashnot.xchange.event.market.ITickerMonitor;
 import com.hashnot.xchange.event.market.TickerEvent;
-import com.hashnot.xchange.ext.util.Numbers;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.marketdata.Ticker;
@@ -18,6 +17,8 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
+
+import static com.hashnot.xchange.ext.util.Tickers.eq;
 
 /**
  * @author Rafał Krupiński
@@ -67,13 +68,6 @@ public class TickerMonitor extends AbstractParametrizedMonitor<CurrencyPair, ITi
         super(scheduler, executor);
         this.marketDataService = marketDataService;
         this.exchange = exchange;
-    }
-
-    private static boolean eq(Ticker t1, Ticker t2) {
-        assert t1.getCurrencyPair().equals(t2.getCurrencyPair());
-        return t1.getTimestamp() == null ? t2.getTimestamp() == null : t1.getTimestamp().equals(t2.getTimestamp())
-                && Numbers.eq(t1.getAsk(), t2.getAsk())
-                && Numbers.eq(t1.getBid(), t2.getBid());
     }
 
     @Override
