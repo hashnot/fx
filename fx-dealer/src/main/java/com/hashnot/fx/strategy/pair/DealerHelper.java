@@ -68,7 +68,7 @@ public class DealerHelper {
         log.debug("open: {}", openAmount);
         log.debug("close: {}", closeAmount);
 
-        BigDecimal openAmountActual = min(openAmount, closeAmount).setScale(getScale(openMonitor, closeMonitor, pair), RoundingMode.FLOOR);
+        BigDecimal openAmountActual = /*Ordering.natural().*/min(openAmount, closeAmount).setScale(getScale(openMonitor, closeMonitor, pair), RoundingMode.FLOOR);
 
         if (!checkMinima(openAmountActual, openMonitor, pair)) {
             log.debug("Amount {} less than minimum", openAmountActual);
@@ -109,41 +109,32 @@ public class DealerHelper {
 
     private static BigDecimal getCloseAmount(List<LimitOrder> closeOrders, BigDecimal amountLimit, LimitOrder openOrder, IExchangeMonitor closeMonitor) {
         if (openOrder.getType() == Order.OrderType.ASK)
-            return totalAmountByValue(closeOrders, amountLimit, openOrder.getNetPrice(), closeMonitor);
+            return totalAmountByValue(closeOrders, amountLimit, openOrder.getLimitPrice(), closeMonitor);
         else
-            return totalAmountByAmount(closeOrders, amountLimit, openOrder.getNetPrice(), closeMonitor);
+            return totalAmountByAmount(closeOrders, amountLimit, openOrder.getLimitPrice());
     }
 
-    private static BigDecimal totalAmountByAmount(List<LimitOrder> orders, BigDecimal amountLimit, BigDecimal netPriceLimit, IExchangeMonitor x) {
-        BigDecimal totalValue = ZERO;
+    private static BigDecimal totalAmountByAmount(List<LimitOrder> orders, BigDecimal amountLimit, BigDecimal netPriceLimit) {
         BigDecimal totalAmount = ZERO;
         Order.OrderType type = Order.OrderType.ASK;
         for (LimitOrder order : orders) {
             assert type != order.getType();
 
-            BigDecimal netPrice = Orders.getNetPrice(order.getLimitPrice(), type, x.getMarketMetadata(order.getCurrencyPair()).getOrderFeeFactor());
-            log.debug("order {} net {}", order, netPrice);
+            log.debug("order {}", order);
 
-            if (isFurther(netPrice, netPriceLimit, order.getType()))
+            if (isFurther(order.getLimitPrice(), netPriceLimit, order.getType()))
                 break;
-            BigDecimal newAmount = totalAmount.add(order.getTradableAmount());
 
-            BigDecimal actualAmount;
+            totalAmount = totalAmount.add(order.getTradableAmount());
 
-            if (!lt(newAmount, amountLimit)) {
-                actualAmount = amountLimit.subtract(totalAmount);
-                totalAmount = totalAmount.add(actualAmount);
+            if (!lt(totalAmount, amountLimit)) {
                 break;
-            } else {
-                actualAmount = order.getTradableAmount();
-                totalAmount = newAmount;
-                totalValue = totalValue.add(actualAmount.multiply(order.getLimitPrice(), c));
             }
         }
         return totalAmount;
     }
 
-    static BigDecimal totalAmountByValue(List<LimitOrder> orders, BigDecimal valueLimit, BigDecimal netPriceLimit, IExchangeMonitor x) {
+    static BigDecimal totalAmountByValue(List<LimitOrder> orders, BigDecimal valueLimit, BigDecimal priceLimit, IExchangeMonitor x) {
         BigDecimal totalValue = ZERO;
         BigDecimal totalAmount = ZERO;
         Order.OrderType type = Order.OrderType.BID;
@@ -153,24 +144,17 @@ public class DealerHelper {
             BigDecimal netPrice = Orders.getNetPrice(order.getLimitPrice(), type, x.getMarketMetadata(order.getCurrencyPair()).getOrderFeeFactor());
             log.debug("order {} net {}", order, netPrice);
 
-            if (isFurther(netPrice, netPriceLimit, order.getType()))
+            if (isFurther(order.getLimitPrice(), priceLimit, order.getType()))
                 break;
             BigDecimal curAmount = order.getTradableAmount();
-            BigDecimal newAmount = totalAmount.add(curAmount);
-
             BigDecimal curValue = curAmount.multiply(order.getLimitPrice(), c);
-            BigDecimal newValue = totalValue.add(curValue);
+            totalValue = totalValue.add(curValue);
 
-            // if >0 then cut amount
-            // TODO if =0 then break
-            if (!lt(newValue, valueLimit)) {
-                curValue = valueLimit.subtract(totalValue);
-                curAmount = curValue.divide(order.getLimitPrice(), c);
-                totalAmount = totalAmount.add(curAmount);
+            curAmount = curValue.divide(order.getLimitPrice(), c);
+            totalAmount = totalAmount.add(curAmount);
+
+            if (!lt(totalValue, valueLimit)) {
                 break;
-            } else {
-                totalAmount = newAmount;
-                totalValue = newValue;
             }
         }
         return totalAmount;

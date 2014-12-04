@@ -23,6 +23,9 @@ import static com.xeiam.xchange.dto.trade.LimitOrder.Builder.from;
 import static java.math.BigDecimal.ZERO;
 
 /**
+ * Tracker is enabled whenever limit order is placed, and it's disabled when there are no known open orders.
+ * Adding or removing {@link }UserTradeListener}s doesn't influence monitoring, unlike in case of other monitors.
+ *
  * @author Rafał Krupiński
  */
 public class OrderTracker implements IUserTradesListener, IOrderPlacementListener, IOrderTracker {
@@ -45,6 +48,8 @@ public class OrderTracker implements IUserTradesListener, IOrderPlacementListene
             log.warn("Received user trades from exchange {} where no orders are registered", exchange);
             return;
         }
+
+        // TODO merge trades with the same price
 
         for (UserTrade trade : evt.userTrades.getUserTrades()) {
             String orderId = trade.getOrderId();
@@ -99,6 +104,7 @@ public class OrderTracker implements IUserTradesListener, IOrderPlacementListene
             log.info("Tracking {}", id);
 
         current.put(id, limitOrder);
+        updateRunning();
     }
 
     @Override
@@ -118,6 +124,7 @@ public class OrderTracker implements IUserTradesListener, IOrderPlacementListene
             log.info("Removing {}@{}", id, x);
             monitored.remove(id);
             current.remove(id);
+            updateRunning();
         }
     }
 
@@ -138,14 +145,11 @@ public class OrderTracker implements IUserTradesListener, IOrderPlacementListene
     @Override
     public void addTradeListener(IUserTradeListener listener) {
         listeners.add(listener);
-        userTradesMonitor.addTradesListener(this);
     }
 
     @Override
     public void removeTradeListener(IUserTradeListener listener) {
         listeners.remove(listener);
-        if (listeners.isEmpty())
-            userTradesMonitor.removeTradesListener(this);
     }
 }
 

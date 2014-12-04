@@ -33,15 +33,15 @@ public class UserTradesMonitor extends AbstractPollingMonitor implements IUserTr
 
     private final Set<IUserTradesListener> listeners = new HashSet<>();
 
-    private Date previous;
+    private volatile Date previous;
 
     @Override
     public void run() {
         Date now = new Date();
 
+        log.debug("Getting trades from {} since {}", tradeService, previous);
         tradeService.getTradeHistory(new DefaultTradeHistoryParamsTimeSpan(previous), (future) -> {
             try {
-                log.debug("Getting trades from {}", tradeService);
                 UserTrades trades = future.get();
                 log.debug("User trades {}", trades.getUserTrades().size());
 
@@ -56,6 +56,8 @@ public class UserTradesMonitor extends AbstractPollingMonitor implements IUserTr
                 log.warn("Error from {}", tradeService, e.getCause());
             }
         });
+        if (previous == null || previous.compareTo(now) < 0)
+            previous = now;
     }
 
     protected void updatePreviousDate(UserTrades trades, Date now) {

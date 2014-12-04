@@ -18,7 +18,7 @@ public class GaussOrderOpenStrategy extends SimpleOrderOpenStrategy {
      * {@link java.util.Random#nextGaussian()} has a standard deviation of 1, which makes the p(result<1)=31%
      * Tune the gauss
      */
-    static private final int stdDevFactor = 50;
+    static private final int stdDevFactor = 5;
     static final private RoundingMode round = RoundingMode.HALF_EVEN;
 
     @Override

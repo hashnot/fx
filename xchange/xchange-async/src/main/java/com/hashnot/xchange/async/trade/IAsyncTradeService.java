@@ -7,7 +7,9 @@ import com.xeiam.xchange.dto.trade.OpenOrders;
 import com.xeiam.xchange.dto.trade.UserTrades;
 import com.xeiam.xchange.service.polling.trade.TradeHistoryParams;
 
+import java.io.IOException;
 import java.util.Collection;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
@@ -21,7 +23,9 @@ public interface IAsyncTradeService {
 
     void placeMarketOrder(MarketOrder marketOrder, Consumer<Future<String>> consumer);
 
-    void placeLimitOrder(LimitOrder limitOrder, Consumer<Future<String>> consumer);
+    Future<String> placeLimitOrder(LimitOrder limitOrder, Consumer<Future<String>> consumer);
+
+    String placeLimitOrder(LimitOrder limitOrder) throws ExecutionException, InterruptedException, IOException;
 
     void cancelOrder(String orderId, Consumer<Future<Boolean>> consumer);
 
@@ -32,6 +36,4 @@ public interface IAsyncTradeService {
     TradeHistoryParams createTradeHistoryParams();
 
     void getExchangeSymbols(Consumer<Future<Collection<CurrencyPair>>> consumer);
-
-    void updateOrder(String orderId, LimitOrder order, Consumer<Future<String>> consumer);
 }

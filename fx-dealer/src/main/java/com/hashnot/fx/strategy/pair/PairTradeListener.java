@@ -1,5 +1,6 @@
 package com.hashnot.fx.strategy.pair;
 
+import com.hashnot.fx.Operations;
 import com.hashnot.xchange.async.trade.IAsyncTradeService;
 import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.event.trade.IUserTradeListener;
@@ -77,13 +78,14 @@ public class PairTradeListener implements IUserTradeListener {
     }
 
     private void updateOrder(LimitOrder order) {
-        getTradeService(data.orderBinding.openExchange).updateOrder(data.orderBinding.openOrderId, order, (idf) -> {
+        IAsyncTradeService tradeService = getTradeService(data.orderBinding.openExchange);
+        Operations.updateOrder(tradeService, data.orderBinding.openOrderId, order, (idf) -> {
             try {
                 data.orderBinding.openOrderId = idf.get();
             } catch (InterruptedException e) {
                 log.warn("Interrupted", e);
             } catch (ExecutionException e) {
-                log.warn("Error", e.getCause());
+                log.warn("Error from {}", tradeService, e.getCause());
             }
         });
     }
@@ -104,13 +106,16 @@ public class PairTradeListener implements IUserTradeListener {
             String id = null;
             try {
                 id = idf.get();
-            } catch (Exception e) {
+            } catch (ExecutionException x) {
+                Throwable e = x.getCause();
                 if (update.openOrderId == null) {
-                    log.warn("Error from {}", update.openExchange, e);
+                    log.warn("Error from {}", tradeService, e);
                     data.orderBinding = null;
                 } else {
-                    log.warn("Error from {} but have order ID {}", update.openExchange, update.openOrderId, e);
+                    log.warn("Error from {} but have order ID {}", tradeService, update.openOrderId, e);
                 }
+            } catch (InterruptedException e) {
+                log.warn("Interrupted!", e);
             }
             // cancel might have been called during placeLimitOrder. If so, orderBinding is null
             if (data.orderBinding == null) {
@@ -132,7 +137,20 @@ public class PairTradeListener implements IUserTradeListener {
             return;
         }
         log.info("Cancel @{} {} {}", data.orderBinding.openExchange, data.orderBinding.openOrderId, data.orderBinding.openedOrder);
-        getTradeService(data.orderBinding.openExchange).cancelOrder(data.orderBinding.openOrderId, (success) -> data.orderBinding = null);
+        IAsyncTradeService tradeService = getTradeService(data.orderBinding.openExchange);
+        tradeService.cancelOrder(data.orderBinding.openOrderId, (future) -> {
+            try {
+                Boolean success = future.get();
+                data.orderBinding = null;
+                if (!success) {
+                    log.warn("No such order");
+                }
+            } catch (InterruptedException e) {
+                log.warn("Interrupted!", e);
+            } catch (ExecutionException e) {
+                log.warn("Error from {}", tradeService, e.getCause());
+            }
+        });
     }
 
     @Override

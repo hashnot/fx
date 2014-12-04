@@ -49,7 +49,7 @@ public class SimpleOrderCloseStrategy {
             } catch (InterruptedException e) {
                 log.warn("Interrupted!", e);
             } catch (ExecutionException e) {
-                log.warn("Error from {}", tradeService, e);
+                log.warn("Error from {} {}", tradeService, e.getCause(), order);
             }
         });
     }

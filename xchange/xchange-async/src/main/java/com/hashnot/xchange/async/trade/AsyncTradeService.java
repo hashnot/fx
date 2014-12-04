@@ -1,7 +1,7 @@
 package com.hashnot.xchange.async.trade;
 
-import com.google.common.util.concurrent.SettableFuture;
 import com.hashnot.xchange.async.AbstractAsyncService;
+import com.xeiam.xchange.ExchangeException;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.dto.trade.MarketOrder;
@@ -12,6 +12,7 @@ import com.xeiam.xchange.service.polling.trade.TradeHistoryParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
@@ -42,8 +43,23 @@ public class AsyncTradeService extends AbstractAsyncService implements IAsyncTra
     }
 
     @Override
-    public void placeLimitOrder(LimitOrder limitOrder, Consumer<Future<String>> consumer) {
-        call(() -> service.placeLimitOrder(limitOrder), consumer);
+    public Future<String> placeLimitOrder(LimitOrder limitOrder, Consumer<Future<String>> consumer) {
+        return call(() -> service.placeLimitOrder(limitOrder), consumer);
+    }
+
+    @Override
+    public String placeLimitOrder(LimitOrder limitOrder) throws InterruptedException, IOException {
+        try {
+            return call(() -> service.placeLimitOrder(limitOrder), null).get();
+        } catch (ExecutionException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof IOException)
+                throw (IOException) cause;
+            else if (cause instanceof ExchangeException)
+                throw (ExchangeException) cause;
+            else
+                throw new ExchangeException("Error", cause);
+        }
     }
 
     @Override
@@ -71,30 +87,4 @@ public class AsyncTradeService extends AbstractAsyncService implements IAsyncTra
         call(service::getExchangeSymbols, consumer);
     }
 
-    /**
-     * Update existing LimitOrder with a new one
-     *
-     * @param orderId  orderOd of the existing order
-     * @param order    new order
-     * @param consumer callback to be notified of the new order ID or of an exception
-     */
-    @Override
-    public void updateOrder(String orderId, LimitOrder order, Consumer<Future<String>> consumer) {
-        cancelOrder(orderId, success -> {
-            SettableFuture<String> result = SettableFuture.create();
-            try {
-                if (success.get()) {
-                    placeLimitOrder(order, consumer);
-                    return;
-                } else {
-                    result.setException(new IllegalStateException("Order filled"));
-                }
-            } catch (ExecutionException e) {
-                result.setException(e.getCause());
-            } catch (InterruptedException e) {
-                log.warn("Interrupted!", e);
-            }
-            consumer.accept(result);
-        });
-    }
 }

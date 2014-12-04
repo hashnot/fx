@@ -122,6 +122,7 @@ public class Dealer implements IBestOfferListener {
     }
 
     private void updateCloseMarket(Exchange oldExchange) {
+        log.debug("open {} old close {} new close {}", getOpenExchange(), oldExchange, getCloseExchange());
         if (oldExchange != null && oldExchange != getCloseExchange()) {
             MarketSide oldCloseSide = new MarketSide(oldExchange, config.listing, config.side);
             log.debug("Remove OBL from {}", oldCloseSide);

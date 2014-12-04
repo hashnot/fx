@@ -81,7 +81,7 @@ public class PairOrderBookSideListener implements IOrderBookSideListener{
                 log.debug("Order still profitable");
                 return;
             } else {
-                log.info("Order unprofitable {}", openOrder);
+                log.info("Unprofitable {}", openOrder);
                 orderManager.cancel();
             }
         }
@@ -126,6 +126,7 @@ public class PairOrderBookSideListener implements IOrderBookSideListener{
         if (evt.getChanges().isEmpty())
             return true;
         BigDecimal closeAmount = DealerHelper.getCloseAmount(evt.newOrders, openOrder, monitors.get(data.getCloseExchange()));
+        log.debug("Buyable for {}: {}", openOrder.getLimitPrice(), closeAmount);
         return !lt(closeAmount, openOrder.getTradableAmount());
     }
 

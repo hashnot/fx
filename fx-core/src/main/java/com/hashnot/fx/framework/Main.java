@@ -9,11 +9,14 @@ import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.ext.util.MDCRunnable;
 import com.xeiam.xchange.currency.CurrencyPair;
 import groovy.lang.GroovyShell;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
@@ -22,6 +25,7 @@ import java.util.concurrent.ThreadFactory;
  * @author Rafał Krupiński
  */
 public class Main {
+    final private static Logger log = LoggerFactory.getLogger(Main.class);
     private static final CurrencyPair pair = CurrencyPair.BTC_EUR;
     private static final String DEFAULT_STRATEGY = "com.hashnot.fx.strategy.pair.PairStrategy";
     private Thread shutdownHook = new Thread(this::stop, "Shutdown");
@@ -87,7 +91,16 @@ public class Main {
         } catch (IllegalStateException e) {
             // thrown during shutdown - safe to ignore
         }
-        monitors.forEach(IExchangeMonitor::stop);
+        CountDownLatch countDownLatch = new CountDownLatch(monitors.size());
+        monitors.forEach(monitor -> scheduler.execute(() -> {
+            monitor.stop();
+            countDownLatch.countDown();
+        }));
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            log.warn("Interrupted!", e);
+        }
         scheduler.shutdown();
     }
 
