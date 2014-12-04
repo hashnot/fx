@@ -26,9 +26,11 @@ import com.hashnot.xchange.event.trade.impl.UserTradesMonitor;
 import com.hashnot.xchange.ext.IExchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.marketdata.MarketMetadata;
+import com.xeiam.xchange.dto.trade.LimitOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,23 +42,25 @@ import java.util.concurrent.*;
 public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange {
     final private static Logger log = LoggerFactory.getLogger(ExchangeMonitor.class);
 
-    protected ScheduledFuture<?> future;
+    protected ScheduledFuture<?> exchangeScheduler;
     final protected RoundRobinScheduler runnableScheduler;
 
     final protected IExchange exchange;
     private ScheduledExecutorService executor;
     private long rate;
 
-    final protected IOrderBookMonitor orderBookMonitor;
-    final protected IUserTradesMonitor userTradesMonitor;
-    final protected ITickerMonitor tickerMonitor;
-    final protected IOpenOrdersMonitor openOrdersMonitor;
+    final protected OrderBookMonitor orderBookMonitor;
+    final protected UserTradesMonitor userTradesMonitor;
+    final protected TickerMonitor tickerMonitor;
+    final protected OpenOrdersMonitor openOrdersMonitor;
     final protected IWalletMonitor walletTracker;
     final protected OrderTracker orderTracker;
     final protected IAsyncTradeService tradeService;
     final protected IAsyncAccountService accountService;
     final protected IAsyncMarketMetadataService metadataService;
     final protected IAsyncMarketDataService marketDataService;
+
+    final protected Iterable<AbstractPollingMonitor> closeables;
 
     protected final Map<CurrencyPair, MarketMetadata> metadata = new HashMap<>();
 
@@ -75,12 +79,14 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange {
         orderTracker = new OrderTracker(userTradesMonitor);
         exchange.getPollingTradeService().addLimitOrderPlacedListener(orderTracker);
 
-        IWalletMonitor walletMonitor = new WalletMonitor(exchange, runnableScheduler, executor, accountService);
+        WalletMonitor walletMonitor = new WalletMonitor(exchange, runnableScheduler, executor, accountService);
         walletTracker = new WalletTracker(orderTracker, walletMonitor);
 
         marketDataService = new AsyncMarketDataService(runnableScheduler, exchange.getPollingMarketDataService(), executor);
         tickerMonitor = new TickerMonitor(marketDataService, exchange, runnableScheduler, executor);
         orderBookMonitor = new OrderBookMonitor(exchange, runnableScheduler, executor, marketDataService);
+
+        closeables = Arrays.asList(openOrdersMonitor, userTradesMonitor, tickerMonitor, walletMonitor);
     }
 
     public MarketMetadata getMarketMetadata(CurrencyPair pair) {
@@ -103,20 +109,46 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange {
         });
     }
 
+    /**
+     * - shutdown all polling monitors,
+     * - cancel all open orders,
+     * - stop exchange scheduler
+     */
+    @Override
+    public void stop() {
+        log.info("Stopping monitor: {}", exchange);
+
+        stopAll();
+        cancelAll();
+        exchangeScheduler.cancel(false);
+    }
+
+    protected void cancelAll() {
+        log.info("Cancelling all orders");
+        Map<String, LimitOrder> monitored = orderTracker.getMonitored();
+        CountDownLatch count = new CountDownLatch(monitored.size());
+        monitored.forEach((k, v) -> {
+            tradeService.cancelOrder(k, (future) -> count.countDown());
+        });
+        try {
+            count.await();
+        } catch (InterruptedException e) {
+            log.warn("Interrupted!", e);
+        }
+    }
+
+    protected void stopAll(){
+        closeables.forEach(AbstractPollingMonitor::disable);
+    }
+
     @Override
     public String toString() {
         return getExchange().toString();
     }
 
     @Override
-    public void stop() {
-        log.info("Stopping monitor: {}", exchange);
-        future.cancel(false);
-    }
-
-    @Override
     public void start() {
-        future = executor.scheduleAtFixedRate(runnableScheduler, 0, rate, TimeUnit.MILLISECONDS);
+        exchangeScheduler = executor.scheduleAtFixedRate(runnableScheduler, 0, rate, TimeUnit.MILLISECONDS);
         getWalletMonitor().update(Collections.emptyList());
     }
 

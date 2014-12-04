@@ -50,21 +50,21 @@ public abstract class AbstractParametrizedMonitor<P, L, R> extends AbstractPolli
     protected void addListener(L listener, P param) {
         synchronized (listeners) {
             boolean put = listeners.put(param, listener);
-            if (put)
-                log.debug("{} listens on {} @{}", listener, param, this);
-
-            enable();
+            if (put) {
+                log.info("{}@{} + {}", param, this, listener);
+                enable();
+            }
         }
     }
 
     protected void removeListener(L listener, P param) {
         synchronized (listeners) {
             boolean remove = listeners.remove(param, listener);
-            if (remove)
-                log.debug("{} doesn't listen on {} @{}", listener, param, this);
-
-            if (listeners.isEmpty())
-                disable();
+            if (remove) {
+                log.info("{}@{} - {}", param, this, listener);
+                if (listeners.isEmpty())
+                    disable();
+            }
         }
     }
 

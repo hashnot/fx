@@ -1,7 +1,6 @@
 package com.hashnot.xchange.async;
 
 import com.google.common.util.concurrent.SettableFuture;
-import com.hashnot.xchange.ext.util.MDCRunnable;
 
 import java.io.IOException;
 import java.util.concurrent.Executor;
@@ -30,7 +29,7 @@ public class AbstractAsyncService {
                 future.setException(e);
             }
             if (consumer != null)
-                consumerExecutor.execute(new MDCRunnable(() -> consumer.accept(future)));
+                consumerExecutor.execute(() -> consumer.accept(future));
         });
         return future;
     }

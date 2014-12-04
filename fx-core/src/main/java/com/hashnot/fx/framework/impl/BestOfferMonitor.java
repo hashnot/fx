@@ -126,6 +126,7 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
 
     @Override
     public void addBestOfferListener(IBestOfferListener listener, MarketSide source) {
+        log.info("{} + {}", source, listener);
         boolean listen = bestOfferListeners.computeIfAbsent(source.market, (k) -> Multimaps.newSetMultimap(new EnumMap<>(OrderType.class), LinkedHashSet::new)).put(source.side, listener);
         if (!listen)
             return;
@@ -139,6 +140,7 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
 
     @Override
     public void removeBestOfferListener(IBestOfferListener listener, MarketSide source) {
+        log.info("{} - {}", source, listener);
         Market market = source.market;
         Multimap<OrderType, IBestOfferListener> marketBestOfferListeners = bestOfferListeners.getOrDefault(market, EMPTY_MULTIMAP);
         marketBestOfferListeners.remove(source.side, listener);
@@ -151,6 +153,7 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
 
     @Override
     public void addOrderBookSideListener(IOrderBookSideListener listener, MarketSide source) {
+        log.info("{} + {}", source, listener);
         boolean listen = orderBookListeners.put(source, listener);
         if (!listen)
             return;
@@ -166,11 +169,10 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
 
     @Override
     public void removeOrderBookSideListener(IOrderBookSideListener listener, MarketSide source) {
+        log.info("{} - {}", source, listener);
         boolean remove = orderBookListeners.remove(source, listener);
-        if (!remove)
-            return;
-
-        super.removeOrderBookSideListener(listener, source);
+        if (remove)
+            super.removeOrderBookSideListener(listener, source);
 
         Market market = source.market;
         if (bestOfferListeners.containsKey(market) && !(orderBookListeners.containsKey(source) || orderBookListeners.containsKey(new MarketSide(market, revert(source.side))))) {

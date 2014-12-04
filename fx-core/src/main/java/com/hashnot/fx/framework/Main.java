@@ -6,7 +6,6 @@ import com.google.inject.Injector;
 import com.google.inject.name.Names;
 import com.hashnot.fx.util.ConfigurableThreadFactory;
 import com.hashnot.xchange.event.IExchangeMonitor;
-import com.hashnot.xchange.ext.trade.ITradeService;
 import com.hashnot.xchange.ext.util.MDCRunnable;
 import com.xeiam.xchange.currency.CurrencyPair;
 import groovy.lang.GroovyShell;
@@ -83,17 +82,13 @@ public class Main {
     }
 
     public void stop() {
-        for (IExchangeMonitor monitor : monitors) {
-            ITradeService tradeService = monitor.getExchange().getPollingTradeService();
-            tradeService.cancelAll();
-            monitor.stop();
-        }
-        scheduler.shutdown();
         try {
             Runtime.getRuntime().removeShutdownHook(shutdownHook);
         } catch (IllegalStateException e) {
             // thrown during shutdown - safe to ignore
         }
+        monitors.forEach(IExchangeMonitor::stop);
+        scheduler.shutdown();
     }
 
     protected static IStrategy getPairStrategy(String className) {

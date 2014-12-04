@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
@@ -22,8 +21,6 @@ import static com.hashnot.xchange.ext.util.Multiplexer.multiplex;
 public class TradeService extends AbstractTradeService implements ITradeService {
     final private static Logger log = LoggerFactory.getLogger(TradeService.class);
 
-    final private Map<String, LimitOrder> openOrders = new ConcurrentHashMap<>();
-
     private Set<IOrderPlacementListener> listeners = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     public TradeService(Supplier<Exchange> backend) {
@@ -35,13 +32,10 @@ public class TradeService extends AbstractTradeService implements ITradeService 
         Exchange x = exchange.get();
         log.debug("Cancel {}@{}", orderId, this);
         boolean result = x.getPollingTradeService().cancelOrder(orderId);
-        if (openOrders.remove(orderId) == null)
-            log.info("Unknown order {}", orderId);
-        else if (!result)
+        multiplex(listeners, new OrderCancelEvent(orderId, x), IOrderPlacementListener::orderCanceled);
+        if (!result) {
             log.warn("Unsuccessful cancel order {}@{}", orderId, this);
-
-        if (result)
-            multiplex(listeners, new OrderCancelEvent(orderId, x), IOrderPlacementListener::orderCanceled);
+        }
 
         return result;
     }
@@ -50,9 +44,6 @@ public class TradeService extends AbstractTradeService implements ITradeService 
     public String placeLimitOrder(LimitOrder limitOrder) throws IOException {
         Exchange exchange = this.exchange.get();
         String id = exchange.getPollingTradeService().placeLimitOrder(limitOrder);
-        if (openOrders.containsKey(id))
-            log.warn("ID {} present @{}", id, exchange);
-        openOrders.put(id, limitOrder);
 
         multiplex(listeners, new OrderEvent<>(id, limitOrder, exchange), IOrderPlacementListener::limitOrderPlaced);
 
@@ -67,18 +58,6 @@ public class TradeService extends AbstractTradeService implements ITradeService 
         multiplex(listeners, new OrderEvent<>(id, marketOrder, exchange), IOrderPlacementListener::marketOrderPlaced);
 
         return id;
-    }
-
-    // TODO consider moving to OrderTracker
-    public void cancelAll() {
-        log.info("Cancel all at shutdown");
-        openOrders.forEach((k, v) -> {
-            try {
-                cancelOrder(k);
-            } catch (IOException e) {
-                log.warn("Error while cancelling {}", k, e);
-            }
-        });
     }
 
     @Override
