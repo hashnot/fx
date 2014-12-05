@@ -74,11 +74,9 @@ public class PairOrderBookSideListenerTest {
 
 
         LimitOrder openOrder = new LimitOrder(side, ONE, p, null, null, openPrice);
-        openOrder.setNetPrice(openPrice);
         MarketSide closeSide = new MarketSide(closeExchange, p, side);
 
         LimitOrder closeOrder = from(openOrder).limitPrice(closePrice).build();
-        closeOrder.setNetPrice(closePrice);
         List<LimitOrder> closingOrders = asList((closeOrder));
         orderBookSideListener.orderBookSideChanged(new OrderBookSideUpdateEvent(closeSide, emptyList(), closingOrders));
 

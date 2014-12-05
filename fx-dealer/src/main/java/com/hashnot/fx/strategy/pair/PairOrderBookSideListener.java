@@ -4,7 +4,6 @@ import com.hashnot.fx.framework.IOrderBookSideListener;
 import com.hashnot.fx.framework.OrderBookSideUpdateEvent;
 import com.hashnot.fx.util.OrderBooks;
 import com.hashnot.xchange.event.IExchangeMonitor;
-import com.hashnot.xchange.event.util.NetPrice;
 import com.hashnot.xchange.ext.util.Orders;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.trade.LimitOrder;
@@ -70,9 +69,6 @@ public class PairOrderBookSideListener implements IOrderBookSideListener{
         IExchangeMonitor closeMonitor = monitors.get(data.getCloseExchange());
         List<LimitOrder> limited = OrderBooks.removeOverLimit(evt.newOrders, getLimit(closeMonitor, config.listing.baseSymbol), getLimit(closeMonitor, config.listing.counterSymbol));
 
-        // TODO remove net prices
-        Orders.updateNetPrices(limited, closeMonitor.getMarketMetadata(config.listing).getOrderFeeFactor());
-
         if (orderManager.isActive()) {
             orderManager.update(evt.newOrders);
             // return if there is open and profitable order
@@ -86,11 +82,17 @@ public class PairOrderBookSideListener implements IOrderBookSideListener{
             }
         }
 
-        LimitOrder closeOrder = NetPrice.closing(evt.newOrders.get(0), closeMonitor);
+        BigDecimal closingNetPrice;
+        BigDecimal closingPrice;
+        {
+            LimitOrder closeOrder = evt.newOrders.get(0);
+            closingPrice = closeOrder.getLimitPrice();
+            closingNetPrice = Orders.getNetPrice(closeOrder, closeMonitor.getMarketMetadata(closeOrder.getCurrencyPair()).getOrderFeeFactor());
+        }
 
         BigDecimal openGrossPrice = data.getBestOffers().get(data.getOpenExchange());
         BigDecimal openNetPrice = getOpenNetPrice(openGrossPrice);
-        BigDecimal diff = openNetPrice.subtract(closeOrder.getNetPrice());
+        BigDecimal diff = openNetPrice.subtract(closingNetPrice);
 
         // ask -> diff > 0
         boolean profitable = isFurther(diff, ZERO, config.side);
@@ -103,10 +105,9 @@ public class PairOrderBookSideListener implements IOrderBookSideListener{
             openNetPrice = getOpenNetPrice(openGrossPrice);
         }
         LimitOrder openOrder = new LimitOrder.Builder(config.side, config.listing).limitPrice(openGrossPrice).build();
-        openOrder.setNetPrice(openNetPrice);
 
 
-        log.info("open {} {} {} <=> {} {} close {}profitable", openOrder.getType(), openGrossPrice, openNetPrice, closeOrder.getNetPrice(), closeOrder.getLimitPrice(), profitable ? "" : "not ");
+        log.info("open {} {} {} <=> {} {} close {}profitable", openOrder.getType(), openGrossPrice, openNetPrice, closingNetPrice, closingPrice, profitable ? "" : "not ");
         if (!profitable) {
             if (orderManager.isActive())
                 orderManager.cancel();

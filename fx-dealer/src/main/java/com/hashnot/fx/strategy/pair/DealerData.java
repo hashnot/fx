@@ -1,7 +1,9 @@
 package com.hashnot.fx.strategy.pair;
 
 import com.xeiam.xchange.Exchange;
+import com.xeiam.xchange.dto.trade.LimitOrder;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
@@ -77,5 +79,17 @@ public class DealerData {
                 ", closeExchange=" + closeExchange +
                 ", openExchange=" + openExchange +
                 '}';
+    }
+
+    /**
+     * Helper method
+     */
+    @Nullable
+    public BigDecimal getOpenPrice() {
+        if (orderBinding != null) {
+            LimitOrder openedOrder = orderBinding.openedOrder;
+            return openedOrder == null ? null : openedOrder.getLimitPrice();
+        }
+        return null;
     }
 }

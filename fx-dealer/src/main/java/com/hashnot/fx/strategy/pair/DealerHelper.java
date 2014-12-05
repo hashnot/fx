@@ -2,7 +2,6 @@ package com.hashnot.fx.strategy.pair;
 
 import com.google.common.collect.Ordering;
 import com.hashnot.xchange.event.IExchangeMonitor;
-import com.hashnot.xchange.event.util.NetPrice;
 import com.hashnot.xchange.ext.util.Orders;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
@@ -78,7 +77,6 @@ public class DealerHelper {
 
 
         LimitOrder openOrder = LimitOrder.Builder.from(openOrderTempl).tradableAmount(openAmountActual).build();
-        NetPrice.updateNetPrice(openOrder, openMonitor);
         return new OrderBinding(openMonitor.getExchange(), closeMonitor.getExchange(), openOrder, closeOrders);
     }
 

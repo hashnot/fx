@@ -2,7 +2,6 @@ package com.hashnot.fx.strategy.pair;
 
 import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.event.account.IWalletMonitor;
-import com.hashnot.xchange.event.util.NetPrice;
 import com.hashnot.xchange.ext.util.Numbers;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.marketdata.BaseMarketMetadata;
@@ -43,10 +42,10 @@ public class DealerHelperTest {
 
     @Test
     public void testDeal() throws Exception {
-        LimitOrder openTempl = order(side, ONE, P, ONE, m1);
+        LimitOrder openTempl = order(side, ONE, P, ONE);
         List<LimitOrder> closeOrders = asList(
-                order(side, v(".5"), P, p(ONE, v("-.2")), m2),
-                order(side, ONE, P, p(ONE, v("-.1")), m2)
+                order(side, v(".5"), P, p(ONE, v("-.2"))),
+                order(side, ONE, P, p(ONE, v("-.1")))
         );
         OrderBinding deal = DealerHelper.deal(openTempl, m1, closeOrders, m2);
 
@@ -55,10 +54,10 @@ public class DealerHelperTest {
 
     @Test
     public void testDealFee() throws Exception {
-        LimitOrder openTempl = order(side, ONE, P, ONE, m1);
+        LimitOrder openTempl = order(side, ONE, P, ONE);
         List<LimitOrder> closeOrders = asList(
-                order(side, v(".5"), P, p(ONE, v("-.2")), m2),
-                order(side, ONE, P, p(ONE, v("-.1")), m2)
+                order(side, v(".5"), P, p(ONE, v("-.2"))),
+                order(side, ONE, P, p(ONE, v("-.1")))
         );
         OrderBinding deal = DealerHelper.deal(openTempl, m1, closeOrders, m2);
 
@@ -68,11 +67,11 @@ public class DealerHelperTest {
     @Test
     public void testCloseAmount() {
         List<LimitOrder> closeOrders = asList(
-                order(side, v(".5"), P, p(ONE, v("-.3")), m2),
-                order(side, v(".7"), P, p(ONE, v("-.2")), m2),
-                order(side, ONE, P, p(ONE, v("-.1")), m2)
+                order(side, v(".5"), P, p(ONE, v("-.3"))),
+                order(side, v(".7"), P, p(ONE, v("-.2"))),
+                order(side, ONE, P, p(ONE, v("-.1")))
         );
-        LimitOrder openTempl = order(side, ONE, P, ONE, m1);
+        LimitOrder openTempl = order(side, ONE, P, ONE);
         BigDecimal closeAmount = DealerHelper.getCloseAmount(closeOrders, openTempl, m1);
 
         LoggerFactory.getLogger(getClass()).info("{}", closeAmount);
@@ -82,11 +81,11 @@ public class DealerHelperTest {
     @Test
     public void testCloseAmount2() {
         List<LimitOrder> closeOrders = asList(
-                order(side, v(".5"), P, p(ONE, v("-.3")), m2),
-                order(side, v(".7"), P, p(ONE, v("-.2")), m2),
-                order(side, ONE, P, p(ONE, v("-.1")), m2)
+                order(side, v(".5"), P, p(ONE, v("-.3"))),
+                order(side, v(".7"), P, p(ONE, v("-.2"))),
+                order(side, ONE, P, p(ONE, v("-.1")))
         );
-        LimitOrder openTempl = order(side, ONE, P, ONE, m1);
+        LimitOrder openTempl = order(side, ONE, P, ONE);
         BigDecimal closeAmount = DealerHelper.getCloseAmount(closeOrders, openTempl, m1);
 
         log.info("{}", openTempl);
@@ -119,10 +118,8 @@ public class DealerHelperTest {
 
     static CurrencyPair P = CurrencyPair.BTC_EUR;
 
-    protected static LimitOrder order(OrderType type, BigDecimal tradableAmount, CurrencyPair pair, BigDecimal limitPrice, IExchangeMonitor m) {
-        LimitOrder order = new LimitOrder(type, tradableAmount, pair, null, null, limitPrice);
-        NetPrice.updateNetPrice(order, m);
-        return order;
+    protected static LimitOrder order(OrderType type, BigDecimal tradableAmount, CurrencyPair pair, BigDecimal limitPrice) {
+        return new LimitOrder(type, tradableAmount, pair, null, null, limitPrice);
     }
 
 }

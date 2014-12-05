@@ -35,7 +35,7 @@ public class Dealer implements IBestOfferListener {
     final private DealerConfig config;
 
     public Dealer(IOrderBookSideMonitor orderBookSideMonitor, Map<Exchange, IExchangeMonitor> monitors, DealerConfig config, SimpleOrderOpenStrategy orderStrategy, SimpleOrderCloseStrategy orderCloseStrategy) {
-        this(orderBookSideMonitor, monitors, config, orderStrategy, orderCloseStrategy,new DealerData());
+        this(orderBookSideMonitor, monitors, config, orderStrategy, orderCloseStrategy, new DealerData());
     }
 
     protected Dealer(IOrderBookSideMonitor orderBookSideMonitor, Map<Exchange, IExchangeMonitor> monitors, DealerConfig config, SimpleOrderOpenStrategy orderStrategy, SimpleOrderCloseStrategy orderCloseStrategy, DealerData data) {
@@ -79,9 +79,11 @@ public class Dealer implements IBestOfferListener {
             return;
         }
 
-        log.info("Best offer {} @{}/{}; mine {}", newPrice, config.side, eventExchange, orderManager.getOpenOrder());
+        log.info("Best offer {} @{}/{}; mine {}@{}", newPrice, config.side, eventExchange, data.getOpenPrice(), getOpenExchange());
 
-        if (isMineTop(newPrice)) return;
+        boolean mineTop = isMineTop(newPrice);
+        log.debug("Mine on top: {}", mineTop);
+        if (mineTop) return;
 
         getBestOffers().put(eventExchange, newPrice);
 
@@ -96,7 +98,7 @@ public class Dealer implements IBestOfferListener {
 
             // worse is better, because we open between closer and further on the further exchange
             if (isFurther(newPrice, oldOpenPrice, config.side)) {
-                setOpenExchange(eventExchange);
+                data.setOpenExchange(eventExchange);
                 dirty = true;
             }
         }
@@ -109,7 +111,7 @@ public class Dealer implements IBestOfferListener {
                 closeMarketPrice = getBestOffers().getOrDefault(getCloseExchange(), closeMarketPrice);
 
             if (isCloser(newPrice, closeMarketPrice, config.side)) {
-                setCloseExchange(eventExchange);
+                data.setCloseExchange(eventExchange);
                 dirty = true;
             }
         }
@@ -172,11 +174,4 @@ public class Dealer implements IBestOfferListener {
         return data.getCloseExchange();
     }
 
-    private void setOpenExchange(Exchange exchange) {
-        data.setOpenExchange(exchange);
-    }
-
-    private void setCloseExchange(Exchange exchange) {
-        data.setCloseExchange(exchange);
-    }
 }
