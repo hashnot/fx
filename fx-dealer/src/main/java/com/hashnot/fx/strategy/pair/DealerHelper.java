@@ -1,5 +1,6 @@
 package com.hashnot.fx.strategy.pair;
 
+import com.google.common.collect.Ordering;
 import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.event.util.NetPrice;
 import com.hashnot.xchange.ext.util.Orders;
@@ -15,7 +16,6 @@ import java.util.List;
 
 import static com.hashnot.xchange.ext.util.Numbers.Price.isFurther;
 import static com.hashnot.xchange.ext.util.Numbers.lt;
-import static com.hashnot.xchange.ext.util.Numbers.min;
 import static com.hashnot.xchange.ext.util.Orders.*;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
@@ -68,7 +68,7 @@ public class DealerHelper {
         log.debug("open: {}", openAmount);
         log.debug("close: {}", closeAmount);
 
-        BigDecimal openAmountActual = /*Ordering.natural().*/min(openAmount, closeAmount).setScale(getScale(openMonitor, closeMonitor, pair), RoundingMode.FLOOR);
+        BigDecimal openAmountActual = Ordering.natural().min(openAmount, closeAmount, closeOutGross).setScale(getScale(openMonitor, closeMonitor, pair), RoundingMode.FLOOR);
 
         if (!checkMinima(openAmountActual, openMonitor, pair)) {
             log.debug("Amount {} less than minimum", openAmountActual);

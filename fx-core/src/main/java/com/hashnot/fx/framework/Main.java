@@ -102,6 +102,7 @@ public class Main {
             log.warn("Interrupted!", e);
         }
         scheduler.shutdown();
+        log.info("Good bye");
     }
 
     protected static IStrategy getPairStrategy(String className) {
