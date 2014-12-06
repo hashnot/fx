@@ -17,10 +17,7 @@ import com.xeiam.xchange.dto.trade.LimitOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.hashnot.xchange.ext.util.Multiplexer.multiplex;
 import static com.xeiam.xchange.dto.Order.OrderType;
@@ -31,12 +28,12 @@ import static com.xeiam.xchange.dto.Order.OrderType.BID;
  * @author Rafał Krupiński
  */
 public class OrderBookSideMonitor implements IOrderBookSideMonitor, IOrderBookListener {
-    final private static Logger log = LoggerFactory.getLogger(OrderBookSideMonitor.class);
-    final private Map<Exchange, IExchangeMonitor> monitors;
+    final protected Logger log = LoggerFactory.getLogger(getClass());
+    final protected Map<Exchange, IExchangeMonitor> monitors;
 
     final private Map<Market, OrderBook> orderBooks = new HashMap<>();
 
-    final private Map<Market, Multimap<OrderType, IOrderBookSideListener>> listeners = new HashMap<>();
+    final protected Map<Market, Multimap<OrderType, IOrderBookSideListener>> listeners = new HashMap<>();
 
     public OrderBookSideMonitor(Map<Exchange, IExchangeMonitor> monitors) {
         this.monitors = monitors;
@@ -45,15 +42,14 @@ public class OrderBookSideMonitor implements IOrderBookSideMonitor, IOrderBookLi
     @Override
     public void addOrderBookSideListener(IOrderBookSideListener listener, MarketSide source) {
         Market market = source.market;
-        Multimap<OrderType, IOrderBookSideListener> marketListeners = listeners.computeIfAbsent(market, k -> Multimaps.newSetMultimap(new HashMap<>(), LinkedHashSet::new));
+        Multimap<OrderType, IOrderBookSideListener> marketListeners = listeners.computeIfAbsent(market, k -> Multimaps.newSetMultimap(new EnumMap<>(OrderType.class), LinkedHashSet::new));
 
-        // avoid race condition, we could get an order book between registration as listener and putting our listener in map
-        boolean listen = marketListeners.isEmpty();
-
-        marketListeners.put(source.side, listener);
-
-        if (listen)
+        if (marketListeners.put(source.side, listener)) {
+            log.info("{}@{} + {}", source, this, listener);
             monitors.get(market.exchange).getOrderBookMonitor().addOrderBookListener(this, market.listing);
+        } else {
+            log.debug("Duplacate registration {} @ {}@", listener, source, this);
+        }
     }
 
     @Override
@@ -62,10 +58,11 @@ public class OrderBookSideMonitor implements IOrderBookSideMonitor, IOrderBookLi
         Multimap<OrderType, IOrderBookSideListener> marketListeners = listeners.get(market);
 
         if (marketListeners == null) {
-            log.warn("Removing unregistered listener");
+            log.debug("No such listener {} @ {}@", listener, source, this);
             return;
         }
 
+        log.info("{}@{} - {}", source, this, listener);
         marketListeners.remove(source.side, listener);
 
         if (marketListeners.isEmpty()) {
@@ -109,9 +106,24 @@ public class OrderBookSideMonitor implements IOrderBookSideMonitor, IOrderBookLi
         multiplex(marketListeners.get(side), obse, IOrderBookSideListener::orderBookSideChanged);
     }
 
+    protected boolean hasListener(IOrderBookSideListener listener, MarketSide source) {
+        return listeners.getOrDefault(source.market, emptyMultimap()).containsEntry(source.side, listener);
+    }
+
+    protected boolean hasListener(Market market) {
+        return !listeners.getOrDefault(market, emptyMultimap()).isEmpty();
+    }
+
     @Override
     public String toString() {
         // intended singleton object, class name should suffice
         return getClass().getSimpleName();
+    }
+
+    private static final Multimap<?, ?> EMPTY_MULTIMAP = Multimaps.newSetMultimap(Collections.emptyMap(), Collections::emptySet);
+
+    @SuppressWarnings("unchecked")
+    protected static <K, V> Multimap<K, V> emptyMultimap() {
+        return (Multimap<K, V>) EMPTY_MULTIMAP;
     }
 }

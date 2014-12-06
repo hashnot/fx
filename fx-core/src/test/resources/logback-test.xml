@@ -8,7 +8,7 @@
         </encoder>
     </appender>
 
-    <logger name="com.hashnot.fx" level="debug" />
+    <logger name="com.hashnot" level="debug" />
 
     <root>
         <level value="warn" />

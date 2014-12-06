@@ -21,7 +21,7 @@ import static java.math.BigDecimal.ZERO;
 /**
  * @author Rafał Krupiński
  */
-public class PairOrderBookSideListener implements IOrderBookSideListener{
+public class PairOrderBookSideListener implements IOrderBookSideListener {
     final private static Logger log = LoggerFactory.getLogger(PairOrderBookSideListener.class);
 
     static private final BigDecimal TWO = new BigDecimal(2);
