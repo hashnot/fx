@@ -107,7 +107,7 @@ public class PairOrderBookSideListener implements IOrderBookSideListener {
         LimitOrder openOrder = new LimitOrder.Builder(config.side, config.listing).limitPrice(openGrossPrice).build();
 
 
-        log.info("open {} {} {} <=> {} {} close {}profitable", openOrder.getType(), openGrossPrice, openNetPrice, closingNetPrice, closingPrice, profitable ? "" : "not ");
+        log.info("open {} {} {} <=> {} {} close {}profitable", config.side, openGrossPrice, openNetPrice, closingNetPrice, closingPrice, profitable ? "" : "not ");
         if (!profitable) {
             if (orderManager.isActive())
                 orderManager.cancel();

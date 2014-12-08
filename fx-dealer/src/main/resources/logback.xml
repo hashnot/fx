@@ -19,7 +19,7 @@
     <logger name="com.hashnot.fx" level="debug"/>
 
     <logger name="com.hashnot.xchange" level="info"/>
-    <!--<logger name="com.hashnot.xchange.event" level="debug"/>-->
+    <logger name="com.hashnot.xchange.event.trade.impl.UserTradesMonitor" level="debug"/>
 
     <logger name="si.mazi.rescu" level="TRACE" additivity="false">
         <appender-ref ref="io"/>

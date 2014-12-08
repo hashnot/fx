@@ -100,17 +100,26 @@ public class UserTradesMonitor extends AbstractPollingMonitor implements IUserTr
     @Override
     public void addTradesListener(IUserTradesListener listener) {
         synchronized (listeners) {
-            listeners.add(listener);
-            enable();
+            if (listeners.add(listener)) {
+                log.info("{} + {}", this, listener);
+                enable();
+            }
         }
     }
 
     @Override
     public void removeTradesListener(IUserTradesListener listener) {
         synchronized (listeners) {
-            listeners.remove(listener);
-            if (listeners.isEmpty())
-                disable();
+            if (listeners.remove(listener)) {
+                log.info("{} - {}", this, listener);
+                if (listeners.isEmpty())
+                    disable();
+            }
         }
+    }
+
+    @Override
+    public String toString() {
+        return "UserTradesMonitor@" + exchange;
     }
 }

@@ -12,15 +12,15 @@ public class Multiplexer {
     final private static Logger log = LoggerFactory.getLogger(Multiplexer.class);
 
     public static <E, L> void multiplex(Iterable<L> listeners, E event, BiConsumer<L, E> call) {
-        for (L listener : listeners) {
+        listeners.forEach((listener) -> {
             try {
                 call.accept(listener, event);
             } catch (RuntimeException x) {
                 log.warn("Error from {}", listener, x);
-            } catch (Throwable x) {
+            } catch (Error x) {
                 log.warn("Error from {}", listener, x);
                 throw x;
             }
-        }
+        });
     }
 }
