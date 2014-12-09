@@ -5,6 +5,7 @@ import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.ext.util.Orders;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
+import com.xeiam.xchange.dto.marketdata.MarketMetadata;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,23 +30,50 @@ public class DealerHelper {
 
     public static OrderBinding deal(LimitOrder openOrderTempl, IExchangeMonitor openMonitor, List<LimitOrder> closeOrders, IExchangeMonitor closeMonitor) {
 
-        //after my open order os closed on the open exchange, this money should disappear
+        //after my open order is closed at the open exchange, this money should disappear
         String openOutgoingCur = outgoingCurrency(openOrderTempl);
 
         String closeOutCur = incomingCurrency(openOrderTempl);
 
         BigDecimal openOutGross = openMonitor.getWalletMonitor().getWallet(openOutgoingCur);
-        CurrencyPair pair = openOrderTempl.getCurrencyPair();
-        BigDecimal openOutNet = applyFeeToWallet(openMonitor, openOutGross, pair);
-
-
         BigDecimal closeOutGross = closeMonitor.getWalletMonitor().getWallet(closeOutCur);
-        BigDecimal closeOutNet = applyFeeToWallet(closeMonitor, closeOutGross, pair);
 
-        log.debug("type: {}, open {}, close {}", openOrderTempl.getType(), openMonitor, closeMonitor);
-        log.debug("open  {} {} -> {}", openOutgoingCur, openOutGross, openOutNet);
-        log.debug("close {} {} -> {}", closeOutCur, closeOutGross, closeOutNet);
+        CurrencyPair pair = openOrderTempl.getCurrencyPair();
+        MarketMetadata openMetadata = openMonitor.getMarketMetadata(pair);
+        MarketMetadata closeMetadata = closeMonitor.getMarketMetadata(pair);
 
+        // adjust amounts by dividing by two and check if it's not below minima
+        {
+            // amount of base currency
+            BigDecimal openBaseAmount = openMonitor.getWalletMonitor().getWallet(pair.baseSymbol);
+            BigDecimal closeBaseAmount = closeMonitor.getWalletMonitor().getWallet(pair.baseSymbol);
+
+            BigDecimal two = new BigDecimal(2);
+
+            BigDecimal openBaseHalf = openBaseAmount.subtract(two);
+            BigDecimal closeBaseHalf = closeBaseAmount.subtract(two);
+
+            BigDecimal openLowLimit = openMetadata.getAmountMinimum();
+            BigDecimal closeLowLimit = closeMetadata.getAmountMinimum();
+
+            // if half of the wallet is greater than minimum, open for half, if less, open for full amount but only if it's ASK (arbitrary, avoid wallet collision)
+            if (lt(openBaseHalf, openLowLimit) || lt(closeBaseHalf, closeLowLimit)) {
+                if (openOrderTempl.getType() == Order.OrderType.BID)
+                    return null;
+            } else {
+                openOutGross = openOutGross.divide(two);
+                closeOutGross = closeOutGross.divide(two);
+            }
+        }
+
+        {
+            BigDecimal openOutNet = applyFeeToWallet(openOutGross, openMetadata);
+            BigDecimal closeOutNet = applyFeeToWallet(closeOutGross, closeMetadata);
+
+            log.debug("type: {}, open {}, close {}", openOrderTempl.getType(), openMonitor, closeMonitor);
+            log.debug("open  {} {} -> {}", openOutgoingCur, openOutGross, openOutNet);
+            log.debug("close {} {} -> {}", closeOutCur, closeOutGross, closeOutNet);
+        }
 
         // limit po stronie open ASK = base wallet
         //                  close/ BID = suma( otwarte ASK-> cena*liczba) < base wallet
@@ -67,9 +95,9 @@ public class DealerHelper {
         log.debug("open: {}", openAmount);
         log.debug("close: {}", closeAmount);
 
-        BigDecimal openAmountActual = Ordering.natural().min(openAmount, closeAmount, closeOutGross).setScale(getScale(openMonitor, closeMonitor, pair), RoundingMode.FLOOR);
+        BigDecimal openAmountActual = Ordering.natural().min(openAmount, closeAmount, closeOutGross).setScale(getScale(openMetadata, closeMetadata), RoundingMode.FLOOR);
 
-        if (!checkMinima(openAmountActual, openMonitor, pair)) {
+        if (!checkMinima(openAmountActual, openMetadata)) {
             log.debug("Amount {} less than minimum", openAmountActual);
             return null;
         }
@@ -80,27 +108,27 @@ public class DealerHelper {
         return new OrderBinding(openMonitor.getExchange(), closeMonitor.getExchange(), openOrder, closeOrders);
     }
 
-    protected static BigDecimal applyFeeToWallet(IExchangeMonitor openMonitor, BigDecimal openOutGross, CurrencyPair pair) {
-        BigDecimal feeFactor = openMonitor.getMarketMetadata(pair).getOrderFeeFactor();
+    protected static BigDecimal applyFeeToWallet(BigDecimal openOutGross, MarketMetadata meta) {
+        BigDecimal feeFactor = meta.getOrderFeeFactor();
         return openOutGross.multiply(ONE.subtract(feeFactor));
     }
 
-    protected static boolean checkMinima(BigDecimal openAmountActual, IExchangeMonitor openMonitor, CurrencyPair listing) {
+    protected static boolean checkMinima(BigDecimal openAmountActual, MarketMetadata meta) {
         return !(lt(openAmountActual, LOW_LIMIT)
-                || lt(openAmountActual, openMonitor.getMarketMetadata(listing).getAmountMinimum())
+                || lt(openAmountActual, meta.getAmountMinimum())
         );
     }
 
-    private static int getScale(IExchangeMonitor e1, IExchangeMonitor e2, CurrencyPair pair) {
-        int s1 = e1.getMarketMetadata(pair).getPriceScale();
-        int s2 = e2.getMarketMetadata(pair).getPriceScale();
+    private static int getScale(MarketMetadata meta1, MarketMetadata meta2) {
+        int s1 = meta1.getPriceScale();
+        int s2 = meta2.getPriceScale();
         return Math.min(s1, s2);
     }
 
     public static BigDecimal getCloseAmount(List<LimitOrder> closeOrders, LimitOrder openOrder, IExchangeMonitor closeMonitor) {
         String closeOutCur = incomingCurrency(openOrder);
         BigDecimal closeOutGross = closeMonitor.getWalletMonitor().getWallet(closeOutCur);
-        BigDecimal closeOutNet = applyFeeToWallet(closeMonitor, closeOutGross, openOrder.getCurrencyPair());
+        BigDecimal closeOutNet = applyFeeToWallet(closeOutGross, closeMonitor.getMarketMetadata(openOrder.getCurrencyPair()));
 
         return getCloseAmount(closeOrders, closeOutNet, openOrder, closeMonitor);
     }
