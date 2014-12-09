@@ -87,4 +87,8 @@ public class AsyncTradeService extends AbstractAsyncService implements IAsyncTra
         call(service::getExchangeSymbols, consumer);
     }
 
+    @Override
+    public String toString() {
+        return "Async " + service;
+    }
 }

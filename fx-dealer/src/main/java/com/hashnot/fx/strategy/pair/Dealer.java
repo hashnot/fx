@@ -119,7 +119,7 @@ public class Dealer implements IBestOfferListener {
 
     protected boolean isMineTop(BigDecimal newTopPrice) {
         LimitOrder order = orderManager.getOpenOrder();
-        return (order != null && isCloser(order.getLimitPrice(), newTopPrice, config.side));
+        return (order != null && !isFurther(order.getLimitPrice(), newTopPrice, config.side));
     }
 
     private boolean hasMinimumMoney(Exchange exchange, BigDecimal price) {

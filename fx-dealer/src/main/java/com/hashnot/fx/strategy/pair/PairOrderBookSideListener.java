@@ -127,7 +127,7 @@ public class PairOrderBookSideListener implements IOrderBookSideListener {
         if (evt.getChanges().isEmpty())
             return true;
         BigDecimal closeAmount = DealerHelper.getCloseAmount(evt.newOrders, openOrder, monitors.get(data.getCloseExchange()));
-        log.debug("Buyable for {}: {}", openOrder.getLimitPrice(), closeAmount);
+        log.debug("Buyable for {}: {} (opened: {})", openOrder.getLimitPrice(), closeAmount, openOrder.getTradableAmount());
         return !lt(closeAmount, openOrder.getTradableAmount());
     }
 

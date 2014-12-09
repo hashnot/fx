@@ -19,7 +19,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
+import static com.google.common.collect.Ordering.natural;
 import static com.hashnot.xchange.ext.util.Multiplexer.multiplex;
 
 /**
@@ -56,8 +58,6 @@ public class UserTradesMonitor extends AbstractPollingMonitor implements IUserTr
                 log.warn("Error from {}", tradeService, e.getCause());
             }
         });
-        if (previous == null || previous.compareTo(now) < 0)
-            previous = now;
     }
 
     protected void updatePreviousDate(UserTrades trades, Date now) {
@@ -74,21 +74,16 @@ public class UserTradesMonitor extends AbstractPollingMonitor implements IUserTr
             return;
         }
 
+        Date max;
         if (tradeList.size() == 1) {
-            previous = first.getTimestamp();
-            return;
-        }
-
-        if (Trades.TradeSortType.SortByTimestamp == trades.getTradeSortType()) {
+            max = first.getTimestamp();
+        } else if (Trades.TradeSortType.SortByTimestamp == trades.getTradeSortType()) {
             UserTrade last = tradeList.get(tradeList.size() - 1);
-            log.debug("first: {}, last: {}", first.getTimestamp(), last.getTimestamp());
-            previous = first.getTimestamp().compareTo(last.getTimestamp()) < 0 ? last.getTimestamp() : first.getTimestamp();
+            max = natural().max(last.getTimestamp(), first.getTimestamp());
         } else {
-            long max = first.getTimestamp().getTime();
-            for (UserTrade userTrade : tradeList)
-                max = Math.max(max, userTrade.getTimestamp().getTime());
-            previous = new Date(max);
+            max = tradeList.stream().map(UserTrade::getTimestamp).collect(Collectors.maxBy(natural())).get();
         }
+        previous = previous == null ? max : natural().max(previous, max);
     }
 
     public UserTradesMonitor(Exchange exchange, IAsyncTradeService tradeService, RunnableScheduler scheduler) {

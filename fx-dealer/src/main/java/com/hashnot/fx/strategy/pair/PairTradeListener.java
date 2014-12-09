@@ -84,8 +84,10 @@ public class PairTradeListener implements IUserTradeListener {
                 data.orderBinding.openOrderId = idf.get();
             } catch (InterruptedException e) {
                 log.warn("Interrupted", e);
+                data.orderBinding = null;
             } catch (ExecutionException e) {
                 log.warn("Error from {}", tradeService, e.getCause());
+                data.orderBinding = null;
             }
         });
     }
