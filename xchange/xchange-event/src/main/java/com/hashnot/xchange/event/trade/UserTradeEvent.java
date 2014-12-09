@@ -2,18 +2,18 @@ package com.hashnot.xchange.event.trade;
 
 import com.hashnot.xchange.ext.event.Event;
 import com.xeiam.xchange.Exchange;
-import com.xeiam.xchange.dto.trade.LimitOrder;
+import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.trade.UserTrade;
 
 /**
  * @author Rafał Krupiński
  */
 public class UserTradeEvent extends Event<Exchange> {
-    public final LimitOrder monitored;
-    public final LimitOrder current;
+    public final Order monitored;
+    public final Order current;
     public final UserTrade trade;
 
-    public UserTradeEvent(LimitOrder monitored, UserTrade trade, LimitOrder current, Exchange source) {
+    public UserTradeEvent(Order monitored, UserTrade trade, Order current, Exchange source) {
         super(source);
 
         assert monitored != null;

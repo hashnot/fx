@@ -34,27 +34,6 @@ public class Dealer implements IBestOfferListener {
 
     final private DealerConfig config;
 
-    public Dealer(IOrderBookSideMonitor orderBookSideMonitor, Map<Exchange, IExchangeMonitor> monitors, DealerConfig config, SimpleOrderOpenStrategy orderStrategy, SimpleOrderCloseStrategy orderCloseStrategy) {
-        this(orderBookSideMonitor, monitors, config, orderStrategy, orderCloseStrategy, new DealerData());
-    }
-
-    protected Dealer(IOrderBookSideMonitor orderBookSideMonitor, Map<Exchange, IExchangeMonitor> monitors, DealerConfig config, SimpleOrderOpenStrategy orderStrategy, SimpleOrderCloseStrategy orderCloseStrategy, DealerData data) {
-        this(orderBookSideMonitor, new PairTradeListener(orderCloseStrategy, monitors, data), monitors, config, orderStrategy, data);
-    }
-
-    protected Dealer(IOrderBookSideMonitor orderBookSideMonitor, PairTradeListener orderManager, Map<Exchange, IExchangeMonitor> monitors, DealerConfig config, SimpleOrderOpenStrategy orderStrategy, DealerData data) {
-        this(orderBookSideMonitor, orderManager, monitors, config, new PairOrderBookSideListener(config, data, orderManager, orderStrategy, monitors), data);
-    }
-
-    public Dealer(IOrderBookSideMonitor orderBookSideMonitor, PairTradeListener orderManager, Map<Exchange, IExchangeMonitor> monitors, DealerConfig config, IOrderBookSideListener orderBookSideListener, DealerData data) {
-        this.orderBookSideMonitor = orderBookSideMonitor;
-        this.monitors = monitors;
-        this.config = config;
-        this.data = data;
-        this.orderManager = orderManager;
-        this.orderBookSideListener = orderBookSideListener;
-    }
-
     /**
      * If the new price is the best, update internal state and change order book monitor to monitor new best market
      */
@@ -172,6 +151,27 @@ public class Dealer implements IBestOfferListener {
 
     private Exchange getCloseExchange() {
         return data.getCloseExchange();
+    }
+
+    public Dealer(IOrderBookSideMonitor orderBookSideMonitor, Map<Exchange, IExchangeMonitor> monitors, DealerConfig config, SimpleOrderOpenStrategy orderStrategy, SimpleOrderCloseStrategy orderCloseStrategy) {
+        this(orderBookSideMonitor, monitors, config, orderStrategy, orderCloseStrategy, new DealerData());
+    }
+
+    protected Dealer(IOrderBookSideMonitor orderBookSideMonitor, Map<Exchange, IExchangeMonitor> monitors, DealerConfig config, SimpleOrderOpenStrategy orderStrategy, SimpleOrderCloseStrategy orderCloseStrategy, DealerData data) {
+        this(orderBookSideMonitor, new PairTradeListener(orderCloseStrategy, monitors, data), monitors, config, orderStrategy, data);
+    }
+
+    protected Dealer(IOrderBookSideMonitor orderBookSideMonitor, PairTradeListener orderManager, Map<Exchange, IExchangeMonitor> monitors, DealerConfig config, SimpleOrderOpenStrategy orderStrategy, DealerData data) {
+        this(orderBookSideMonitor, orderManager, monitors, config, new PairOrderBookSideListener(config, data, orderManager, orderStrategy, monitors), data);
+    }
+
+    public Dealer(IOrderBookSideMonitor orderBookSideMonitor, PairTradeListener orderManager, Map<Exchange, IExchangeMonitor> monitors, DealerConfig config, IOrderBookSideListener orderBookSideListener, DealerData data) {
+        this.orderBookSideMonitor = orderBookSideMonitor;
+        this.monitors = monitors;
+        this.config = config;
+        this.data = data;
+        this.orderManager = orderManager;
+        this.orderBookSideListener = orderBookSideListener;
     }
 
 }

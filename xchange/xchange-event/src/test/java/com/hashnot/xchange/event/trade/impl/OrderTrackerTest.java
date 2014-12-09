@@ -1,10 +1,9 @@
-package com.hashnot.fx.framework.impl;
+package com.hashnot.xchange.event.trade.impl;
 
 import com.hashnot.xchange.event.trade.IUserTradeListener;
 import com.hashnot.xchange.event.trade.IUserTradesMonitor;
 import com.hashnot.xchange.event.trade.UserTradeEvent;
 import com.hashnot.xchange.event.trade.UserTradesEvent;
-import com.hashnot.xchange.event.trade.impl.OrderTracker;
 import com.hashnot.xchange.ext.trade.OrderEvent;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
@@ -33,15 +32,15 @@ public class OrderTrackerTest {
         IUserTradeListener orderListener = mock(IUserTradeListener.class);
 
         IUserTradesMonitor tradesMonitor = mock(IUserTradesMonitor.class);
-        OrderTracker trackingTradesMonitor = new OrderTracker(tradesMonitor);
-        trackingTradesMonitor.addTradeListener(orderListener);
+        OrderTracker orderTracker = new OrderTracker(tradesMonitor);
+        orderTracker.addTradeListener(orderListener);
 
         String id = "ID";
         LimitOrder order = new LimitOrder(ASK, ONE, BTC_EUR, id, null, ONE);
-        trackingTradesMonitor.limitOrderPlaced(new OrderEvent<>(id, order, source));
+        orderTracker.limitOrderPlaced(new OrderEvent<>(id, order, source));
 
         UserTrade trade = trade(ASK, ONE, BTC_EUR, ONE, "id", id);
-        trackingTradesMonitor.trades(new UserTradesEvent(new UserTrades(asList(trade), 0l, Trades.TradeSortType.SortByID), source));
+        orderTracker.trades(new UserTradesEvent(new UserTrades(asList(trade), 0l, Trades.TradeSortType.SortByID), source));
         verify(orderListener).trade(new UserTradeEvent(order, trade, null, source));
     }
 
@@ -50,18 +49,18 @@ public class OrderTrackerTest {
         IUserTradeListener orderListener = mock(IUserTradeListener.class);
 
         IUserTradesMonitor tradesMonitor = mock(IUserTradesMonitor.class);
-        OrderTracker trackingTradesMonitor = new OrderTracker(tradesMonitor);
-        trackingTradesMonitor.addTradeListener(orderListener);
+        OrderTracker orderTracker = new OrderTracker(tradesMonitor);
+        orderTracker.addTradeListener(orderListener);
 
         String id = "ID";
         LimitOrder order = new LimitOrder(ASK, TWO, BTC_EUR, id, null, ONE);
-        trackingTradesMonitor.limitOrderPlaced(new OrderEvent<>(id, order, source));
+        orderTracker.limitOrderPlaced(new OrderEvent<>(id, order, source));
 
         UserTrade t1 = trade(ASK, ONE, BTC_EUR, ONE, "t1", id);
         UserTrade t2 = trade(ASK, ONE, BTC_EUR, ONE, "t2", id);
 
-        trackingTradesMonitor.trades(new UserTradesEvent(new UserTrades(asList(t1, t2), 0l, Trades.TradeSortType.SortByID), source));
-        verify(orderListener, times(1)).trade(new UserTradeEvent(order, trade(ASK, TWO, BTC_EUR, ONE, "t2", id), null, source));
+        orderTracker.trades(new UserTradesEvent(new UserTrades(asList(t1, t2), 0l, Trades.TradeSortType.SortByID), source));
+        verify(orderListener, times(1)).trade(new UserTradeEvent(order, trade(ASK, TWO, BTC_EUR, ONE, "t1+t2", id), null, source));
     }
 
     @Test
@@ -69,22 +68,22 @@ public class OrderTrackerTest {
         IUserTradeListener orderListener = mock(IUserTradeListener.class);
 
         IUserTradesMonitor tradesMonitor = mock(IUserTradesMonitor.class);
-        OrderTracker trackingTradesMonitor = new OrderTracker(tradesMonitor);
-        trackingTradesMonitor.addTradeListener(orderListener);
+        OrderTracker orderTracker = new OrderTracker(tradesMonitor);
+        orderTracker.addTradeListener(orderListener);
 
         String id = "ID";
         LimitOrder order = new LimitOrder(ASK, TWO, BTC_EUR, id, null, ONE);
-        trackingTradesMonitor.limitOrderPlaced(new OrderEvent<>(id, order, source));
+        orderTracker.limitOrderPlaced(new OrderEvent<>(id, order, source));
 
         UserTrade t1 = trade(ASK, ONE, BTC_EUR, ONE, "t1", id);
         UserTrade t2 = trade(ASK, ONE, BTC_EUR, ONE, "t2", id);
 
         LimitOrder one = new LimitOrder(ASK, ONE, BTC_EUR, id, null, ONE);
 
-        trackingTradesMonitor.trades(new UserTradesEvent(new UserTrades(asList(t1), 0l, Trades.TradeSortType.SortByID), source));
+        orderTracker.trades(new UserTradesEvent(new UserTrades(asList(t1), 0l, Trades.TradeSortType.SortByID), source));
         verify(orderListener).trade(new UserTradeEvent(order, t1, one, source));
 
-        trackingTradesMonitor.trades(new UserTradesEvent(new UserTrades(asList(t2), 0l, Trades.TradeSortType.SortByID), source));
+        orderTracker.trades(new UserTradesEvent(new UserTrades(asList(t2), 0l, Trades.TradeSortType.SortByID), source));
         verify(orderListener).trade(new UserTradeEvent(order, t2, null, source));
     }
 
