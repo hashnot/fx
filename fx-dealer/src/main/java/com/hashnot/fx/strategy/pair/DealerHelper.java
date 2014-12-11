@@ -50,16 +50,18 @@ public class DealerHelper {
 
             BigDecimal two = new BigDecimal(2);
 
-            BigDecimal openBaseHalf = openBaseAmount.subtract(two);
-            BigDecimal closeBaseHalf = closeBaseAmount.subtract(two);
+            BigDecimal openBaseHalf = openBaseAmount.divide(two);
+            BigDecimal closeBaseHalf = closeBaseAmount.divide(two);
 
             BigDecimal openLowLimit = openMetadata.getAmountMinimum();
             BigDecimal closeLowLimit = closeMetadata.getAmountMinimum();
 
             // if half of the wallet is greater than minimum, open for half, if less, open for full amount but only if it's ASK (arbitrary, avoid wallet collision)
             if (lt(openBaseHalf, openLowLimit) || lt(closeBaseHalf, closeLowLimit)) {
-                if (openOrderTempl.getType() == Order.OrderType.BID)
+                if (openOrderTempl.getType() == Order.OrderType.BID) {
+                    log.info("Skip BID to avoid wallet collision over BID/ASK");
                     return null;
+                }
             } else {
                 openOutGross = openOutGross.divide(two);
                 closeOutGross = closeOutGross.divide(two);
@@ -93,7 +95,8 @@ public class DealerHelper {
         BigDecimal closeAmount = getCloseAmount(closeOrders, closeOutGross, openOrderTempl, closeMonitor);
 
         log.debug("open: {}", openAmount);
-        log.debug("close: {}", closeAmount);
+        log.debug("available: {}", closeAmount);
+        log.debug("close: {}", closeOutGross);
 
         BigDecimal openAmountActual = Ordering.natural().min(openAmount, closeAmount, closeOutGross).setScale(getScale(openMetadata, closeMetadata), RoundingMode.FLOOR);
 
