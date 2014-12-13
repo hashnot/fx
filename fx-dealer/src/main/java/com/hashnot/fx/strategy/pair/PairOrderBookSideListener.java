@@ -14,9 +14,9 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
-import static com.hashnot.xchange.ext.util.Numbers.BigDecimal.TWO;
-import static com.hashnot.xchange.ext.util.Numbers.Price.isFurther;
-import static com.hashnot.xchange.ext.util.Numbers.lt;
+import static com.hashnot.xchange.ext.util.BigDecimals.TWO;
+import static com.hashnot.xchange.ext.util.Comparables.lt;
+import static com.hashnot.xchange.ext.util.Prices.isFurther;
 import static java.math.BigDecimal.ZERO;
 
 /**

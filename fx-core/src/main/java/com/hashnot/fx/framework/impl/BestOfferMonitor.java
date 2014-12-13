@@ -14,10 +14,10 @@ import com.xeiam.xchange.dto.trade.LimitOrder;
 import java.math.BigDecimal;
 import java.util.*;
 
+import static com.hashnot.xchange.ext.util.Comparables.eq;
 import static com.hashnot.xchange.ext.util.Multiplexer.multiplex;
-import static com.hashnot.xchange.ext.util.Numbers.Price.forNull;
-import static com.hashnot.xchange.ext.util.Numbers.eq;
 import static com.hashnot.xchange.ext.util.Orders.revert;
+import static com.hashnot.xchange.ext.util.Prices.forNull;
 import static com.xeiam.xchange.dto.Order.OrderType;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
 import static com.xeiam.xchange.dto.Order.OrderType.BID;

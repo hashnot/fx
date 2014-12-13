@@ -8,8 +8,8 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 
-import static com.hashnot.xchange.ext.util.Numbers.BigDecimal.TWO;
-import static com.hashnot.xchange.ext.util.Numbers.lt;
+import static com.hashnot.xchange.ext.util.BigDecimals.TWO;
+import static com.hashnot.xchange.ext.util.Comparables.lt;
 import static com.xeiam.xchange.dto.Order.OrderType.BID;
 
 /**

@@ -14,10 +14,10 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 
-import static com.hashnot.xchange.ext.util.Numbers.BigDecimal.TWO;
-import static com.hashnot.xchange.ext.util.Numbers.Price.isFurther;
-import static com.hashnot.xchange.ext.util.Numbers.lt;
+import static com.hashnot.xchange.ext.util.BigDecimals.TWO;
+import static com.hashnot.xchange.ext.util.Comparables.lt;
 import static com.hashnot.xchange.ext.util.Orders.*;
+import static com.hashnot.xchange.ext.util.Prices.isFurther;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 

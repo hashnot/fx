@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 
 import static com.hashnot.fx.strategy.pair.DealerTest.orderOpenStrategy;
 import static com.hashnot.fx.strategy.pair.PairTestUtils.*;
-import static com.hashnot.xchange.ext.util.Numbers.BigDecimal.TWO;
+import static com.hashnot.xchange.ext.util.BigDecimals.TWO;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
 import static com.xeiam.xchange.dto.trade.LimitOrder.Builder.from;
 import static java.math.BigDecimal.ONE;

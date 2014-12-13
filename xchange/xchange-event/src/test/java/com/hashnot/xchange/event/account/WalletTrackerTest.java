@@ -13,7 +13,7 @@ import org.junit.Test;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.hashnot.xchange.ext.util.Numbers.BigDecimal.TWO;
+import static com.hashnot.xchange.ext.util.BigDecimals.TWO;
 import static java.math.BigDecimal.ONE;
 import static org.mockito.Mockito.*;
 

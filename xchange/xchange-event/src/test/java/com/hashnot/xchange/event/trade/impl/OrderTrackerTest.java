@@ -16,7 +16,7 @@ import org.junit.Test;
 
 import java.math.BigDecimal;
 
-import static com.hashnot.xchange.ext.util.Numbers.BigDecimal.TWO;
+import static com.hashnot.xchange.ext.util.BigDecimals.TWO;
 import static com.xeiam.xchange.currency.CurrencyPair.BTC_EUR;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
 import static java.math.BigDecimal.ONE;

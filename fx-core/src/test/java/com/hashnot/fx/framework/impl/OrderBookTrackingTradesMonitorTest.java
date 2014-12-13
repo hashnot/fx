@@ -16,7 +16,7 @@ import org.junit.Test;
 
 import java.util.List;
 
-import static com.hashnot.xchange.ext.util.Numbers.BigDecimal.TWO;
+import static com.hashnot.xchange.ext.util.BigDecimals.TWO;
 import static java.math.BigDecimal.ONE;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;

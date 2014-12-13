@@ -15,8 +15,8 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
-import static com.hashnot.xchange.ext.util.Numbers.BigDecimal.isZero;
-import static com.hashnot.xchange.ext.util.Numbers.eq;
+import static com.hashnot.xchange.ext.util.BigDecimals.isZero;
+import static com.hashnot.xchange.ext.util.Comparables.eq;
 
 /**
  * @author Rafał Krupiński

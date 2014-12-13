@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-import static com.hashnot.xchange.ext.util.Numbers.eq;
+import static com.hashnot.xchange.ext.util.Comparables.eq;
 
 /**
  * @author Rafał Krupiński

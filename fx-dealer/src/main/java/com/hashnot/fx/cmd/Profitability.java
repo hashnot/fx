@@ -19,8 +19,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 
-import static com.hashnot.xchange.ext.util.Numbers.BigDecimal.TWO;
-import static com.hashnot.xchange.ext.util.Numbers.lt;
+import static com.hashnot.xchange.ext.util.BigDecimals.TWO;
+import static com.hashnot.xchange.ext.util.Comparables.lt;
 import static java.lang.System.out;
 import static java.math.BigDecimal.*;
 

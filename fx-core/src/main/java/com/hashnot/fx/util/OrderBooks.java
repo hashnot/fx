@@ -11,9 +11,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 
-import static com.hashnot.xchange.ext.util.Numbers.BigDecimal.isZero;
-import static com.hashnot.xchange.ext.util.Numbers.Price.compareTo;
-import static com.hashnot.xchange.ext.util.Numbers.gt;
+import static com.hashnot.xchange.ext.util.BigDecimals.isZero;
+import static com.hashnot.xchange.ext.util.Comparables.gt;
+import static com.hashnot.xchange.ext.util.Prices.compareTo;
 import static com.xeiam.xchange.dto.trade.LimitOrder.Builder.from;
 
 /**

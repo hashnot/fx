@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static com.google.common.collect.Lists.transform;
-import static com.hashnot.xchange.ext.util.Numbers.eq;
+import static com.hashnot.xchange.ext.util.Comparables.eq;
 import static com.xeiam.xchange.dto.Order.OrderType;
 import static com.xeiam.xchange.dto.Order.OrderType.BID;
 import static java.math.BigDecimal.ONE;

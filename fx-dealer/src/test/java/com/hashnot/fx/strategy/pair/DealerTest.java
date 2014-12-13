@@ -17,8 +17,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.hashnot.fx.strategy.pair.PairTestUtils.*;
-import static com.hashnot.xchange.ext.util.Numbers.BigDecimal.TWO;
-import static com.hashnot.xchange.ext.util.Numbers.BigDecimal._ONE;
+import static com.hashnot.xchange.ext.util.BigDecimals.TWO;
+import static com.hashnot.xchange.ext.util.BigDecimals._ONE;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
 import static java.math.BigDecimal.ONE;
 import static java.util.Arrays.asList;

@@ -1,6 +1,6 @@
 package com.hashnot.fx.strategy.pair;
 
-import com.hashnot.xchange.ext.util.Numbers;
+import com.hashnot.xchange.ext.util.Comparables;
 import com.xeiam.xchange.dto.Order;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
@@ -11,7 +11,7 @@ import org.junit.runners.Parameterized;
 import java.math.BigDecimal;
 import java.util.Arrays;
 
-import static com.hashnot.xchange.ext.util.Numbers.BigDecimal.TWO;
+import static com.hashnot.xchange.ext.util.BigDecimals.TWO;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
 import static com.xeiam.xchange.dto.Order.OrderType.BID;
 import static java.math.BigDecimal.ONE;
@@ -83,7 +83,7 @@ public class GaussOrderOpenStrategyTest {
 
         @Override
         protected boolean matchesSafely(BigDecimal item) {
-            return Numbers.gt(item, low) && Numbers.lt(item, hi);
+            return Comparables.gt(item, low) && Comparables.lt(item, hi);
         }
 
         @Override

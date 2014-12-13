@@ -5,7 +5,7 @@ import com.hashnot.xchange.event.trade.*;
 import com.hashnot.xchange.ext.trade.IOrderPlacementListener;
 import com.hashnot.xchange.ext.trade.OrderCancelEvent;
 import com.hashnot.xchange.ext.trade.OrderEvent;
-import com.hashnot.xchange.ext.util.Numbers;
+import com.hashnot.xchange.ext.util.BigDecimals;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.Order.OrderType;
 import com.xeiam.xchange.dto.trade.LimitOrder;
@@ -109,7 +109,7 @@ public class OrderTracker implements IUserTradesListener, IOrderPlacementListene
                     return null;
                 } else {
                     BigDecimal remain = v.getTradableAmount().subtract(trade.getTradableAmount());
-                    if (Numbers.BigDecimal.isZero(remain))
+                    if (BigDecimals.isZero(remain))
                         return null;
                     else
                         return MarketOrder.Builder.from(v).tradableAmount(remain).build();

@@ -4,8 +4,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Random;
 
-import static com.hashnot.xchange.ext.util.Numbers.eq;
-import static com.hashnot.xchange.ext.util.Numbers.lt;
+import static com.hashnot.xchange.ext.util.Comparables.eq;
+import static com.hashnot.xchange.ext.util.Comparables.lt;
 import static java.math.BigDecimal.ZERO;
 
 /**

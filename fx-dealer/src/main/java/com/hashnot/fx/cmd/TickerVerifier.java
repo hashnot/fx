@@ -7,7 +7,7 @@ import com.hashnot.xchange.event.market.IOrderBookListener;
 import com.hashnot.xchange.event.market.ITickerListener;
 import com.hashnot.xchange.event.market.OrderBookUpdateEvent;
 import com.hashnot.xchange.event.market.TickerEvent;
-import com.hashnot.xchange.ext.util.Numbers;
+import com.hashnot.xchange.ext.util.Comparables;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
 import org.slf4j.Logger;
@@ -70,7 +70,7 @@ public class TickerVerifier implements IStrategy, ITickerListener, IOrderBookLis
         BigDecimal ticker = this.ticker.get(key);
         BigDecimal best = this.best.get(key);
 
-        if (Numbers.eq(ticker, best)) {
+        if (Comparables.eq(ticker, best)) {
             if (diffStartTime.remove(key) != null)
                 log.debug("{} equals", key);
         } else {

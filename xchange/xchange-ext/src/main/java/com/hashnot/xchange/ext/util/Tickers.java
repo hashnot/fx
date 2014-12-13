@@ -13,8 +13,8 @@ import static com.xeiam.xchange.dto.Order.OrderType.ASK;
 public class Tickers {
     public static boolean eq(Ticker t1, Ticker t2) {
         assert t1.getCurrencyPair().equals(t2.getCurrencyPair());
-        return Numbers.eq(t1.getAsk(), t2.getAsk())
-                && Numbers.eq(t1.getBid(), t2.getBid());
+        return Comparables.eq(t1.getAsk(), t2.getAsk())
+                && Comparables.eq(t1.getBid(), t2.getBid());
     }
 
     public static BigDecimal getPrice(Ticker ticker, Order.OrderType type) {
