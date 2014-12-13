@@ -28,6 +28,7 @@ import static org.mockito.Mockito.when;
 @RunWith(Parameterized.class)
 public class DealerHelperTest {
     private OrderType side;
+    private SimpleOrderOpenStrategy s = new SimpleOrderOpenStrategy();
 
     public DealerHelperTest(OrderType side) {
         this.side = side;
@@ -48,7 +49,7 @@ public class DealerHelperTest {
                 order(side, v(".5"), P, p(ONE, v("-.2"))),
                 order(side, ONE, P, p(ONE, v("-.1")))
         );
-        OrderBinding deal = DealerHelper.deal(openTempl, m1, closeOrders, m2);
+        OrderBinding deal = DealerHelper.deal(openTempl, m1, closeOrders, m2, s);
 
         assertNotNull(deal);
         assertTrue(eq(deal.openedOrder.getTradableAmount(), new BigDecimal("1.5")));
@@ -66,7 +67,7 @@ public class DealerHelperTest {
         );
 
 
-        OrderBinding deal = DealerHelper.deal(openTempl, m("myOpenExchange", v(2)), closeOrders, m2);
+        OrderBinding deal = DealerHelper.deal(openTempl, m("myOpenExchange", v(2)), closeOrders, m2, s);
 
         assertNotNull(deal);
         assertTrue("tradableAmount=" + deal.openedOrder.getTradableAmount(), eq(deal.openedOrder.getTradableAmount(), ONE));
@@ -81,7 +82,7 @@ public class DealerHelperTest {
         );
 
 
-        OrderBinding deal = DealerHelper.deal(openTempl, m1, closeOrders, m("myCloseExchange", v(2)));
+        OrderBinding deal = DealerHelper.deal(openTempl, m1, closeOrders, m("myCloseExchange", v(2)), s);
 
         assertNotNull(deal);
         assertTrue("tradableAmount=" + deal.openedOrder.getTradableAmount(), eq(deal.openedOrder.getTradableAmount(), ONE));
@@ -97,7 +98,7 @@ public class DealerHelperTest {
         );
 
         BigDecimal small = v(".01");
-        OrderBinding deal = DealerHelper.deal(openTempl, m("myOpenExchange", small), closeOrders, m2);
+        OrderBinding deal = DealerHelper.deal(openTempl, m("myOpenExchange", small), closeOrders, m2, s);
 
         if (side == BID) {
             // skip BID
@@ -117,7 +118,7 @@ public class DealerHelperTest {
         );
 
         BigDecimal small = v(".01");
-        OrderBinding deal = DealerHelper.deal(openTempl, m1, closeOrders, m("myCloseExchange", small));
+        OrderBinding deal = DealerHelper.deal(openTempl, m1, closeOrders, m("myCloseExchange", small), s);
 
         if (side == BID) {
             // skip BID
@@ -136,7 +137,7 @@ public class DealerHelperTest {
                 order(side, v(".5"), P, p(ONE, v("-.2"))),
                 order(side, ONE, P, p(ONE, v("-.1")))
         );
-        OrderBinding deal = DealerHelper.deal(openTempl, m1, closeOrders, m2);
+        OrderBinding deal = DealerHelper.deal(openTempl, m1, closeOrders, m2, s);
 
         assertNotNull(deal);
         assertTrue("tradableAmount=" + deal.openedOrder.getTradableAmount(), eq(deal.openedOrder.getTradableAmount(), new BigDecimal("1.5")));
