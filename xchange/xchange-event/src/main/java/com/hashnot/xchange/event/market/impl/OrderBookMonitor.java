@@ -17,7 +17,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
 /**
@@ -31,8 +30,8 @@ public class OrderBookMonitor extends AbstractParametrizedMonitor<CurrencyPair, 
 
     final private Map<CurrencyPair, Long> timestamps = new HashMap<>();
 
-    public OrderBookMonitor(Exchange exchange, RunnableScheduler runnableScheduler, Executor executor, IAsyncMarketDataService marketDataService) {
-        super(runnableScheduler, executor);
+    public OrderBookMonitor(Exchange exchange, RunnableScheduler runnableScheduler, IAsyncMarketDataService marketDataService) {
+        super(runnableScheduler);
         this.marketDataService = marketDataService;
         this.exchange = exchange;
     }

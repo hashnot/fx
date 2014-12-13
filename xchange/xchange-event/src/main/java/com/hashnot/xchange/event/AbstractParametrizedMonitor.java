@@ -10,7 +10,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
 import static com.hashnot.xchange.ext.util.Multiplexer.multiplex;
@@ -21,30 +20,21 @@ import static com.hashnot.xchange.ext.util.Multiplexer.multiplex;
 public abstract class AbstractParametrizedMonitor<P, L, R> extends AbstractPollingMonitor {
     final protected Logger log = LoggerFactory.getLogger(getClass());
 
-    final protected Executor executor;
-
     final protected Multimap<P, L> listeners = Multimaps.newSetMultimap(new HashMap<>(), LinkedHashSet::new);
 
-    public AbstractParametrizedMonitor(RunnableScheduler scheduler, Executor executor) {
+    public AbstractParametrizedMonitor(RunnableScheduler scheduler) {
         super(scheduler);
-        this.executor = executor;
     }
 
     @Override
     public void run() {
         for (Map.Entry<P, Collection<L>> e : listeners.asMap().entrySet()) {
-            getData(e.getKey(), (data) -> {
-                if (data == null)
-                    log.warn("Null result from {}", this);
-
-                callListeners(data, e.getValue());
-            });
+            getData(e.getKey(), (data) -> callListeners(data, e.getValue()));
         }
     }
 
     protected void callListeners(R data, Iterable<L> listeners) {
-        // must use executor, all calls on an exchange are made in single thread
-        executor.execute(() -> multiplex(listeners, data, this::callListener));
+        multiplex(listeners, data, this::callListener);
     }
 
     protected void addListener(L listener, P param) {

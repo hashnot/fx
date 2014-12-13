@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.hashnot.xchange.ext.util.Multiplexer.multiplex;
 import static java.math.BigDecimal.ZERO;
@@ -33,10 +34,10 @@ public class OrderTracker implements IUserTradesListener, IOrderPlacementListene
 
     final private IUserTradesMonitor userTradesMonitor;
 
-    final private Map<String, LimitOrder> monitored = new HashMap<>();
+    final private Map<String, LimitOrder> monitored = new ConcurrentHashMap<>();
     final private Map<String, LimitOrder> monitoredView = Collections.unmodifiableMap(monitored);
 
-    final private Map<String, LimitOrder> current = new HashMap<>();
+    final private Map<String, LimitOrder> current = new ConcurrentHashMap<>();
     final private Map<String, LimitOrder> currentView = Collections.unmodifiableMap(current);
 
     final private Map<OrderType, MarketOrder> marketOrders = Collections.synchronizedMap(new EnumMap<>(OrderType.class));

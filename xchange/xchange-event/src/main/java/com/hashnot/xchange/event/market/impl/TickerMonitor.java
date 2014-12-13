@@ -12,13 +12,8 @@ import com.xeiam.xchange.dto.marketdata.Ticker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
 import java.util.function.Consumer;
-
-import static com.hashnot.xchange.ext.util.Tickers.eq;
 
 /**
  * @author Rafał Krupiński
@@ -28,7 +23,6 @@ public class TickerMonitor extends AbstractParametrizedMonitor<CurrencyPair, ITi
 
     private final Exchange exchange;
     private final IAsyncMarketDataService marketDataService;
-    private final Map<CurrencyPair, Ticker> previous = new HashMap<>();
 
     @Override
     protected void getData(CurrencyPair pair, Consumer<TickerEvent> consumer) {
@@ -37,10 +31,7 @@ public class TickerMonitor extends AbstractParametrizedMonitor<CurrencyPair, ITi
             try {
                 Ticker ticker = future.get();
                 log.debug("{}", ticker);
-
-                Ticker prev = previous.put(pair, ticker);
-                if (prev == null || !eq(prev, ticker))
-                    consumer.accept(new TickerEvent(ticker, exchange));
+                consumer.accept(new TickerEvent(ticker, exchange));
             } catch (InterruptedException e) {
                 log.warn("Interrupted!", e);
             } catch (ExecutionException e) {
@@ -64,8 +55,8 @@ public class TickerMonitor extends AbstractParametrizedMonitor<CurrencyPair, ITi
         removeListener(listener, pair);
     }
 
-    public TickerMonitor(IAsyncMarketDataService marketDataService, Exchange exchange, RunnableScheduler scheduler, Executor executor) {
-        super(scheduler, executor);
+    public TickerMonitor(IAsyncMarketDataService marketDataService, Exchange exchange, RunnableScheduler scheduler) {
+        super(scheduler);
         this.marketDataService = marketDataService;
         this.exchange = exchange;
     }

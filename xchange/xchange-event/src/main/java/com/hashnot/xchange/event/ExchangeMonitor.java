@@ -69,23 +69,22 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange {
         this.executor = executor;
         this.rate = rate;
 
-        runnableScheduler = new RoundRobinScheduler(exchange.getExchangeSpecification().getExchangeName());
+        runnableScheduler = new RoundRobinScheduler(executor, exchange.getExchangeSpecification().getExchangeName());
         openOrdersMonitor = new OpenOrdersMonitor(exchange, runnableScheduler);
-        tradeService = new AsyncTradeService(runnableScheduler, exchange.getPollingTradeService(), executor);
-        userTradesMonitor = new UserTradesMonitor(exchange, tradeService, runnableScheduler);
-        accountService = new AsyncAccountService(runnableScheduler, exchange.getPollingAccountService(), executor);
-        metadataService = new AsyncMarketMetadataService(runnableScheduler, exchange.getMarketMetadataService(), executor);
+        tradeService = new AsyncTradeService(runnableScheduler, exchange.getPollingTradeService());
+        accountService = new AsyncAccountService(runnableScheduler, exchange.getPollingAccountService());
+        metadataService = new AsyncMarketMetadataService(runnableScheduler, exchange.getMarketMetadataService());
+        marketDataService = new AsyncMarketDataService(runnableScheduler, exchange.getPollingMarketDataService());
+
+        userTradesMonitor = new UserTradesMonitor(exchange, runnableScheduler);
+        WalletMonitor walletMonitor = new WalletMonitor(exchange, runnableScheduler, accountService);
+        tickerMonitor = new TickerMonitor(marketDataService, exchange, runnableScheduler);
+        orderBookMonitor = new OrderBookMonitor(exchange, runnableScheduler, marketDataService);
 
         orderTracker = new OrderTracker(userTradesMonitor);
-        exchange.getPollingTradeService().addLimitOrderPlacedListener(orderTracker);
-
-        WalletMonitor walletMonitor = new WalletMonitor(exchange, runnableScheduler, executor, accountService);
         walletTracker = new WalletTracker(orderTracker, walletMonitor);
 
-        marketDataService = new AsyncMarketDataService(runnableScheduler, exchange.getPollingMarketDataService(), executor);
-        tickerMonitor = new TickerMonitor(marketDataService, exchange, runnableScheduler, executor);
-        orderBookMonitor = new OrderBookMonitor(exchange, runnableScheduler, executor, marketDataService);
-
+        exchange.getPollingTradeService().addLimitOrderPlacedListener(orderTracker);
         closeables = Arrays.asList(openOrdersMonitor, userTradesMonitor, tickerMonitor, walletMonitor);
     }
 
@@ -127,9 +126,7 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange {
         log.info("Cancelling all orders");
         Map<String, LimitOrder> monitored = orderTracker.getMonitored();
         CountDownLatch count = new CountDownLatch(monitored.size());
-        monitored.forEach((k, v) -> {
-            tradeService.cancelOrder(k, (future) -> count.countDown());
-        });
+        monitored.forEach((k, v) -> tradeService.cancelOrder(k, (future) -> count.countDown()));
         try {
             count.await();
         } catch (InterruptedException e) {
@@ -137,7 +134,7 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange {
         }
     }
 
-    protected void stopAll(){
+    protected void stopAll() {
         closeables.forEach(AbstractPollingMonitor::disable);
     }
 

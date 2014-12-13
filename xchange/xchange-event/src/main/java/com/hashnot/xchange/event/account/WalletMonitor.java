@@ -13,7 +13,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
 import static com.hashnot.xchange.ext.util.Numbers.BigDecimal.isZero;
@@ -81,8 +80,8 @@ public class WalletMonitor extends AbstractParametrizedMonitor<String, IWalletLi
         addListener(listener, currency);
     }
 
-    public WalletMonitor(Exchange exchange, RunnableScheduler scheduler, Executor executor, IAsyncAccountService accountService) {
-        super(scheduler, executor);
+    public WalletMonitor(Exchange exchange, RunnableScheduler scheduler, IAsyncAccountService accountService) {
+        super(scheduler);
         this.exchange = exchange;
         this.accountService = accountService;
     }
