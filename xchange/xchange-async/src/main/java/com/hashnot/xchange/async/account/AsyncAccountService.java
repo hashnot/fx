@@ -15,8 +15,8 @@ import java.util.function.Consumer;
 public class AsyncAccountService extends AbstractAsyncService implements IAsyncAccountService {
     final private PollingAccountService service;
 
-    public AsyncAccountService(Executor remoteExecutor, PollingAccountService service, Executor consumerExecutor) {
-        super(remoteExecutor, consumerExecutor);
+    public AsyncAccountService(Executor remoteExecutor, PollingAccountService service) {
+        super(remoteExecutor);
         this.service = service;
     }
 

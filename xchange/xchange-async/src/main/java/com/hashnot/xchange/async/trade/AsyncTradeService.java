@@ -9,8 +9,6 @@ import com.xeiam.xchange.dto.trade.OpenOrders;
 import com.xeiam.xchange.dto.trade.UserTrades;
 import com.xeiam.xchange.service.polling.PollingTradeService;
 import com.xeiam.xchange.service.polling.trade.TradeHistoryParams;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -23,12 +21,10 @@ import java.util.function.Consumer;
  * @author Rafał Krupiński
  */
 public class AsyncTradeService extends AbstractAsyncService implements IAsyncTradeService {
-    final private Logger log = LoggerFactory.getLogger(AsyncTradeService.class);
-
     final private PollingTradeService service;
 
-    public AsyncTradeService(Executor remoteExecutor, PollingTradeService pollingTradeService, Executor consumerExecutor) {
-        super(remoteExecutor, consumerExecutor);
+    public AsyncTradeService(Executor remoteExecutor, PollingTradeService pollingTradeService) {
+        super(remoteExecutor);
         service = pollingTradeService;
     }
 

@@ -1,6 +1,5 @@
-package com.hashnot.xchange.event.impl.exec;
+package com.hashnot.xchange.async;
 
-import com.hashnot.xchange.async.RoundRobinScheduler;
 import org.junit.Test;
 
 import static org.mockito.Mockito.*;
@@ -9,7 +8,7 @@ public class RoundRobinSchedulerTest {
 
     @Test
     public void testRun() throws Exception {
-        RoundRobinScheduler sched = new RoundRobinScheduler("test");
+        RoundRobinScheduler sched = new RoundRobinScheduler(Runnable::run, "test");
 
         Runnable runnable = mock(Runnable.class);
         sched.addTask(runnable);
@@ -24,7 +23,7 @@ public class RoundRobinSchedulerTest {
 
     @Test
     public void testRunPriority() throws Exception {
-        RoundRobinScheduler sched = new RoundRobinScheduler("test");
+        RoundRobinScheduler sched = new RoundRobinScheduler(Runnable::run, "test");
 
         Runnable task = mock(Runnable.class);
         sched.addTask(task);

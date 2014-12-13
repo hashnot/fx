@@ -12,14 +12,12 @@ import java.util.function.Consumer;
  */
 public class AbstractAsyncService {
     final private Executor remoteExecutor;
-    final private Executor consumerExecutor;
 
-    public AbstractAsyncService(Executor remoteExecutor, Executor consumerExecutor) {
+    public AbstractAsyncService(Executor remoteExecutor) {
         this.remoteExecutor = remoteExecutor;
-        this.consumerExecutor = consumerExecutor;
     }
 
-    protected <T> Future<T> call(RemoteCall<T> call, Consumer<Future<T>> consumer) {
+    protected <T> Future<T> call(CallableExt<T, IOException> call, Consumer<Future<T>> consumer) {
         SettableFuture<T> future = SettableFuture.create();
         remoteExecutor.execute(() -> {
             try {
@@ -29,12 +27,12 @@ public class AbstractAsyncService {
                 future.setException(e);
             }
             if (consumer != null)
-                consumerExecutor.execute(() -> consumer.accept(future));
+                consumer.accept(future);
         });
         return future;
     }
 
-    protected static interface RemoteCall<T> {
-        T call() throws IOException;
+    protected static interface CallableExt<V, E extends Exception> {
+        V call() throws E;
     }
 }

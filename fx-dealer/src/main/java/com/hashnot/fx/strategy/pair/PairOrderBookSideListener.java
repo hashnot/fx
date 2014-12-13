@@ -45,7 +45,7 @@ public class PairOrderBookSideListener implements IOrderBookSideListener {
      * Called when order book changes on the close exchange
      */
     @Override
-    public void orderBookSideChanged(OrderBookSideUpdateEvent evt) {
+    synchronized public void orderBookSideChanged(OrderBookSideUpdateEvent evt) {
         assert config.side == evt.source.side;
         assert config.listing.equals(evt.source.market.listing);
 

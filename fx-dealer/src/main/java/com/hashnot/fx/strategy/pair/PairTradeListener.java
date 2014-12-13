@@ -40,14 +40,14 @@ public class PairTradeListener implements IUserTradeListener {
         return data.orderBinding != null;
     }
 
-    public void update(List<LimitOrder> orders) {
+    synchronized public void update(List<LimitOrder> orders) {
         data.orderBinding.closingOrders = orders;
     }
 
     /*
      old value is called self, new - evt
      */
-    public void update(OrderBinding evt) {
+    synchronized public void update(OrderBinding evt) {
         if (data.orderBinding == null) {
             open(evt);
         } else if (!isIgnoreUpdate(data.orderBinding, evt)) {
@@ -128,7 +128,7 @@ public class PairTradeListener implements IUserTradeListener {
         });
     }
 
-    public void cancel() {
+    synchronized public void cancel() {
         if (!isActive()) {
             log.warn("Cancelling inactive order manager");
             return;

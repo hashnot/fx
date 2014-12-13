@@ -38,7 +38,7 @@ public class Dealer implements IBestOfferListener {
      * If the new price is the best, update internal state and change order book monitor to monitor new best market
      */
     @Override
-    public void updateBestOffer(BestOfferEvent evt) {
+    synchronized public void updateBestOffer(BestOfferEvent evt) {
         assert config.side == evt.source.side;
         assert config.listing.equals(evt.source.market.listing);
 

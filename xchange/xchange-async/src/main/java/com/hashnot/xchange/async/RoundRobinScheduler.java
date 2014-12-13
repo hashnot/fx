@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -20,16 +21,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 final public class RoundRobinScheduler implements Runnable, RunnableScheduler {
     final private static Logger log = LoggerFactory.getLogger(RoundRobinScheduler.class);
-    private final BlockingQueue<Runnable> priorityQueue = new LinkedBlockingQueue<>();
 
-    private final Set<Runnable> runnables = Collections.newSetFromMap(new ConcurrentHashMap<>());
-    private final Iterator<Runnable> iterator = Iterators.cycle(runnables);
-
-    private final AtomicBoolean skipPriorityQueue = new AtomicBoolean(false);
-
+    final private Executor executor;
     final private String name;
 
-    public RoundRobinScheduler(String name) {
+    private final BlockingQueue<Runnable> priorityQueue = new LinkedBlockingQueue<>();
+    private final Set<Runnable> runnables = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    private final Iterator<Runnable> iterator = Iterators.cycle(runnables);
+    private final AtomicBoolean skipPriorityQueue = new AtomicBoolean(false);
+
+    public RoundRobinScheduler(Executor executor, String name) {
+        this.executor = executor;
         this.name = name;
     }
 
@@ -56,8 +58,7 @@ final public class RoundRobinScheduler implements Runnable, RunnableScheduler {
         if (!iterator.hasNext()) {
             return false;
         }
-        Runnable task = iterator.next();
-        task.run();
+        executor.execute(iterator.next()::run);
         return true;
     }
 
@@ -67,7 +68,7 @@ final public class RoundRobinScheduler implements Runnable, RunnableScheduler {
             return false;
         }
         skipPriorityQueue.set(true);
-        priority.run();
+        executor.execute(priority::run);
         return true;
     }
 

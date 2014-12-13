@@ -16,8 +16,8 @@ public class AsyncMarketMetadataService extends AbstractAsyncService implements 
 
     final private MarketMetadataService service;
 
-    public AsyncMarketMetadataService(Executor remoteExecutor, MarketMetadataService service, Executor consumerExecutor) {
-        super(remoteExecutor, consumerExecutor);
+    public AsyncMarketMetadataService(Executor remoteExecutor, MarketMetadataService service) {
+        super(remoteExecutor);
         this.service = service;
     }
 
