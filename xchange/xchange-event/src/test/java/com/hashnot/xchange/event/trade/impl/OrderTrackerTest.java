@@ -56,11 +56,14 @@ public class OrderTrackerTest {
         LimitOrder order = new LimitOrder(ASK, TWO, BTC_EUR, id, null, ONE);
         orderTracker.limitOrderPlaced(new OrderEvent<>(id, order, source));
 
-        UserTrade t1 = trade(ASK, ONE, BTC_EUR, ONE, "t1", id);
-        UserTrade t2 = trade(ASK, ONE, BTC_EUR, ONE, "t2", id);
+        String oid1 = "t1";
+        String oid2 = "t2";
+        UserTrade t1 = trade(ASK, ONE, BTC_EUR, ONE, oid1, id);
+        UserTrade t2 = trade(ASK, ONE, BTC_EUR, ONE, oid2, id);
 
         orderTracker.trades(new UserTradesEvent(new UserTrades(asList(t1, t2), 0l, Trades.TradeSortType.SortByID), source));
-        verify(orderListener, times(1)).trade(new UserTradeEvent(order, trade(ASK, TWO, BTC_EUR, ONE, "t1+t2", id), null, source));
+        verify(orderListener, times(1)).trade(new UserTradeEvent(order, trade(ASK, ONE, BTC_EUR, ONE, oid1, id), LimitOrder.Builder.from(order).tradableAmount(ONE).build(), source));
+        verify(orderListener, times(1)).trade(new UserTradeEvent(order, trade(ASK, ONE, BTC_EUR, ONE, oid2, id), null, source));
     }
 
     @Test

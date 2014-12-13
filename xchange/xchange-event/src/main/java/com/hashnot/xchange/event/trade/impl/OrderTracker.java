@@ -42,7 +42,7 @@ public class OrderTracker implements IUserTradesListener, IOrderPlacementListene
 
     final private Map<OrderType, MarketOrder> marketOrders = Collections.synchronizedMap(new EnumMap<>(OrderType.class));
 
-    final private Set<UserTrade> ignored = Sets.newConcurrentHashSet();
+    final private Set<String> known = Sets.newConcurrentHashSet();
 
     @Override
     public void trades(UserTradesEvent evt) {
@@ -60,6 +60,9 @@ public class OrderTracker implements IUserTradesListener, IOrderPlacementListene
     }
 
     protected void handleTrade(Exchange exchange, UserTrade trade) {
+        if (!known.add(trade.getId()))
+            return;
+
         if (marketOrders.containsKey(trade.getType())) {
             handleMarketOrderTrade(exchange, trade);
             return;
@@ -68,8 +71,7 @@ public class OrderTracker implements IUserTradesListener, IOrderPlacementListene
         String orderId = trade.getOrderId();
         LimitOrder monitoredOrder = monitored.get(orderId);
         if (monitoredOrder == null) {
-            if (ignored.add(trade))
-                log.warn("Trade on an unknown order {}", trade);
+            log.warn("Trade on an unknown order {}", trade);
             return;
         }
 
