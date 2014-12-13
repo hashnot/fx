@@ -101,7 +101,7 @@ public class Main {
         } catch (InterruptedException e) {
             log.warn("Interrupted!", e);
         }
-        scheduler.shutdown();
+        scheduler.shutdownNow();
         log.info("Good bye");
     }
 

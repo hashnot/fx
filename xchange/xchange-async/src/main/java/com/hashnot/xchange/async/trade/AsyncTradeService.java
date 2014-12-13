@@ -1,7 +1,6 @@
 package com.hashnot.xchange.async.trade;
 
 import com.hashnot.xchange.async.AbstractAsyncService;
-import com.xeiam.xchange.ExchangeException;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.dto.trade.MarketOrder;
@@ -12,7 +11,6 @@ import com.xeiam.xchange.service.polling.trade.TradeHistoryParams;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
@@ -45,17 +43,7 @@ public class AsyncTradeService extends AbstractAsyncService implements IAsyncTra
 
     @Override
     public String placeLimitOrder(LimitOrder limitOrder) throws InterruptedException, IOException {
-        try {
-            return call(() -> service.placeLimitOrder(limitOrder), null).get();
-        } catch (ExecutionException e) {
-            Throwable cause = e.getCause();
-            if (cause instanceof IOException)
-                throw (IOException) cause;
-            else if (cause instanceof ExchangeException)
-                throw (ExchangeException) cause;
-            else
-                throw new ExchangeException("Error", cause);
-        }
+        return get(call(() -> service.placeLimitOrder(limitOrder), null));
     }
 
     @Override

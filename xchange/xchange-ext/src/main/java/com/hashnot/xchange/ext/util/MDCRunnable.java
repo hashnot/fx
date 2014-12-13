@@ -25,6 +25,10 @@ public class MDCRunnable implements Runnable {
         } finally {
             MDC.clear();
         }
+    }
 
+    @Override
+    public String toString() {
+        return "MDC+" + run.toString();
     }
 }

@@ -73,6 +73,6 @@ public class TradeService extends AbstractTradeService implements ITradeService 
     @Override
     public String toString() {
         PollingTradeService backend = backend();
-        return "TradeService@" + backend.getClass().getSimpleName() + "#" + System.identityHashCode(backend);
+        return backend.getClass().getSimpleName() + "#" + System.identityHashCode(backend);
     }
 }
