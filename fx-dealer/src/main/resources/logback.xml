@@ -17,6 +17,7 @@
     </appender>
 
     <logger name="com.hashnot.fx" level="debug"/>
+    <logger name="com.hashnot.fx.framework" level="info"/>
 
     <logger name="com.hashnot.xchange" level="info"/>
     <logger name="com.hashnot.xchange.event.trade.impl.UserTradesMonitor" level="debug"/>

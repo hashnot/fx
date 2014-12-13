@@ -13,13 +13,10 @@ import com.xeiam.xchange.dto.Order;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
-import javax.inject.Named;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ScheduledExecutorService;
 
 import static com.hashnot.xchange.ext.util.Tickers.getPrice;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
@@ -30,13 +27,6 @@ import static com.xeiam.xchange.dto.Order.OrderType.BID;
  */
 public class TickerVerifier implements IStrategy, ITickerListener, IOrderBookListener {
     final private static Logger log = LoggerFactory.getLogger(TickerVerifier.class);
-
-    @Inject
-    private ScheduledExecutorService executor;
-
-    @Inject
-    @Named("exitHook")
-    private Runnable exitHook;
 
     private Map<MarketSide, BigDecimal> ticker = new HashMap<>();
     private Map<MarketSide, BigDecimal> best = new HashMap<>();

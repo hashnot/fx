@@ -53,21 +53,16 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
             return;
         }
 
-        boolean serviced = checkBestOffer(ticker.getAsk(), new MarketSide(market, ASK));
-        serviced |= checkBestOffer(ticker.getBid(), new MarketSide(market, BID));
-
-        if (!serviced)
-            log.warn("Received a ticker update from {} but no listeners are registered", market);
+        checkBestOffer(ticker.getAsk(), new MarketSide(market, ASK));
+        checkBestOffer(ticker.getBid(), new MarketSide(market, BID));
     }
 
-    protected boolean checkBestOffer(BigDecimal price, MarketSide key) {
-        BigDecimal cached = cache.getOrDefault(key, forNull(key.side));
-        if (eq(price, cached))
-            return false;
-
-        cache.put(key, price);
-        notifyBestOfferListeners(new BestOfferEvent(price, key));
-        return true;
+    protected void checkBestOffer(BigDecimal price, MarketSide key) {
+        BigDecimal cached = cache.put(key, price);
+        if (!eq(price, cached))
+            notifyBestOfferListeners(new BestOfferEvent(price, key));
+        else
+            log.debug("Best offer @{} didn't change", key);
     }
 
     @Override
@@ -76,7 +71,7 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
         // they are here just so we know what to listen to.
 
         // we should only be notified only if we have both best offer and order book listeners
-        if (!(hasListener(evt.source.market) && !bestOfferListeners.getOrDefault(evt.source.market,emptyMultimap()).isEmpty())) {
+        if (!(hasListener(evt.source.market) && !bestOfferListeners.getOrDefault(evt.source.market, emptyMultimap()).isEmpty())) {
             log.warn("Received an OrderBook update bot no listeners are registered");
             return;
         }

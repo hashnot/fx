@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.hashnot.xchange.ext.util.Multiplexer.multiplex;
 import static com.xeiam.xchange.dto.Order.OrderType;
@@ -31,9 +32,9 @@ public class OrderBookSideMonitor implements IOrderBookSideMonitor, IOrderBookLi
     final protected Logger log = LoggerFactory.getLogger(getClass());
     final protected Map<Exchange, IExchangeMonitor> monitors;
 
-    final private Map<Market, OrderBook> orderBooks = new HashMap<>();
+    final private Map<Market, OrderBook> orderBooks = new ConcurrentHashMap<>();
 
-    final protected Map<Market, Multimap<OrderType, IOrderBookSideListener>> listeners = new HashMap<>();
+    final protected Map<Market, Multimap<OrderType, IOrderBookSideListener>> listeners = new LinkedHashMap<>();
 
     public OrderBookSideMonitor(Map<Exchange, IExchangeMonitor> monitors) {
         this.monitors = monitors;
@@ -48,7 +49,7 @@ public class OrderBookSideMonitor implements IOrderBookSideMonitor, IOrderBookLi
             log.info("{}@{} + {}", source, this, listener);
             monitors.get(market.exchange).getOrderBookMonitor().addOrderBookListener(this, market.listing);
         } else {
-            log.debug("Duplacate registration {} @ {}@", listener, source, this);
+            log.debug("Duplicate registration {} @ {}@", listener, source, this);
         }
     }
 
@@ -82,6 +83,11 @@ public class OrderBookSideMonitor implements IOrderBookSideMonitor, IOrderBookLi
         Market market = evt.source;
         OrderBook newBook = evt.orderBook;
         OrderBook oldBook = orderBooks.put(market, newBook);
+
+        if (oldBook != null && oldBook.getTimeStamp() != null && oldBook.getTimeStamp().equals(newBook.getTimeStamp())) {
+            log.debug("Skip, same timestamp");
+            return;
+        }
 
         checkOrderBookUpdate(oldBook, newBook, marketListeners, market, ASK);
         checkOrderBookUpdate(oldBook, newBook, marketListeners, market, BID);
