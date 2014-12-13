@@ -22,11 +22,6 @@ public class GaussOrderOpenStrategy extends SimpleOrderOpenStrategy {
     static final private RoundingMode round = RoundingMode.HALF_EVEN;
 
     @Override
-    public BigDecimal getAmount(BigDecimal amount) {
-        return amount.round(AMOUNT_MCTX);
-    }
-
-    @Override
     protected BigDecimal getDelta(BigDecimal low, BigDecimal diff, int scale) {
         BigDecimal add = getRandom(scale).multiply(diff).setScale(scale, round);
         if (eq(add, ZERO)) {

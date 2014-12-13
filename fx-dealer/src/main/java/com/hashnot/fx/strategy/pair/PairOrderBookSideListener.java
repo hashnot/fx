@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
+import static com.hashnot.xchange.ext.util.Numbers.BigDecimal.TWO;
 import static com.hashnot.xchange.ext.util.Numbers.Price.isFurther;
 import static com.hashnot.xchange.ext.util.Numbers.lt;
 import static java.math.BigDecimal.ZERO;
@@ -23,8 +24,6 @@ import static java.math.BigDecimal.ZERO;
  */
 public class PairOrderBookSideListener implements IOrderBookSideListener {
     final private static Logger log = LoggerFactory.getLogger(PairOrderBookSideListener.class);
-
-    static private final BigDecimal TWO = new BigDecimal(2);
 
     final private Map<Exchange, IExchangeMonitor> monitors;
 
@@ -114,7 +113,7 @@ public class PairOrderBookSideListener implements IOrderBookSideListener {
             return;
         }
 
-        OrderBinding event = DealerHelper.deal(openOrder, openMonitor, limited, closeMonitor);
+        OrderBinding event = DealerHelper.deal(openOrder, openMonitor, limited, closeMonitor, orderStrategy);
         if (event != null) {
             log.info("Place {}", event.openedOrder);
             orderManager.update(event);

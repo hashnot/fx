@@ -8,6 +8,8 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 
+import static com.hashnot.xchange.ext.util.Numbers.BigDecimal.TWO;
+import static com.hashnot.xchange.ext.util.Numbers.lt;
 import static com.xeiam.xchange.dto.Order.OrderType.BID;
 
 /**
@@ -16,13 +18,22 @@ import static com.xeiam.xchange.dto.Order.OrderType.BID;
 public class SimpleOrderOpenStrategy {
     protected MathContext AMOUNT_MCTX = new MathContext(1, RoundingMode.FLOOR);
 
-    public LimitOrder createLimitOrder(Order.OrderType side, BigDecimal maxAmount, CurrencyPair pair, BigDecimal priceLow, BigDecimal diff, int scale) {
+    public LimitOrder createLimitOrder(Order.OrderType side, BigDecimal maxAmount, BigDecimal minAmount, CurrencyPair pair, BigDecimal priceLow, BigDecimal diff, int scale) {
         BigDecimal price = getPrice(priceLow, diff, scale, side);
-        return new LimitOrder.Builder(side, pair).tradableAmount(getAmount(maxAmount)).limitPrice(price).build();
+        return new LimitOrder.Builder(side, pair).tradableAmount(getAmount(maxAmount, minAmount)).limitPrice(price).build();
     }
 
-    public BigDecimal getAmount(BigDecimal amount) {
-        return amount;
+    /**
+     * If amount is between minAmount and minAmount*2 return minAmount. Otherwise our order could be partially closed
+     * and we would have no way to make matching closing order
+     */
+    public BigDecimal getAmount(BigDecimal amount, BigDecimal minAmount) {
+        if (lt(amount, minAmount))
+            return null;
+        else if (lt(amount, minAmount.multiply(TWO)))
+            return minAmount;
+        else
+            return amount.round(AMOUNT_MCTX);
     }
 
     public BigDecimal getPrice(BigDecimal low, BigDecimal diff, int scale, Order.OrderType side) {

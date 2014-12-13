@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 
+import static com.hashnot.xchange.ext.util.Numbers.BigDecimal.TWO;
 import static com.hashnot.xchange.ext.util.Numbers.Price.isFurther;
 import static com.hashnot.xchange.ext.util.Numbers.lt;
 import static com.hashnot.xchange.ext.util.Orders.*;
@@ -28,7 +29,7 @@ public class DealerHelper {
 
     private static final BigDecimal LOW_LIMIT = new BigDecimal(".001");
 
-    public static OrderBinding deal(LimitOrder openOrderTempl, IExchangeMonitor openMonitor, List<LimitOrder> closeOrders, IExchangeMonitor closeMonitor) {
+    public static OrderBinding deal(LimitOrder openOrderTempl, IExchangeMonitor openMonitor, List<LimitOrder> closeOrders, IExchangeMonitor closeMonitor, SimpleOrderOpenStrategy orderOpenStrategy) {
 
         //after my open order is closed at the open exchange, this money should disappear
         String openOutgoingCur = outgoingCurrency(openOrderTempl);
@@ -48,10 +49,8 @@ public class DealerHelper {
             BigDecimal openBaseAmount = openMonitor.getWalletMonitor().getWallet(pair.baseSymbol);
             BigDecimal closeBaseAmount = closeMonitor.getWalletMonitor().getWallet(pair.baseSymbol);
 
-            BigDecimal two = new BigDecimal(2);
-
-            BigDecimal openBaseHalf = openBaseAmount.divide(two);
-            BigDecimal closeBaseHalf = closeBaseAmount.divide(two);
+            BigDecimal openBaseHalf = openBaseAmount.divide(TWO);
+            BigDecimal closeBaseHalf = closeBaseAmount.divide(TWO);
 
             BigDecimal openLowLimit = openMetadata.getAmountMinimum();
             BigDecimal closeLowLimit = closeMetadata.getAmountMinimum();
@@ -63,8 +62,8 @@ public class DealerHelper {
                     return null;
                 }
             } else {
-                openOutGross = openOutGross.divide(two);
-                closeOutGross = closeOutGross.divide(two);
+                openOutGross = openOutGross.divide(TWO);
+                closeOutGross = closeOutGross.divide(TWO);
             }
         }
 
@@ -104,6 +103,9 @@ public class DealerHelper {
             log.debug("Amount {} less than minimum", openAmountActual);
             return null;
         }
+
+        openAmountActual = orderOpenStrategy.getAmount(openAmountActual, closeMetadata.getAmountMinimum());
+
         log.info("open for {}", openAmountActual);
 
 

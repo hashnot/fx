@@ -16,7 +16,7 @@ public class OrderBinding {
     public String openOrderId;
     public List<LimitOrder> closingOrders;
 
-    // Unneded, because we're closing orders according to incoming trades and we also know when open order is closed
+    // Not needed, because we're closing orders according to incoming trades and we also know when open order is closed
     // public BigDecimal filled = BigDecimal.ZERO;
 
     public OrderBinding(Exchange openExchange, Exchange closeExchange, LimitOrder openedOrder, List<LimitOrder> closingOrders) {
