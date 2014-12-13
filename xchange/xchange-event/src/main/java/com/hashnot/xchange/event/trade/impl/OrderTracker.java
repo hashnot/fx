@@ -42,6 +42,8 @@ public class OrderTracker implements IUserTradesListener, IOrderPlacementListene
 
     final private Map<OrderType, MarketOrder> marketOrders = Collections.synchronizedMap(new EnumMap<>(OrderType.class));
 
+    final private Set<UserTrade> ignored = Sets.newConcurrentHashSet();
+
     @Override
     public void trades(UserTradesEvent evt) {
         Exchange exchange = evt.source;
@@ -51,8 +53,6 @@ public class OrderTracker implements IUserTradesListener, IOrderPlacementListene
         }
 
         List<UserTrade> userTrades = evt.userTrades.getUserTrades();
-        userTrades = merge(userTrades);
-
         for (UserTrade trade : userTrades)
             handleTrade(exchange, trade);
 
@@ -68,7 +68,8 @@ public class OrderTracker implements IUserTradesListener, IOrderPlacementListene
         String orderId = trade.getOrderId();
         LimitOrder monitoredOrder = monitored.get(orderId);
         if (monitoredOrder == null) {
-            log.warn("Trade on an unknown order {}", trade);
+            if (ignored.add(trade))
+                log.warn("Trade on an unknown order {}", trade);
             return;
         }
 
@@ -177,67 +178,6 @@ public class OrderTracker implements IUserTradesListener, IOrderPlacementListene
             current.remove(id);
             updateRunning();
         }
-    }
-
-    /**
-     * Merge subsequent trades with the same price into one
-     */
-    private static List<UserTrade> merge(List<UserTrade> userTrades) {
-        List<UserTrade> result = new ArrayList<>(userTrades.size());
-
-        BigDecimal price;
-        BigDecimal amount;
-        BigDecimal feeAmount;
-        StringBuilder id;
-
-        Iterator<UserTrade> iter = userTrades.listIterator();
-        UserTrade trade = iter.next();
-        UserTrade prev = trade;
-
-        price = trade.getPrice();
-        amount = trade.getTradableAmount();
-        feeAmount = trade.getFeeAmount();
-        id = new StringBuilder(trade.getId());
-
-        while (iter.hasNext()) {
-            trade = iter.next();
-
-            if (similar(trade, prev)) {
-                amount = amount.add(trade.getTradableAmount());
-                feeAmount = feeAmount==null?null:feeAmount.add(trade.getFeeAmount());
-                id.append('+').append(trade.getId());
-            } else {
-                result.add(from(prev).feeAmount(feeAmount).id(id.toString()).price(price).tradableAmount(amount).build());
-                price = trade.getPrice();
-                amount = trade.getTradableAmount();
-                feeAmount = trade.getFeeAmount();
-                id = new StringBuilder(trade.getId());
-            }
-            prev = trade;
-        }
-        result.add(from(prev).feeAmount(feeAmount).id(id.toString()).price(price).tradableAmount(amount).build());
-
-        return result;
-    }
-
-    private static UserTrade.Builder from(UserTrade t) {
-        return new UserTrade.Builder()
-                .currencyPair(t.getCurrencyPair())
-                .feeAmount(t.getFeeAmount())
-                .feeCurrency(t.getFeeCurrency())
-                .id(t.getId())
-                .orderId(t.getOrderId())
-                .price(t.getPrice())
-                .timestamp(t.getTimestamp())
-                .tradableAmount(t.getTradableAmount())
-                .type(t.getType());
-    }
-
-    private static boolean similar(UserTrade a, UserTrade b) {
-        return Numbers.eq(a.getPrice(), b.getPrice())
-                && (a.getFeeCurrency() == null || a.getFeeCurrency().equals(b.getFeeCurrency()))
-                && a.getCurrencyPair().equals(b.getCurrencyPair())
-                && a.getType() == b.getType();
     }
 
     public OrderTracker(IUserTradesMonitor userTradesMonitor) {
