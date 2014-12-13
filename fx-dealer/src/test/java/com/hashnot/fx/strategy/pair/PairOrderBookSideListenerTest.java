@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 
 import static com.hashnot.fx.strategy.pair.DealerTest.orderOpenStrategy;
 import static com.hashnot.fx.strategy.pair.PairTestUtils.*;
+import static com.hashnot.xchange.ext.util.Numbers.BigDecimal.TWO;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
 import static com.xeiam.xchange.dto.trade.LimitOrder.Builder.from;
 import static java.math.BigDecimal.ONE;
@@ -59,7 +60,7 @@ public class PairOrderBookSideListenerTest {
         IExchangeMonitor closeMonitor = getExchangeMonitor(closeExchange);
         Map<Exchange, IExchangeMonitor> monitors = map(openExchange, openMonitor, closeExchange, closeMonitor);
 
-        BigDecimal openPrice = new BigDecimal(2);
+        BigDecimal openPrice = TWO;
         BigDecimal priceDiff = ONE;
         if (ASK == side)
             priceDiff = priceDiff.negate();

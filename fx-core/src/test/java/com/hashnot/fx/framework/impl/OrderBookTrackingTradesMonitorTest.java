@@ -14,9 +14,9 @@ import com.xeiam.xchange.dto.trade.LimitOrder;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.math.BigDecimal;
 import java.util.List;
 
+import static com.hashnot.xchange.ext.util.Numbers.BigDecimal.TWO;
 import static java.math.BigDecimal.ONE;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -24,7 +24,6 @@ import static org.mockito.Mockito.*;
 
 @Ignore
 public class OrderBookTrackingTradesMonitorTest {
-    private static final BigDecimal TWO = new BigDecimal(2);
     protected static final CurrencyPair P = CurrencyPair.BTC_EUR;
     final private static Exchange x = mock(Exchange.class);
     final private static Market m = new Market(x, P);

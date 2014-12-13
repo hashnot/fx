@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.hashnot.fx.strategy.pair.PairTestUtils.*;
+import static com.hashnot.xchange.ext.util.Numbers.BigDecimal.TWO;
 import static com.hashnot.xchange.ext.util.Numbers.BigDecimal._ONE;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
 import static java.math.BigDecimal.ONE;
@@ -57,7 +58,7 @@ public class DealerTest {
 
         Dealer dealer = new Dealer(orderBookSideMonitor, new PairTradeListener(orderCloseStrategy, monitors, data), monitors, new DealerConfig(side, p), orderOpenStrategy, data);
 
-        BigDecimal closePrice = new BigDecimal(2);
+        BigDecimal closePrice = TWO;
 
 
         // step 1: register first exchange - close
@@ -84,7 +85,7 @@ public class DealerTest {
         IExchangeMonitor closeMonitor = getExchangeMonitor(closeExchange);
         Map<Exchange, IExchangeMonitor> monitors = map(openExchange, openMonitor, closeExchange, closeMonitor);
 
-        BigDecimal closePrice = new BigDecimal(2);
+        BigDecimal closePrice = TWO;
         DealerData data = data(closeExchange, closePrice);
 
         PairTradeListener orderManager = new PairTradeListener(orderCloseStrategy, monitors, data);
@@ -120,7 +121,7 @@ public class DealerTest {
 
 
         // step 1: register first exchange - open
-        BigDecimal closePrice = new BigDecimal(2);
+        BigDecimal closePrice = TWO;
         BigDecimal openPrice = closePrice.add(side == ASK ? ONE : _ONE);
         DealerData data = data(openExchange, openPrice);
         PairTradeListener orderManager = new PairTradeListener(orderCloseStrategy, monitors, data);

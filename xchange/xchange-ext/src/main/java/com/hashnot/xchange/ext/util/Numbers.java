@@ -28,7 +28,11 @@ public final class Numbers {
     }
 
     public static final class BigDecimal {
+        // used in tests
         public static final java.math.BigDecimal _ONE = ONE.negate();
+
+        // common constant
+        public static final java.math.BigDecimal TWO = new java.math.BigDecimal(2);
 
         public static boolean isZero(java.math.BigDecimal number) {
             return eq(number, ZERO);

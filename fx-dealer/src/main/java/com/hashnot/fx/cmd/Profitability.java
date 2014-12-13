@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 
+import static com.hashnot.xchange.ext.util.Numbers.BigDecimal.TWO;
 import static com.hashnot.xchange.ext.util.Numbers.lt;
 import static java.lang.System.out;
 import static java.math.BigDecimal.*;
@@ -34,7 +35,7 @@ public class Profitability implements IStrategy {
             new BigDecimal(".2"),
             new BigDecimal(".5"),
             ONE,
-            new BigDecimal(2),
+            TWO,
             new BigDecimal(5),
             ONE.movePointRight(1),
             ONE.movePointRight(2)

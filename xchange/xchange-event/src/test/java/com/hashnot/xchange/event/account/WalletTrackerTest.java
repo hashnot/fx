@@ -10,10 +10,10 @@ import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.dto.trade.UserTrade;
 import org.junit.Test;
 
-import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.hashnot.xchange.ext.util.Numbers.BigDecimal.TWO;
 import static java.math.BigDecimal.ONE;
 import static org.mockito.Mockito.*;
 
@@ -26,7 +26,7 @@ public class WalletTrackerTest {
         IOrderTracker orderTracker = mock(IOrderTracker.class);
         IWalletMonitor walletMonitor = mock(IWalletMonitor.class);
         Exchange exchange = mock(Exchange.class);
-        LimitOrder monitored = new LimitOrder.Builder(Order.OrderType.ASK, CurrencyPair.BTC_EUR).id(orderId).tradableAmount(new BigDecimal(2)).build();
+        LimitOrder monitored = new LimitOrder.Builder(Order.OrderType.ASK, CurrencyPair.BTC_EUR).id(orderId).tradableAmount(TWO).build();
 
         WalletTracker walletTracker = new WalletTracker(orderTracker, walletMonitor);
         List<IWalletListener> listeners = Arrays.asList(walletTracker);

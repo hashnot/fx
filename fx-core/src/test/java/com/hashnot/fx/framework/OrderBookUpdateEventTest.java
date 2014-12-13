@@ -6,9 +6,9 @@ import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import org.junit.Test;
 
-import java.math.BigDecimal;
 import java.util.List;
 
+import static com.hashnot.xchange.ext.util.Numbers.BigDecimal.TWO;
 import static com.hashnot.xchange.ext.util.Numbers.BigDecimal._ONE;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
 import static java.math.BigDecimal.ONE;
@@ -18,8 +18,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class OrderBookUpdateEventTest {
-
-    private static final BigDecimal TWO = new BigDecimal(2);
     private static final CurrencyPair P = CurrencyPair.BTC_EUR;
     private static final Market m = new Market(null, P);
     private static final MarketSide ms = new MarketSide(m, ASK);

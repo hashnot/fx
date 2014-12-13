@@ -16,6 +16,7 @@ import org.junit.Test;
 
 import java.math.BigDecimal;
 
+import static com.hashnot.xchange.ext.util.Numbers.BigDecimal.TWO;
 import static com.xeiam.xchange.currency.CurrencyPair.BTC_EUR;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
 import static java.math.BigDecimal.ONE;
@@ -24,7 +25,6 @@ import static org.mockito.Mockito.*;
 
 public class OrderTrackerTest {
 
-    private static final BigDecimal TWO = new BigDecimal(2);
     private static Exchange source = mock(Exchange.class);
 
     @Test

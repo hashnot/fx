@@ -11,6 +11,7 @@ import org.junit.runners.Parameterized;
 import java.math.BigDecimal;
 import java.util.Arrays;
 
+import static com.hashnot.xchange.ext.util.Numbers.BigDecimal.TWO;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
 import static com.xeiam.xchange.dto.Order.OrderType.BID;
 import static java.math.BigDecimal.ONE;
@@ -38,23 +39,23 @@ public class GaussOrderOpenStrategyTest {
 
     @Test
     public void testAmountRound() {
-        assertEquals(ONE, o.getAmount(new BigDecimal("1.1")));
+        assertEquals(ONE, o.getAmount(new BigDecimal("1.1"), ZERO));
     }
 
     @Test
     public void testAmountOne() {
-        assertEquals(ONE, o.getAmount(ONE));
+        assertEquals(ONE, o.getAmount(ONE, ONE));
     }
 
     @Test
     public void testAmountZero() {
-        assertEquals(ZERO, o.getAmount(ZERO));
+        assertEquals(ZERO, o.getAmount(ZERO, ONE));
     }
 
     @Test
     public void testGetPrice() throws Exception {
         // any scale >0
-        BigDecimal input = new BigDecimal(2);
+        BigDecimal input = TWO;
         BigDecimal lo = input;
         BigDecimal hi = input;
         if (side == ASK) {
