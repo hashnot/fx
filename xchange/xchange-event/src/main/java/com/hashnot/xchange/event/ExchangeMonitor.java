@@ -2,6 +2,7 @@ package com.hashnot.xchange.event;
 
 import com.hashnot.xchange.async.IAsyncExchange;
 import com.hashnot.xchange.async.RoundRobinScheduler;
+import com.hashnot.xchange.async.RunnableScheduler;
 import com.hashnot.xchange.async.account.AsyncAccountService;
 import com.hashnot.xchange.async.account.IAsyncAccountService;
 import com.hashnot.xchange.async.market.AsyncMarketDataService;
@@ -30,10 +31,9 @@ import com.xeiam.xchange.dto.trade.LimitOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import javax.management.*;
+import java.lang.management.ManagementFactory;
+import java.util.*;
 import java.util.concurrent.*;
 
 /**
@@ -64,18 +64,18 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange {
 
     protected final Map<CurrencyPair, MarketMetadata> metadata = new HashMap<>();
 
-    public ExchangeMonitor(IExchange parent, ScheduledExecutorService executor, long rate) {
+    public ExchangeMonitor(IExchange parent, ScheduledExecutorService executor, long rate) throws Exception {
         this.exchange = parent;
         this.executor = executor;
         this.rate = rate;
 
         runnableScheduler = new RoundRobinScheduler(executor, exchange.getExchangeSpecification().getExchangeName());
-        openOrdersMonitor = new OpenOrdersMonitor(exchange, runnableScheduler);
-        tradeService = new AsyncTradeService(runnableScheduler, exchange.getPollingTradeService());
-        accountService = new AsyncAccountService(runnableScheduler, exchange.getPollingAccountService());
-        metadataService = new AsyncMarketMetadataService(runnableScheduler, exchange.getMarketMetadataService());
-        marketDataService = new AsyncMarketDataService(runnableScheduler, exchange.getPollingMarketDataService());
+        tradeService = new AsyncTradeService(executor, exchange.getPollingTradeService());
+        accountService = new AsyncAccountService(executor, exchange.getPollingAccountService());
+        metadataService = new AsyncMarketMetadataService(executor, exchange.getMarketMetadataService());
+        marketDataService = new AsyncMarketDataService(executor, exchange.getPollingMarketDataService());
 
+        openOrdersMonitor = new OpenOrdersMonitor(exchange, runnableScheduler);
         userTradesMonitor = new UserTradesMonitor(exchange, runnableScheduler);
         WalletMonitor walletMonitor = new WalletMonitor(exchange, runnableScheduler, accountService);
         tickerMonitor = new TickerMonitor(marketDataService, exchange, runnableScheduler);
@@ -85,7 +85,24 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange {
         walletTracker = new WalletTracker(orderTracker, walletMonitor);
 
         exchange.getPollingTradeService().addLimitOrderPlacedListener(orderTracker);
-        closeables = Arrays.asList(openOrdersMonitor, userTradesMonitor, tickerMonitor, walletMonitor);
+        closeables = Arrays.asList(openOrdersMonitor, userTradesMonitor, tickerMonitor, walletMonitor, orderBookMonitor);
+
+        MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
+        registerMBean(mBeanServer, "com.hashnot.xchange.async", runnableScheduler);
+        //mBeanServer.registerMBean(openOrdersMonitor)
+        registerMBean(mBeanServer, "com.hashnot.xchange.event", userTradesMonitor);
+        registerMBean(mBeanServer, "com.hashnot.xchange.event", walletMonitor);
+        registerMBean(mBeanServer, "com.hashnot.xchange.event", tickerMonitor);
+        registerMBean(mBeanServer, "com.hashnot.xchange.event", orderBookMonitor);
+        registerMBean(mBeanServer, "com.hashnot.xchange.event", orderTracker);
+        //registerMBean(mBeanServer, "com.hashnot.xchange.event", walletTracker);
+    }
+
+    private void registerMBean(MBeanServer server, String domain, Object object) throws MalformedObjectNameException, NotCompliantMBeanException, InstanceAlreadyExistsException, MBeanRegistrationException {
+        Hashtable<String, String> properties = new Hashtable<>();
+        properties.put("exchange", exchange.toString());
+        properties.put("type", object.getClass().getSimpleName());
+        server.registerMBean(object, new ObjectName(domain, properties));
     }
 
     public MarketMetadata getMarketMetadata(CurrencyPair pair) {
@@ -206,5 +223,9 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange {
     @Override
     public IAsyncMarketDataService getMarketDataService() {
         return marketDataService;
+    }
+
+    public RunnableScheduler getRunnableScheduler() {
+        return runnableScheduler;
     }
 }

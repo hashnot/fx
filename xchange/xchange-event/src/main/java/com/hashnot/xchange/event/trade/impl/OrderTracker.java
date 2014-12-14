@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import static com.hashnot.xchange.ext.util.Multiplexer.multiplex;
 import static java.math.BigDecimal.ZERO;
@@ -27,7 +28,7 @@ import static java.math.BigDecimal.ZERO;
  *
  * @author Rafał Krupiński
  */
-public class OrderTracker implements IUserTradesListener, IOrderPlacementListener, IOrderTracker {
+public class OrderTracker implements IUserTradesListener, IOrderPlacementListener, IOrderTracker, OrderTrackerMBean {
     final private static Logger log = LoggerFactory.getLogger(OrderTracker.class);
 
     final private Set<IUserTradeListener> listeners = Sets.newConcurrentHashSet();
@@ -204,6 +205,11 @@ public class OrderTracker implements IUserTradesListener, IOrderPlacementListene
     @Override
     public void removeTradeListener(IUserTradeListener listener) {
         listeners.remove(listener);
+    }
+
+    @Override
+    public Collection<String> getListeners() {
+        return listeners.stream().map(Object::toString).collect(Collectors.toList());
     }
 }
 

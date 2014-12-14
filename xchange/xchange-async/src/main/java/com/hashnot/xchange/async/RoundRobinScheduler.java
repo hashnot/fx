@@ -5,28 +5,29 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-import java.util.Collections;
+import java.util.Collection;
 import java.util.Iterator;
-import java.util.Set;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 /**
  * Intended to run as timer task
  *
  * @author Rafał Krupiński
  */
-final public class RoundRobinScheduler implements Runnable, RunnableScheduler {
+final public class RoundRobinScheduler implements Runnable, RunnableScheduler, RoundRobinSchedulerMBean {
     final private static Logger log = LoggerFactory.getLogger(RoundRobinScheduler.class);
 
     final private Executor executor;
     final private String name;
 
     private final BlockingQueue<Runnable> priorityQueue = new LinkedBlockingQueue<>();
-    private final Set<Runnable> runnables = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    private final List<Runnable> runnables = new CopyOnWriteArrayList<>();
     private final Iterator<Runnable> iterator = Iterators.cycle(runnables);
     private final AtomicBoolean skipPriorityQueue = new AtomicBoolean(false);
 
@@ -84,5 +85,15 @@ final public class RoundRobinScheduler implements Runnable, RunnableScheduler {
     public void execute(Runnable r) {
         assert r != null;
         priorityQueue.add(r);
+    }
+
+    @Override
+    public Collection<String> getPriority() {
+        return priorityQueue.stream().map(Object::toString).collect(Collectors.toList());
+    }
+
+    @Override
+    public Collection<String> getTasks() {
+        return runnables.stream().map(Object::toString).collect(Collectors.toList());
     }
 }

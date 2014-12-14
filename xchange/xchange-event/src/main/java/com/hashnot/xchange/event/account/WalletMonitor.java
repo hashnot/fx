@@ -21,7 +21,7 @@ import static com.hashnot.xchange.ext.util.Comparables.eq;
 /**
  * @author Rafał Krupiński
  */
-public class WalletMonitor extends AbstractParametrizedMonitor<String, IWalletListener, WalletUpdateEvent> implements Runnable, IWalletMonitor {
+public class WalletMonitor extends AbstractParametrizedMonitor<String, IWalletListener, WalletUpdateEvent> implements Runnable, IWalletMonitor, WalletMonitorMBean {
     private final Map<String, BigDecimal> wallet = new HashMap<>();
     private final Map<String, BigDecimal> walletView = Collections.unmodifiableMap(wallet);
 

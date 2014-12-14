@@ -1,5 +1,6 @@
 package com.hashnot.xchange.event.market.impl;
 
+import com.google.common.collect.Multimaps;
 import com.hashnot.xchange.async.RunnableScheduler;
 import com.hashnot.xchange.async.market.IAsyncMarketDataService;
 import com.hashnot.xchange.event.AbstractParametrizedMonitor;
@@ -22,7 +23,7 @@ import java.util.function.Consumer;
 /**
  * @author Rafał Krupiński
  */
-public class OrderBookMonitor extends AbstractParametrizedMonitor<CurrencyPair, IOrderBookListener, OrderBookUpdateEvent> implements Runnable, IOrderBookMonitor {
+public class OrderBookMonitor extends AbstractParametrizedMonitor<CurrencyPair, IOrderBookListener, OrderBookUpdateEvent> implements Runnable, IOrderBookMonitor, OrderBookMonitorMBean {
     final private static Logger log = LoggerFactory.getLogger(OrderBookMonitor.class);
 
     final private Exchange exchange;
@@ -78,5 +79,12 @@ public class OrderBookMonitor extends AbstractParametrizedMonitor<CurrencyPair, 
     @Override
     public String toString() {
         return getClass().getSimpleName() + "@" + exchange;
+    }
+
+    @Override
+    public Map<String, String> getListeners() {
+        Map<String, String> result = new HashMap<>();
+        Multimaps.asMap(listeners).forEach((k, v) -> result.put(k.toString(), String.join(" ", v.toString())));
+        return result;
     }
 }

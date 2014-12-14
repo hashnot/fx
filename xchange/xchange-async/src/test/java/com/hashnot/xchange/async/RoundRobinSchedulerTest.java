@@ -20,6 +20,27 @@ public class RoundRobinSchedulerTest {
         sched.run();
         verify(runnable).run();
     }
+    @Test
+    public void testMultiTask() throws Exception {
+        RoundRobinScheduler sched = new RoundRobinScheduler(Runnable::run, "test");
+
+        Runnable runnable = mock(Runnable.class);
+        Runnable run1 = mock(Runnable.class);
+        sched.addTask(runnable);
+        sched.addTask(run1);
+
+        sched.run();
+        verify(run1,never()).run();
+        verify(runnable).run();
+
+        reset(runnable);
+        sched.run();
+        verify(run1).run();
+
+        reset(run1);
+        sched.run();
+        verify(runnable).run();
+    }
 
     @Test
     public void testRunPriority() throws Exception {

@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,7 +25,7 @@ import static com.google.common.collect.Ordering.natural;
 /**
  * @author Rafał Krupiński
  */
-public class UserTradesMonitor extends AbstractParameterlessMonitor<IUserTradesListener, UserTradesEvent> implements IUserTradesMonitor {
+public class UserTradesMonitor extends AbstractParameterlessMonitor<IUserTradesListener, UserTradesEvent> implements IUserTradesMonitor, UserTradesMonitorMBean {
     final private Logger log = LoggerFactory.getLogger(UserTradesMonitor.class);
 
     private final Exchange exchange;
@@ -92,5 +93,10 @@ public class UserTradesMonitor extends AbstractParameterlessMonitor<IUserTradesL
     @Override
     public String toString() {
         return "UserTradesMonitor@" + exchange;
+    }
+
+    @Override
+    public Collection<String> getListeners() {
+        return listeners.stream().map(Object::toString).collect(Collectors.toList());
     }
 }
