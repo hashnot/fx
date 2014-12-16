@@ -1,10 +1,11 @@
 package com.hashnot.xchange.event.trade.impl;
 
 import com.google.common.collect.Sets;
+import com.hashnot.xchange.async.impl.ListenerCollection;
 import com.hashnot.xchange.event.trade.*;
 import com.hashnot.xchange.ext.trade.IOrderPlacementListener;
 import com.hashnot.xchange.ext.trade.OrderCancelEvent;
-import com.hashnot.xchange.ext.trade.OrderEvent;
+import com.hashnot.xchange.ext.trade.OrderPlacementEvent;
 import com.hashnot.xchange.ext.util.BigDecimals;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.Order.OrderType;
@@ -19,7 +20,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import static com.hashnot.xchange.ext.util.Multiplexer.multiplex;
 import static java.math.BigDecimal.ZERO;
 
 /**
@@ -31,7 +31,7 @@ import static java.math.BigDecimal.ZERO;
 public class OrderTracker implements IUserTradesListener, IOrderPlacementListener, IOrderTracker, OrderTrackerMBean {
     final private static Logger log = LoggerFactory.getLogger(OrderTracker.class);
 
-    final private Set<IUserTradeListener> listeners = Sets.newConcurrentHashSet();
+    final private ListenerCollection<IUserTradeListener> listeners = new ListenerCollection<>(this);
 
     final private IUserTradesMonitor userTradesMonitor;
 
@@ -92,7 +92,7 @@ public class OrderTracker implements IUserTradesListener, IOrderPlacementListene
             current.put(orderId, currentOrder);
         }
 
-        multiplex(listeners, new UserTradeEvent(monitoredOrder, trade, currentOrder, exchange), IUserTradeListener::trade);
+        listeners.fire(new UserTradeEvent(monitoredOrder, trade, currentOrder, exchange), IUserTradeListener::trade);
     }
 
     private void handleMarketOrderTrade(Exchange exchange, UserTrade trade) {
@@ -118,7 +118,7 @@ public class OrderTracker implements IUserTradesListener, IOrderPlacementListene
             });
         }
 
-        multiplex(listeners, new UserTradeEvent(prev, trade, result, exchange), IUserTradeListener::trade);
+        listeners.fire(new UserTradeEvent(prev, trade, result, exchange), IUserTradeListener::trade);
     }
 
     private void updateRunning() {
@@ -130,14 +130,14 @@ public class OrderTracker implements IUserTradesListener, IOrderPlacementListene
     }
 
     @Override
-    public void limitOrderPlaced(OrderEvent<LimitOrder> evt) {
+    public void limitOrderPlaced(OrderPlacementEvent<LimitOrder> evt) {
         String id = evt.id;
         LimitOrder order = evt.order;
 
         // handle BTC-e market order work-around
         if ("0".equals(id)) {
             log.debug("BTC-e market order ID workaround");
-            marketOrderPlaced(new OrderEvent<>(id, MarketOrder.Builder.from(order).build(), evt.source));
+            marketOrderPlaced(new OrderPlacementEvent<>(id, MarketOrder.Builder.from(order).build(), evt.source));
             return;
         }
 
@@ -156,8 +156,8 @@ public class OrderTracker implements IUserTradesListener, IOrderPlacementListene
     }
 
     @Override
-    public void marketOrderPlaced(OrderEvent<MarketOrder> orderEvent) {
-        MarketOrder order = orderEvent.order;
+    public void marketOrderPlaced(OrderPlacementEvent<MarketOrder> orderPlacementEvent) {
+        MarketOrder order = orderPlacementEvent.order;
         marketOrders.compute(order.getType(), (k, v) -> {
             if (v == null)
                 return order;
@@ -199,17 +199,17 @@ public class OrderTracker implements IUserTradesListener, IOrderPlacementListene
 
     @Override
     public void addTradeListener(IUserTradeListener listener) {
-        listeners.add(listener);
+        listeners.addListener(listener);
     }
 
     @Override
     public void removeTradeListener(IUserTradeListener listener) {
-        listeners.remove(listener);
+        listeners.removeListener(listener);
     }
 
     @Override
     public Collection<String> getListeners() {
-        return listeners.stream().map(Object::toString).collect(Collectors.toList());
+        return listeners.reportListeners();
     }
 
     @Override

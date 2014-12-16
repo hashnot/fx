@@ -1,6 +1,6 @@
 package com.hashnot.xchange.event.trade.impl;
 
-import com.hashnot.xchange.async.RunnableScheduler;
+import com.hashnot.xchange.async.impl.RunnableScheduler;
 import com.hashnot.xchange.event.AbstractParameterLessMonitor;
 import com.hashnot.xchange.event.trade.IUserTradesListener;
 import com.hashnot.xchange.event.trade.IUserTradesMonitor;
@@ -43,11 +43,6 @@ public class UserTradesMonitor extends AbstractParameterLessMonitor<IUserTradesL
         return new UserTradesEvent(trades, exchange);
     }
 
-    @Override
-    protected void callListener(IUserTradesListener listener, UserTradesEvent data) {
-        listener.trades(data);
-    }
-
     protected void updatePreviousDate(UserTrades trades, Date now) {
         List<UserTrade> tradeList = trades.getUserTrades();
 
@@ -75,19 +70,19 @@ public class UserTradesMonitor extends AbstractParameterLessMonitor<IUserTradesL
     }
 
     public UserTradesMonitor(Exchange exchange, RunnableScheduler scheduler) {
-        super(scheduler);
+        super(scheduler, IUserTradesListener::trades);
         this.exchange = exchange;
         this.tradeService = exchange.getPollingTradeService();
     }
 
     @Override
     public void addTradesListener(IUserTradesListener listener) {
-        addListener(listener);
+        listeners.addListener(listener);
     }
 
     @Override
     public void removeTradesListener(IUserTradesListener listener) {
-        removeListener(listener);
+        listeners.removeListener(listener);
     }
 
     @Override
@@ -97,6 +92,6 @@ public class UserTradesMonitor extends AbstractParameterLessMonitor<IUserTradesL
 
     @Override
     public Collection<String> getListeners() {
-        return listeners.keySet().stream().map(Object::toString).collect(Collectors.toList());
+        return listeners.reportListeners();
     }
 }

@@ -1,14 +1,12 @@
 package com.hashnot.xchange.event;
 
-import com.hashnot.xchange.async.RunnableScheduler;
+import com.hashnot.xchange.async.impl.ListenerCollection;
+import com.hashnot.xchange.async.impl.RunnableScheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import static com.hashnot.xchange.ext.util.Multiplexer.multiplex;
+import java.util.function.BiConsumer;
 
 /**
  * @author Rafał Krupiński
@@ -16,52 +14,23 @@ import static com.hashnot.xchange.ext.util.Multiplexer.multiplex;
 public abstract class AbstractParameterLessMonitor<L, R> extends AbstractPollingMonitor {
     protected Logger log = LoggerFactory.getLogger(getClass());
 
-    protected final Map<L, Boolean> listeners = new ConcurrentHashMap<>();
+    final private BiConsumer<L, R> listenerFunction;
+    final protected ListenerCollection<L> listeners = new ListenerCollection<>(this, this::enable, this::disable);
 
-    public AbstractParameterLessMonitor(RunnableScheduler scheduler) {
+    public AbstractParameterLessMonitor(RunnableScheduler scheduler, BiConsumer<L, R> listenerFunction) {
         super(scheduler);
+        this.listenerFunction = listenerFunction;
     }
 
     @Override
     public void run() {
         try {
             R result = getData();
-            callListeners(result);
+            listeners.fire(result, listenerFunction);
         } catch (IOException e) {
             log.warn("Error from {}", this, e);
         }
     }
-
-    protected void callListeners(R data) {
-        multiplex(listeners.keySet(), data, this::callListener);
-    }
-
-    protected void addListener(L listener) {
-        listeners.compute(listener, (k, v) -> {
-            if (v == null) {
-                v = Boolean.TRUE;
-                log.info("{} + {}", this, listener);
-                enable();
-            }
-            return v;
-        });
-    }
-
-    protected void removeListener(L listener) {
-        listeners.computeIfPresent(listener, (k, v) -> {
-            if (v != null) {
-                log.info("{} - {}", this, listener);
-                if (listeners.isEmpty()) {
-                    disable();
-                    return null;
-                }
-                return v;
-            }
-            return null;
-        });
-    }
-
-    abstract protected void callListener(L listener, R data);
 
     abstract protected R getData() throws IOException;
 }

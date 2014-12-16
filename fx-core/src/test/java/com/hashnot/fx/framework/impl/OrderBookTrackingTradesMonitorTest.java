@@ -6,7 +6,7 @@ import com.hashnot.xchange.async.trade.IAsyncTradeService;
 import com.hashnot.xchange.event.trade.IUserTradeListener;
 import com.hashnot.xchange.event.trade.UserTradeEvent;
 import com.hashnot.xchange.ext.Market;
-import com.hashnot.xchange.ext.trade.OrderEvent;
+import com.hashnot.xchange.ext.trade.OrderPlacementEvent;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
@@ -41,7 +41,7 @@ public class OrderBookTrackingTradesMonitorTest {
 
 
         LimitOrder one = new LimitOrder(Order.OrderType.ASK, ONE, m.listing, null, null, ONE);
-        mon.limitOrderPlaced(new OrderEvent<>("id", one, x));
+        mon.limitOrderPlaced(new OrderPlacementEvent<>("id", one, x));
 
         List<LimitOrder> stage0 = emptyList();
         List<LimitOrder> stage1 = asList(one);
@@ -65,7 +65,7 @@ public class OrderBookTrackingTradesMonitorTest {
 
 
         LimitOrder one = new LimitOrder(Order.OrderType.ASK, ONE, P, "o1", null, ONE);
-        mon.limitOrderPlaced(new OrderEvent<>("id", one, x));
+        mon.limitOrderPlaced(new OrderPlacementEvent<>("id", one, x));
 
         List<LimitOrder> stage0 = emptyList();
         List<LimitOrder> stage1 = asList(one);
@@ -93,7 +93,7 @@ public class OrderBookTrackingTradesMonitorTest {
 
         LimitOrder one = new LimitOrder(Order.OrderType.ASK, ONE, P, null, null, ONE);
         LimitOrder two = new LimitOrder(Order.OrderType.ASK, TWO, P, null, null, ONE);
-        mon.limitOrderPlaced(new OrderEvent<>("id", two, x));
+        mon.limitOrderPlaced(new OrderPlacementEvent<>("id", two, x));
 
         List<LimitOrder> stage1 = asList(two);
         mon.orderBookSideChanged(new OrderBookSideUpdateEvent(ms, stage0, stage1));

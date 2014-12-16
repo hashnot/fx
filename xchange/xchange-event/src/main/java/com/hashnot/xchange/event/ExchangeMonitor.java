@@ -1,10 +1,10 @@
 package com.hashnot.xchange.event;
 
 import com.hashnot.xchange.async.IAsyncExchange;
-import com.hashnot.xchange.async.RoundRobinScheduler;
-import com.hashnot.xchange.async.RunnableScheduler;
 import com.hashnot.xchange.async.account.AsyncAccountService;
 import com.hashnot.xchange.async.account.IAsyncAccountService;
+import com.hashnot.xchange.async.impl.RoundRobinScheduler;
+import com.hashnot.xchange.async.impl.RunnableScheduler;
 import com.hashnot.xchange.async.market.AsyncMarketDataService;
 import com.hashnot.xchange.async.market.AsyncMarketMetadataService;
 import com.hashnot.xchange.async.market.IAsyncMarketDataService;
@@ -33,7 +33,10 @@ import org.slf4j.LoggerFactory;
 
 import javax.management.*;
 import java.lang.management.ManagementFactory;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
 import java.util.concurrent.*;
 
 /**
@@ -70,22 +73,22 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange {
         this.rate = rate;
 
         runnableScheduler = new RoundRobinScheduler(executor, exchange.getExchangeSpecification().getExchangeName());
-        tradeService = new AsyncTradeService(executor, exchange.getPollingTradeService());
+        tradeService = new AsyncTradeService(executor, exchange);
         accountService = new AsyncAccountService(executor, exchange.getPollingAccountService());
         metadataService = new AsyncMarketMetadataService(executor, exchange.getMarketMetadataService());
         marketDataService = new AsyncMarketDataService(executor, exchange.getPollingMarketDataService());
 
         openOrdersMonitor = new OpenOrdersMonitor(exchange, runnableScheduler);
         userTradesMonitor = new UserTradesMonitor(exchange, runnableScheduler);
-        WalletMonitor walletMonitor = new WalletMonitor(exchange, runnableScheduler, accountService);
+        WalletMonitor walletMonitor = new WalletMonitor(exchange, accountService);
         tickerMonitor = new TickerMonitor(marketDataService, exchange, runnableScheduler);
         orderBookMonitor = new OrderBookMonitor(exchange, runnableScheduler, marketDataService);
 
         orderTracker = new OrderTracker(userTradesMonitor);
         walletTracker = new WalletTracker(orderTracker, walletMonitor);
 
-        exchange.getPollingTradeService().addLimitOrderPlacedListener(orderTracker);
-        closeables = Arrays.asList(openOrdersMonitor, userTradesMonitor, tickerMonitor, walletMonitor, orderBookMonitor);
+        tradeService.addLimitOrderPlacedListener(orderTracker);
+        closeables = Arrays.asList(openOrdersMonitor, userTradesMonitor, tickerMonitor, orderBookMonitor);
 
         MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
         registerMBean(mBeanServer, "com.hashnot.xchange.async", runnableScheduler);
@@ -163,7 +166,7 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange {
     @Override
     public void start() {
         exchangeScheduler = executor.scheduleAtFixedRate(runnableScheduler, 0, rate, TimeUnit.MILLISECONDS);
-        getWalletMonitor().update(Collections.emptyList());
+        getWalletMonitor().update();
     }
 
     @Override

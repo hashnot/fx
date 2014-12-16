@@ -1,6 +1,7 @@
 package com.hashnot.fx.framework.impl;
 
 import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder.SetMultimapBuilder;
 import com.google.common.collect.Multimaps;
 import com.hashnot.fx.framework.*;
 import com.hashnot.xchange.event.IExchangeMonitor;
@@ -12,10 +13,13 @@ import com.xeiam.xchange.dto.marketdata.Ticker;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import static com.hashnot.fx.util.Multimaps.emptyMultimap;
 import static com.hashnot.xchange.ext.util.Comparables.eq;
 import static com.hashnot.xchange.ext.util.Multiplexer.multiplex;
 import static com.hashnot.xchange.ext.util.Orders.revert;
@@ -110,7 +114,7 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
     @Override
     public void addBestOfferListener(IBestOfferListener listener, MarketSide source) {
         Market market = source.market;
-        Multimap<OrderType, IBestOfferListener> marketListeners = bestOfferListeners.computeIfAbsent(market, (k) -> Multimaps.newSetMultimap(new EnumMap<>(OrderType.class), LinkedHashSet::new));
+        Multimap<OrderType, IBestOfferListener> marketListeners = bestOfferListeners.computeIfAbsent(market, (k) -> SetMultimapBuilder.enumKeys(OrderType.class).linkedHashSetValues().build());
         if (marketListeners.containsEntry(source.side, listener)) {
             log.debug("Duplicate registration {} @ {}", listener, source);
             return;

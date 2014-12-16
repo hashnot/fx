@@ -1,6 +1,6 @@
 package com.hashnot.xchange.event;
 
-import com.hashnot.xchange.async.RunnableScheduler;
+import com.hashnot.xchange.async.impl.RunnableScheduler;
 
 /**
  * @author Rafał Krupiński

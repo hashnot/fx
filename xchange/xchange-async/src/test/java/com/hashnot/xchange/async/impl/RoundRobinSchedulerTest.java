@@ -1,4 +1,4 @@
-package com.hashnot.xchange.async;
+package com.hashnot.xchange.async.impl;
 
 import org.junit.Test;
 
@@ -30,7 +30,7 @@ public class RoundRobinSchedulerTest {
         sched.addTask(run1);
 
         sched.run();
-        verify(run1,never()).run();
+        verify(run1, never()).run();
         verify(runnable).run();
 
         reset(runnable);

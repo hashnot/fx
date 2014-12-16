@@ -4,7 +4,7 @@ import com.hashnot.xchange.event.trade.IUserTradeListener;
 import com.hashnot.xchange.event.trade.IUserTradesMonitor;
 import com.hashnot.xchange.event.trade.UserTradeEvent;
 import com.hashnot.xchange.event.trade.UserTradesEvent;
-import com.hashnot.xchange.ext.trade.OrderEvent;
+import com.hashnot.xchange.ext.trade.OrderPlacementEvent;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
@@ -37,7 +37,7 @@ public class OrderTrackerTest {
 
         String id = "ID";
         LimitOrder order = new LimitOrder(ASK, ONE, BTC_EUR, id, null, ONE);
-        orderTracker.limitOrderPlaced(new OrderEvent<>(id, order, source));
+        orderTracker.limitOrderPlaced(new OrderPlacementEvent<>(id, order, source));
 
         UserTrade trade = trade(ASK, ONE, BTC_EUR, ONE, "id", id);
         orderTracker.trades(new UserTradesEvent(new UserTrades(asList(trade), 0l, Trades.TradeSortType.SortByID), source));
@@ -54,7 +54,7 @@ public class OrderTrackerTest {
 
         String id = "ID";
         LimitOrder order = new LimitOrder(ASK, TWO, BTC_EUR, id, null, ONE);
-        orderTracker.limitOrderPlaced(new OrderEvent<>(id, order, source));
+        orderTracker.limitOrderPlaced(new OrderPlacementEvent<>(id, order, source));
 
         String oid1 = "t1";
         String oid2 = "t2";
@@ -76,7 +76,7 @@ public class OrderTrackerTest {
 
         String id = "ID";
         LimitOrder order = new LimitOrder(ASK, TWO, BTC_EUR, id, null, ONE);
-        orderTracker.limitOrderPlaced(new OrderEvent<>(id, order, source));
+        orderTracker.limitOrderPlaced(new OrderPlacementEvent<>(id, order, source));
 
         UserTrade t1 = trade(ASK, ONE, BTC_EUR, ONE, "t1", id);
         UserTrade t2 = trade(ASK, ONE, BTC_EUR, ONE, "t2", id);

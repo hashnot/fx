@@ -1,74 +1,68 @@
 package com.hashnot.xchange.event;
 
-import com.google.common.collect.Sets;
-import com.hashnot.xchange.async.RunnableScheduler;
+import com.google.common.util.concurrent.SettableFuture;
+import com.hashnot.xchange.async.impl.AsyncSupport;
+import com.hashnot.xchange.async.impl.ListenerMap;
+import com.hashnot.xchange.async.impl.RunnableScheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-
-import static com.hashnot.xchange.ext.util.Multiplexer.multiplex;
+import java.util.function.Function;
 
 /**
  * @author Rafał Krupiński
  */
-public abstract class AbstractParametrizedMonitor<P, L, R> extends AbstractPollingMonitor {
+public abstract class AbstractParametrizedMonitor<P, L, R, I> extends AbstractPollingMonitor {
     final protected Logger log = LoggerFactory.getLogger(getClass());
 
-    final protected Map<P, Collection<L>> listeners = new ConcurrentHashMap<>();
+    final protected ListenerMap<P, L> listeners = new ListenerMap<>(this, this::enable, this::disable);
+    final private BiConsumer<L, R> listenerFunction;
 
-    public AbstractParametrizedMonitor(RunnableScheduler scheduler) {
+    public AbstractParametrizedMonitor(RunnableScheduler scheduler, BiConsumer<L, R> listenerFunction) {
         super(scheduler);
+        this.listenerFunction = listenerFunction;
     }
 
     @Override
     public void run() {
-        for (Map.Entry<P, Collection<L>> e : listeners.entrySet()) {
-            getData(e.getKey(), (data) -> callListeners(data, e.getValue()));
+        for (Map.Entry<P, Collection<L>> e : listeners.map()) {
+            P key = e.getKey();
+            getData(key, result -> handleResult(key, e.getValue(), result));
         }
     }
 
-    protected void callListeners(R data, Iterable<L> listeners) {
-        multiplex(listeners, data, this::callListener);
-    }
-
-    protected void addListener(L listener, P param) {
-        listeners.compute(param, (k, v) -> {
-            if (v == null)
-                v = Sets.newConcurrentHashSet();
-            if (v.add(listener)) {
-                log.info("{}@{} + {}", param, this, listener);
-                enable();
+    protected void handleResult(P param, Collection<L> listeners, Future<I> resultFuture) {
+        for (L listener : listeners) {
+            try {
+                I intermediate = AsyncSupport.get(resultFuture);
+                if (intermediate != null)
+                    listenerFunction.accept(listener, wrap(param, intermediate));
+            } catch (IOException e) {
+                log.warn("Error from {} @{}", param, this, e);
             }
-            return v;
-        });
+        }
     }
 
-    protected void removeListener(L listener, P param) {
-        listeners.computeIfPresent(param, (k, v) -> {
-            if (v.remove(listener)) {
-                log.info("{}@{} - {}", param, this, listener);
-                if (v.isEmpty()) {
-                    disable();
-                    return null;
-                }
-            }
-            return v;
-        });
-    }
+    abstract protected R wrap(P param, I intermediate);
 
-    abstract protected void callListener(L listener, R data);
+    abstract protected void getData(P param, Consumer<Future<I>> consumer);
 
-    abstract protected void getData(P param, Consumer<R> consumer);
-
-    public Map<String, String> getListeners() {
-        Map<String, String> result = new HashMap<>();
-        listeners.forEach((k, v) -> result.put(k.toString(), String.join(" ", v.toString())));
-        return result;
+    protected void get(Future<I> future, Consumer<Future<R>> consumer, Function<I, R> wrapFunction) {
+        SettableFuture<R> futureEvent = SettableFuture.create();
+        try {
+            I intermediate = AsyncSupport.get(future);
+            R result = wrapFunction.apply(intermediate);
+            futureEvent.set(result);
+        } catch (IOException e) {
+            futureEvent.setException(e);
+        }
+        consumer.accept(futureEvent);
     }
 
 }

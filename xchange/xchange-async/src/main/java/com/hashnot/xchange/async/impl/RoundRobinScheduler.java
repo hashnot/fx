@@ -1,4 +1,4 @@
-package com.hashnot.xchange.async;
+package com.hashnot.xchange.async.impl;
 
 import com.google.common.collect.Iterators;
 import org.slf4j.Logger;

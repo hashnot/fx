@@ -8,9 +8,11 @@ import com.xeiam.xchange.Exchange;
  */
 public class OrderCancelEvent extends Event<Exchange> {
     public final String id;
+    public final boolean canceled;
 
-    public OrderCancelEvent(String id, Exchange source) {
+    public OrderCancelEvent(String id, Exchange source, boolean canceled) {
         super(source);
         this.id = id;
+        this.canceled = canceled;
     }
 }

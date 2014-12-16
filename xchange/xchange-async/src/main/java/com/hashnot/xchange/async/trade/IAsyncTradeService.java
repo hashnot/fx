@@ -1,5 +1,6 @@
 package com.hashnot.xchange.async.trade;
 
+import com.hashnot.xchange.ext.trade.IOrderPlacementListener;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.dto.trade.MarketOrder;
@@ -27,7 +28,7 @@ public interface IAsyncTradeService {
 
     String placeLimitOrder(LimitOrder limitOrder) throws ExecutionException, InterruptedException, IOException;
 
-    void cancelOrder(String orderId, Consumer<Future<Boolean>> consumer);
+    Future<Boolean> cancelOrder(String orderId, Consumer<Future<Boolean>> consumer);
 
     void getTradeHistory(Consumer<Future<UserTrades>> consumer, Object... arguments);
 
@@ -36,4 +37,9 @@ public interface IAsyncTradeService {
     TradeHistoryParams createTradeHistoryParams();
 
     void getExchangeSymbols(Consumer<Future<Collection<CurrencyPair>>> consumer);
+
+    void addLimitOrderPlacedListener(IOrderPlacementListener listener);
+
+    void removeLimitOrderPlacedListener(IOrderPlacementListener listener);
+
 }

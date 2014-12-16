@@ -6,10 +6,10 @@ import com.hashnot.fx.framework.OrderBookSideUpdateEvent;
 import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.event.trade.IOrderTracker;
 import com.hashnot.xchange.ext.IExchange;
-import com.hashnot.xchange.ext.trade.ITradeService;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.trade.LimitOrder;
+import com.xeiam.xchange.service.polling.PollingTradeService;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.Test;
@@ -47,7 +47,7 @@ public class PairOrderBookSideListenerTest {
 
     @Test
     public void testOrderBookSideChanged() throws Exception {
-        ITradeService tradeService = mock(ITradeService.class);
+        PollingTradeService tradeService = mock(PollingTradeService.class);
 
         IExchange openExchange = mock(IExchange.class);
         when(openExchange.getPollingTradeService()).thenReturn(tradeService);

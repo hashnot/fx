@@ -1,7 +1,7 @@
 package com.hashnot.fx.framework.impl;
 
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
+import com.google.common.collect.MultimapBuilder;
 import com.hashnot.fx.framework.IOrderBookSideListener;
 import com.hashnot.fx.framework.IOrderBookSideMonitor;
 import com.hashnot.fx.framework.MarketSide;
@@ -17,9 +17,12 @@ import com.xeiam.xchange.dto.trade.LimitOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.hashnot.fx.util.Multimaps.emptyMultimap;
 import static com.hashnot.xchange.ext.util.Multiplexer.multiplex;
 import static com.xeiam.xchange.dto.Order.OrderType;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
@@ -43,7 +46,7 @@ public class OrderBookSideMonitor implements IOrderBookSideMonitor, IOrderBookLi
     @Override
     public void addOrderBookSideListener(IOrderBookSideListener listener, MarketSide source) {
         Market market = source.market;
-        Multimap<OrderType, IOrderBookSideListener> marketListeners = listeners.computeIfAbsent(market, k -> Multimaps.newSetMultimap(new EnumMap<>(OrderType.class), LinkedHashSet::new));
+        Multimap<OrderType, IOrderBookSideListener> marketListeners = listeners.computeIfAbsent(market, k -> MultimapBuilder.SetMultimapBuilder.enumKeys(OrderType.class).linkedHashSetValues().build());
 
         if (marketListeners.put(source.side, listener)) {
             log.info("{}@{} + {}", source, this, listener);
@@ -124,12 +127,5 @@ public class OrderBookSideMonitor implements IOrderBookSideMonitor, IOrderBookLi
     public String toString() {
         // intended singleton object, class name should suffice
         return getClass().getSimpleName();
-    }
-
-    private static final Multimap<?, ?> EMPTY_MULTIMAP = Multimaps.newSetMultimap(Collections.emptyMap(), Collections::emptySet);
-
-    @SuppressWarnings("unchecked")
-    protected static <K, V> Multimap<K, V> emptyMultimap() {
-        return (Multimap<K, V>) EMPTY_MULTIMAP;
     }
 }

@@ -8,7 +8,7 @@ import com.hashnot.xchange.event.trade.IUserTradeMonitor;
 import com.hashnot.xchange.event.trade.UserTradeEvent;
 import com.hashnot.xchange.ext.trade.IOrderPlacementListener;
 import com.hashnot.xchange.ext.trade.OrderCancelEvent;
-import com.hashnot.xchange.ext.trade.OrderEvent;
+import com.hashnot.xchange.ext.trade.OrderPlacementEvent;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.dto.trade.MarketOrder;
@@ -77,12 +77,12 @@ public class OrderBookUserTradeMonitor implements IOrderBookSideListener, IOrder
     }
 
     @Override
-    public void limitOrderPlaced(OrderEvent<LimitOrder> evt) {
+    public void limitOrderPlaced(OrderPlacementEvent<LimitOrder> evt) {
         openOrders.put(evt.order.getLimitPrice(), evt.order);
     }
 
     @Override
-    public void marketOrderPlaced(OrderEvent<MarketOrder> orderEvent) {
+    public void marketOrderPlaced(OrderPlacementEvent<MarketOrder> orderPlacementEvent) {
 
     }
 

@@ -1,12 +1,11 @@
 package com.hashnot.xchange.ext;
 
-import com.hashnot.xchange.ext.trade.ITradeService;
-import com.hashnot.xchange.ext.trade.TradeService;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.ExchangeSpecification;
 import com.xeiam.xchange.service.polling.MarketMetadataService;
 import com.xeiam.xchange.service.polling.PollingAccountService;
 import com.xeiam.xchange.service.polling.PollingMarketDataService;
+import com.xeiam.xchange.service.polling.PollingTradeService;
 import com.xeiam.xchange.service.streaming.ExchangeStreamingConfiguration;
 import com.xeiam.xchange.service.streaming.StreamingExchangeService;
 
@@ -21,8 +20,6 @@ public abstract class AbstractExchange implements IExchange {
      */
     protected abstract Exchange getExchange(boolean forRemote);
 
-    private final ITradeService tradeService = new TradeService(this::getExchange);
-
     public PollingMarketDataService getPollingMarketDataService() {
         return getExchange().getPollingMarketDataService();
     }
@@ -35,8 +32,9 @@ public abstract class AbstractExchange implements IExchange {
         return getExchange().getStreamingExchangeService(configuration);
     }
 
-    public ITradeService getPollingTradeService() {
-        return tradeService;
+    @Override
+    public PollingTradeService getPollingTradeService() {
+        return getExchange().getPollingTradeService();
     }
 
     public PollingAccountService getPollingAccountService() {

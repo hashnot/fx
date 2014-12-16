@@ -7,9 +7,9 @@ import com.xeiam.xchange.dto.trade.MarketOrder;
  * @author Rafał Krupiński
  */
 public interface IOrderPlacementListener {
-    void limitOrderPlaced(OrderEvent<LimitOrder> orderEvent);
+    void limitOrderPlaced(OrderPlacementEvent<LimitOrder> orderPlacementEvent);
 
-    void marketOrderPlaced(OrderEvent<MarketOrder> orderEvent);
+    void marketOrderPlaced(OrderPlacementEvent<MarketOrder> orderPlacementEvent);
 
     void orderCanceled(OrderCancelEvent orderCancelEvent);
 }

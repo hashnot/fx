@@ -1,4 +1,4 @@
-package com.hashnot.xchange.async;
+package com.hashnot.xchange.async.impl;
 
 import com.google.common.util.concurrent.SettableFuture;
 
@@ -11,16 +11,10 @@ import java.util.function.Consumer;
 /**
  * @author Rafał Krupiński
  */
-public class AbstractAsyncService {
-    final private Executor remoteExecutor;
-
-    public AbstractAsyncService(Executor remoteExecutor) {
-        this.remoteExecutor = remoteExecutor;
-    }
-
-    protected <T> Future<T> call(CallableExt<T, IOException> call, Consumer<Future<T>> consumer) {
+final public class AsyncSupport {
+    public static <T> Future<T> call(Callable<T, IOException> call, Consumer<Future<T>> consumer, Executor executor) {
         SettableFuture<T> future = SettableFuture.create();
-        remoteExecutor.execute(() -> {
+        executor.execute(() -> {
             try {
                 T result = call.call();
                 future.set(result);
@@ -33,7 +27,7 @@ public class AbstractAsyncService {
         return future;
     }
 
-    protected <T> T get(Future<T> future) throws IOException {
+    public static <T> T get(Future<T> future) throws IOException {
         try {
             return future.get();
         } catch (InterruptedException e) {
@@ -49,7 +43,4 @@ public class AbstractAsyncService {
         }
     }
 
-    protected static interface CallableExt<V, E extends Exception> {
-        V call() throws E;
-    }
 }

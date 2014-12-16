@@ -5,7 +5,7 @@ import com.google.common.collect.Tables;
 import com.hashnot.fx.framework.IStrategy;
 import com.hashnot.fx.framework.MarketSide;
 import com.hashnot.xchange.event.IExchangeMonitor;
-import com.hashnot.xchange.ext.IExchange;
+import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.marketdata.OrderBook;
@@ -95,7 +95,7 @@ public class Profitability implements IStrategy {
         exitHook.run();
     }
 
-    protected static void getValues(Table<BigDecimal, MarketSide, BigDecimal> values, Order.OrderType type, OrderBook orderBook, IExchange exchange) {
+    protected static void getValues(Table<BigDecimal, MarketSide, BigDecimal> values, Order.OrderType type, OrderBook orderBook, Exchange exchange) {
         List<BigDecimal> myValues = compute(orderBook, type);
         update(values, myValues, new MarketSide(exchange, CurrencyPair.BTC_EUR, type));
     }
