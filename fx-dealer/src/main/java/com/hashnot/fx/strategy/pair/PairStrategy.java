@@ -7,6 +7,8 @@ import com.hashnot.xchange.event.IExchangeMonitor;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 
+import javax.inject.Inject;
+import javax.management.*;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,11 +20,17 @@ import static com.xeiam.xchange.dto.Order.OrderType.BID;
  * @author Rafał Krupiński
  */
 public class PairStrategy implements IStrategy {
+
+    @Inject
+    MBeanServer mBeanServer;
+
     @Override
-    public void init(Collection<IExchangeMonitor> exchangeMonitors, Collection<CurrencyPair> pairs) {
+    public void init(Collection<IExchangeMonitor> exchangeMonitors, Collection<CurrencyPair> pairs) throws MalformedObjectNameException, NotCompliantMBeanException, InstanceAlreadyExistsException, MBeanRegistrationException {
         Map<Exchange, IExchangeMonitor> monitorMap = map(exchangeMonitors);
 
         BestOfferMonitor bestOfferMonitor = new BestOfferMonitor(monitorMap);
+
+        mBeanServer.registerMBean(bestOfferMonitor, new ObjectName("com.hashnot.fx", "type", bestOfferMonitor.getClass().getSimpleName()));
 
         GaussOrderOpenStrategy orderOpenStrategy = new GaussOrderOpenStrategy();
         SimpleOrderCloseStrategy orderCloseStrategy = new SimpleOrderCloseStrategy();

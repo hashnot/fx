@@ -211,5 +211,10 @@ public class OrderTracker implements IUserTradesListener, IOrderPlacementListene
     public Collection<String> getListeners() {
         return listeners.stream().map(Object::toString).collect(Collectors.toList());
     }
+
+    @Override
+    public Map<String, BigDecimal> getOrderIds() {
+        return monitored.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getLimitPrice()));
+    }
 }
 

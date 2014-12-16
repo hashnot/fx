@@ -16,11 +16,18 @@
         </encoder>
     </appender>
 
+    <appender name="all" class="ch.qos.logback.core.FileAppender">
+        <file>out.log</file>
+        <append>false</append>
+        <encoder>
+            <pattern>%7r %.5level [%.10thread] %X{name} %c{30} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
     <logger name="com.hashnot.fx" level="debug"/>
     <logger name="com.hashnot.fx.framework" level="info"/>
 
     <logger name="com.hashnot.xchange" level="info"/>
-    <logger name="com.hashnot.xchange.event.trade.impl.UserTradesMonitor" level="debug"/>
 
     <logger name="si.mazi.rescu" level="TRACE" additivity="false">
         <appender-ref ref="io"/>
@@ -29,5 +36,6 @@
     <root>
         <level value="warn"/>
         <appender-ref ref="STDOUT"/>
+        <appender-ref ref="all"/>
     </root>
 </configuration>

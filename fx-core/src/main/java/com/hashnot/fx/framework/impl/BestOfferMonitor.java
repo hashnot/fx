@@ -13,6 +13,8 @@ import com.xeiam.xchange.dto.trade.LimitOrder;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import static com.hashnot.xchange.ext.util.Comparables.eq;
 import static com.hashnot.xchange.ext.util.Multiplexer.multiplex;
@@ -28,11 +30,11 @@ import static com.xeiam.xchange.dto.Order.OrderType.BID;
  *
  * @author Rafał Krupiński
  */
-public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOfferMonitor, IOrderBookSideMonitor, IOrderBookSideListener, ITickerListener {
+public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOfferMonitor, IOrderBookSideMonitor, IOrderBookSideListener, ITickerListener, BestOfferMonitorMBean {
     final private Map<Market, Multimap<OrderType, IBestOfferListener>> bestOfferListeners = new HashMap<>();
 
     // (exchange, currencyPair, OrderType) -> best offer price
-    final private Map<MarketSide, BigDecimal> cache = new HashMap<>();
+    final private Map<MarketSide, BigDecimal> cache = new ConcurrentHashMap<>();
 
     public BestOfferMonitor(Map<Exchange, IExchangeMonitor> monitors) {
         super(monitors);
@@ -59,9 +61,10 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
 
     protected void checkBestOffer(BigDecimal price, MarketSide key) {
         BigDecimal cached = cache.put(key, price);
-        if (!eq(price, cached))
+        if (!eq(price, cached)) {
+            log.info("New best offer @{} = {}", key, price);
             notifyBestOfferListeners(new BestOfferEvent(price, key));
-        else
+        } else
             log.debug("Best offer @{} didn't change", key);
     }
 
@@ -195,5 +198,17 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
         super.removeOrderBookSideListener(this, new MarketSide(market, ASK));
         super.removeOrderBookSideListener(this, new MarketSide(market, BID));
         monitors.get(market.exchange).getTickerMonitor().addTickerListener(this, market.listing);
+    }
+
+    @Override
+    public Map<String, String> getListeners() {
+        Map<String, String> result = new HashMap<>();
+        bestOfferListeners.forEach((market, mm) -> Multimaps.asMap(mm).forEach((type, v) -> result.put(type + "@" + market, String.join(" ", v.toString()))));
+        return result;
+    }
+
+    @Override
+    public Map<String, BigDecimal> getBestPrices() {
+        return cache.entrySet().stream().collect(Collectors.toMap(e -> e.getKey().toString(), Map.Entry::getValue));
     }
 }

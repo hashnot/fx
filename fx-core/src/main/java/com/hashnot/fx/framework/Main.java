@@ -12,8 +12,10 @@ import groovy.lang.GroovyShell;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.management.MBeanServer;
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
@@ -45,6 +47,7 @@ public class Main {
             protected void configure() {
                 bind(ScheduledExecutorService.class).toInstance(scheduler);
                 bind(Runnable.class).annotatedWith(Names.named("exitHook")).toInstance(framework::stop);
+                bind(MBeanServer.class).toProvider(ManagementFactory::getPlatformMBeanServer);
             }
         });
         injector.injectMembers(strategy);
