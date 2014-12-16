@@ -49,7 +49,7 @@ public class GaussOrderOpenStrategyTest {
 
     @Test
     public void testAmountZero() {
-        assertEquals(ZERO, o.getAmount(ZERO, ONE));
+        assertEquals(null, o.getAmount(ZERO, ONE));
     }
 
     @Test

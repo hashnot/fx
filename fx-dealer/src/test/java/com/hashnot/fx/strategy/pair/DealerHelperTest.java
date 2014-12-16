@@ -52,7 +52,8 @@ public class DealerHelperTest {
         OrderBinding deal = DealerHelper.deal(openTempl, m1, closeOrders, m2, s);
 
         assertNotNull(deal);
-        assertTrue(eq(deal.openedOrder.getTradableAmount(), new BigDecimal("1.5")));
+        BigDecimal amount = deal.openedOrder.getTradableAmount();
+        assertTrue(amount.toString(), eq(amount, ONE));
     }
 
     /**
