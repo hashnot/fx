@@ -1,24 +1,24 @@
 package com.hashnot.xchange.event;
 
-import com.google.common.collect.Sets;
 import com.hashnot.xchange.async.RunnableScheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Set;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.hashnot.xchange.ext.util.Multiplexer.multiplex;
 
 /**
  * @author Rafał Krupiński
  */
-public abstract class AbstractParameterlessMonitor<L, R> extends AbstractPollingMonitor {
+public abstract class AbstractParameterLessMonitor<L, R> extends AbstractPollingMonitor {
     protected Logger log = LoggerFactory.getLogger(getClass());
 
-    protected final Set<L> listeners = Sets.newConcurrentHashSet();
+    protected final Map<L, Boolean> listeners = new ConcurrentHashMap<>();
 
-    public AbstractParameterlessMonitor(RunnableScheduler scheduler) {
+    public AbstractParameterLessMonitor(RunnableScheduler scheduler) {
         super(scheduler);
     }
 
@@ -30,30 +30,35 @@ public abstract class AbstractParameterlessMonitor<L, R> extends AbstractPolling
         } catch (IOException e) {
             log.warn("Error from {}", this, e);
         }
-
     }
 
     protected void callListeners(R data) {
-        multiplex(listeners, data, this::callListener);
+        multiplex(listeners.keySet(), data, this::callListener);
     }
 
     protected void addListener(L listener) {
-        synchronized (listeners) {
-            if (listeners.add(listener)) {
+        listeners.compute(listener, (k, v) -> {
+            if (v == null) {
+                v = Boolean.TRUE;
                 log.info("{} + {}", this, listener);
                 enable();
             }
-        }
+            return v;
+        });
     }
 
     protected void removeListener(L listener) {
-        synchronized (listeners) {
-            if (listeners.remove(listener)) {
+        listeners.computeIfPresent(listener, (k, v) -> {
+            if (v != null) {
                 log.info("{} - {}", this, listener);
-                if (listeners.isEmpty())
+                if (listeners.isEmpty()) {
                     disable();
+                    return null;
+                }
+                return v;
             }
-        }
+            return null;
+        });
     }
 
     abstract protected void callListener(L listener, R data);

@@ -1,6 +1,5 @@
 package com.hashnot.xchange.event.market.impl;
 
-import com.google.common.collect.Multimaps;
 import com.hashnot.xchange.async.RunnableScheduler;
 import com.hashnot.xchange.async.market.IAsyncMarketDataService;
 import com.hashnot.xchange.event.AbstractParametrizedMonitor;
@@ -13,8 +12,6 @@ import com.xeiam.xchange.dto.marketdata.Ticker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
@@ -67,12 +64,5 @@ public class TickerMonitor extends AbstractParametrizedMonitor<CurrencyPair, ITi
     @Override
     public String toString() {
         return getClass().getSimpleName() + "@" + exchange;
-    }
-
-    @Override
-    public Map<String, String> getListeners() {
-        Map<String, String> result = new HashMap<>();
-        Multimaps.asMap(listeners).forEach((k, v) -> result.put(k.toString(), String.join(" ", v.toString())));
-        return result;
     }
 }

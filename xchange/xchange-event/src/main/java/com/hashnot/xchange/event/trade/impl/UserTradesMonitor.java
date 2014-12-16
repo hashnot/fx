@@ -1,7 +1,7 @@
 package com.hashnot.xchange.event.trade.impl;
 
 import com.hashnot.xchange.async.RunnableScheduler;
-import com.hashnot.xchange.event.AbstractParameterlessMonitor;
+import com.hashnot.xchange.event.AbstractParameterLessMonitor;
 import com.hashnot.xchange.event.trade.IUserTradesListener;
 import com.hashnot.xchange.event.trade.IUserTradesMonitor;
 import com.hashnot.xchange.event.trade.UserTradesEvent;
@@ -25,7 +25,7 @@ import static com.google.common.collect.Ordering.natural;
 /**
  * @author Rafał Krupiński
  */
-public class UserTradesMonitor extends AbstractParameterlessMonitor<IUserTradesListener, UserTradesEvent> implements IUserTradesMonitor, UserTradesMonitorMBean {
+public class UserTradesMonitor extends AbstractParameterLessMonitor<IUserTradesListener, UserTradesEvent> implements IUserTradesMonitor, UserTradesMonitorMBean {
     final private Logger log = LoggerFactory.getLogger(UserTradesMonitor.class);
 
     private final Exchange exchange;
@@ -97,6 +97,6 @@ public class UserTradesMonitor extends AbstractParameterlessMonitor<IUserTradesL
 
     @Override
     public Collection<String> getListeners() {
-        return listeners.stream().map(Object::toString).collect(Collectors.toList());
+        return listeners.keySet().stream().map(Object::toString).collect(Collectors.toList());
     }
 }

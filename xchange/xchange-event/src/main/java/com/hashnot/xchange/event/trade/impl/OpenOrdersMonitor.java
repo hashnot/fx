@@ -1,7 +1,7 @@
 package com.hashnot.xchange.event.trade.impl;
 
 import com.hashnot.xchange.async.RunnableScheduler;
-import com.hashnot.xchange.event.AbstractParameterlessMonitor;
+import com.hashnot.xchange.event.AbstractParameterLessMonitor;
 import com.hashnot.xchange.event.trade.IOpenOrdersListener;
 import com.hashnot.xchange.event.trade.IOpenOrdersMonitor;
 import com.hashnot.xchange.event.trade.OpenOrdersEvent;
@@ -13,7 +13,7 @@ import java.io.IOException;
 /**
  * @author Rafał Krupiński
  */
-public class OpenOrdersMonitor extends AbstractParameterlessMonitor<IOpenOrdersListener, OpenOrdersEvent> implements IOpenOrdersMonitor {
+public class OpenOrdersMonitor extends AbstractParameterLessMonitor<IOpenOrdersListener, OpenOrdersEvent> implements IOpenOrdersMonitor {
     final private Exchange exchange;
 
     public OpenOrdersMonitor(Exchange exchange, RunnableScheduler scheduler) {
