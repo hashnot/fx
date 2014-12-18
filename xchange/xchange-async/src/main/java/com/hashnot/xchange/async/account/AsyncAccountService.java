@@ -1,9 +1,12 @@
 package com.hashnot.xchange.async.account;
 
+import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.account.AccountInfo;
+import com.xeiam.xchange.dto.marketdata.MarketMetadata;
 import com.xeiam.xchange.service.polling.PollingAccountService;
 
 import java.math.BigDecimal;
+import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
@@ -35,5 +38,10 @@ public class AsyncAccountService implements IAsyncAccountService {
     @Override
     public void requestDepositAddress(String currency, Consumer<Future<String>> consumer, String... args) {
         call(() -> service.requestDepositAddress(currency, args), consumer, executor);
+    }
+
+    @Override
+    public Future<Map<CurrencyPair, ? extends MarketMetadata>> getMetadata(Consumer<Future<Map<CurrencyPair, ? extends MarketMetadata>>> consumer) {
+        return call(service::getMetadata, consumer, executor);
     }
 }

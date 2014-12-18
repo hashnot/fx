@@ -2,7 +2,6 @@ package com.hashnot.xchange.ext;
 
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.ExchangeSpecification;
-import com.xeiam.xchange.service.polling.MarketMetadataService;
 import com.xeiam.xchange.service.polling.PollingAccountService;
 import com.xeiam.xchange.service.polling.PollingMarketDataService;
 import com.xeiam.xchange.service.polling.PollingTradeService;
@@ -22,10 +21,6 @@ public abstract class AbstractExchange implements IExchange {
 
     public PollingMarketDataService getPollingMarketDataService() {
         return getExchange().getPollingMarketDataService();
-    }
-
-    public MarketMetadataService getMarketMetadataService() {
-        return getExchange().getMarketMetadataService();
     }
 
     public StreamingExchangeService getStreamingExchangeService(ExchangeStreamingConfiguration configuration) {

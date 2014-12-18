@@ -6,9 +6,7 @@ import com.hashnot.xchange.async.account.IAsyncAccountService;
 import com.hashnot.xchange.async.impl.RoundRobinScheduler;
 import com.hashnot.xchange.async.impl.RunnableScheduler;
 import com.hashnot.xchange.async.market.AsyncMarketDataService;
-import com.hashnot.xchange.async.market.AsyncMarketMetadataService;
 import com.hashnot.xchange.async.market.IAsyncMarketDataService;
-import com.hashnot.xchange.async.market.IAsyncMarketMetadataService;
 import com.hashnot.xchange.async.trade.AsyncTradeService;
 import com.hashnot.xchange.async.trade.IAsyncTradeService;
 import com.hashnot.xchange.event.account.IWalletMonitor;
@@ -34,7 +32,6 @@ import org.slf4j.LoggerFactory;
 import javax.management.*;
 import java.lang.management.ManagementFactory;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.concurrent.*;
@@ -60,12 +57,11 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange {
     final protected OrderTracker orderTracker;
     final protected IAsyncTradeService tradeService;
     final protected IAsyncAccountService accountService;
-    final protected IAsyncMarketMetadataService metadataService;
     final protected IAsyncMarketDataService marketDataService;
 
     final protected Iterable<AbstractPollingMonitor> closeables;
 
-    protected final Map<CurrencyPair, MarketMetadata> metadata = new HashMap<>();
+    protected Map<CurrencyPair, ? extends MarketMetadata> metadata;
 
     public ExchangeMonitor(IExchange parent, ScheduledExecutorService executor, long rate) throws Exception {
         this.exchange = parent;
@@ -75,7 +71,6 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange {
         runnableScheduler = new RoundRobinScheduler(executor, exchange.getExchangeSpecification().getExchangeName());
         tradeService = new AsyncTradeService(executor, exchange);
         accountService = new AsyncAccountService(executor, exchange.getPollingAccountService());
-        metadataService = new AsyncMarketMetadataService(executor, exchange.getMarketMetadataService());
         marketDataService = new AsyncMarketDataService(executor, exchange.getPollingMarketDataService());
 
         openOrdersMonitor = new OpenOrdersMonitor(exchange, runnableScheduler);
@@ -109,23 +104,24 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange {
     }
 
     public MarketMetadata getMarketMetadata(CurrencyPair pair) {
-        return metadata.computeIfAbsent(pair, (p) -> {
-            try {
-                Future<MarketMetadata> future = metadataService.getMarketMetadata(p, null);
-                return future.get();
-            } catch (InterruptedException e) {
-                log.warn("Interrupted!", e);
-                return null;
-            } catch (ExecutionException e) {
+        synchronized (this) {
+            if (metadata == null)
                 try {
-                    throw e.getCause();
-                } catch (Error | RuntimeException r) {
-                    throw r;
-                } catch (Throwable throwable) {
-                    throw new IllegalStateException(throwable);
+                    metadata = accountService.getMetadata(null).get();
+                } catch (InterruptedException e) {
+                    log.warn("Interrupted!", e);
+                    throw new IllegalStateException(e);
+                } catch (ExecutionException e) {
+                    try {
+                        throw e.getCause();
+                    } catch (Error | RuntimeException r) {
+                        throw r;
+                    } catch (Throwable throwable) {
+                        throw new IllegalStateException(throwable);
+                    }
                 }
-            }
-        });
+        }
+        return metadata.get(pair);
     }
 
     /**
@@ -166,7 +162,6 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange {
     @Override
     public void start() {
         exchangeScheduler = executor.scheduleAtFixedRate(runnableScheduler, 0, rate, TimeUnit.MILLISECONDS);
-        getWalletMonitor().update();
     }
 
     @Override
@@ -216,11 +211,6 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange {
     @Override
     public IAsyncAccountService getAccountService() {
         return accountService;
-    }
-
-    @Override
-    public IAsyncMarketMetadataService getMetadataService() {
-        return metadataService;
     }
 
     @Override

@@ -26,7 +26,12 @@ public class PairStrategy implements IStrategy {
 
     @Override
     public void init(Collection<IExchangeMonitor> exchangeMonitors, Collection<CurrencyPair> pairs) throws MalformedObjectNameException, NotCompliantMBeanException, InstanceAlreadyExistsException, MBeanRegistrationException {
-        Map<Exchange, IExchangeMonitor> monitorMap = map(exchangeMonitors);
+        HashMap<Exchange, IExchangeMonitor> monitorMap = new HashMap<>();
+
+        for (IExchangeMonitor monitor : exchangeMonitors) {
+            monitorMap.put(monitor.getExchange(), monitor);
+            monitor.getWalletMonitor().update();
+        }
 
         BestOfferMonitor bestOfferMonitor = new BestOfferMonitor(monitorMap);
 

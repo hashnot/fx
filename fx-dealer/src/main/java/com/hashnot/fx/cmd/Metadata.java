@@ -26,17 +26,14 @@ public class Metadata implements IStrategy {
     public void init(Collection<IExchangeMonitor> exchangeMonitors, Collection<CurrencyPair> pairs) throws Exception {
         CountDownLatch count = new CountDownLatch(exchangeMonitors.size() * pairs.size());
         for (IExchangeMonitor monitor : exchangeMonitors) {
-            for (CurrencyPair pair : pairs) {
-                monitor.getAsyncExchange().getMetadataService().getMarketMetadata(pair, (future) -> {
-                    count.countDown();
-                    try {
-                        log.info("{}", future.get());
-                    } catch (InterruptedException | ExecutionException e) {
-                        log.error("Error", e);
-                    }
-                });
-
-            }
+            monitor.getAsyncExchange().getAccountService().getMetadata((future) -> {
+                count.countDown();
+                try {
+                    log.info("{}", future.get());
+                } catch (InterruptedException | ExecutionException e) {
+                    log.error("Error", e);
+                }
+            });
         }
         count.await();
         exitHook.run();
