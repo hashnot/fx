@@ -60,10 +60,19 @@ public class Dealer implements IBestOfferListener {
 
         log.info("Best offer {} @{}/{}; mine {}@{}", newPrice, config.side, eventExchange, data.getOpenPrice(), getOpenExchange());
 
-        boolean mineTop = isMineTop(newPrice);
-        log.debug("Mine on top: {}", mineTop);
-        if (mineTop) return;
-
+        boolean cancel = false;
+        {
+            LimitOrder order = orderManager.getOpenOrder();
+            if (order != null) {
+                if (isFurther(order.getLimitPrice(), newPrice, config.side)) {
+                    log.debug("My order fell from the top");
+                    cancel = true;
+                } else {
+                    log.debug("Mine on top");
+                    return;
+                }
+            }
+        }
         getBestOffers().put(eventExchange, newPrice);
 
         // it's important to first update open before close exchange,
@@ -97,9 +106,9 @@ public class Dealer implements IBestOfferListener {
 
         if (dirty) {
             updateCloseMarket(oldClose);
-            if (orderManager.isActive())
-                orderManager.cancel();
         }
+        if (dirty && orderManager.isActive() || cancel)
+            orderManager.cancel();
     }
 
     private void updateCloseMarket(Exchange oldExchange) {
@@ -115,11 +124,6 @@ public class Dealer implements IBestOfferListener {
             log.debug("Add OBL to {}", marketSide);
             orderBookSideMonitor.addOrderBookSideListener(orderBookSideListener, marketSide);
         }
-    }
-
-    protected boolean isMineTop(BigDecimal newTopPrice) {
-        LimitOrder order = orderManager.getOpenOrder();
-        return (order != null && !isFurther(order.getLimitPrice(), newTopPrice, config.side));
     }
 
     private boolean hasMinimumMoney(Exchange exchange, BigDecimal price) {
