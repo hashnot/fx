@@ -34,7 +34,10 @@ import java.lang.management.ManagementFactory;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Rafał Krupiński
@@ -104,23 +107,6 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange {
     }
 
     public MarketMetadata getMarketMetadata(CurrencyPair pair) {
-        synchronized (this) {
-            if (metadata == null)
-                try {
-                    metadata = accountService.getMetadata(null).get();
-                } catch (InterruptedException e) {
-                    log.warn("Interrupted!", e);
-                    throw new IllegalStateException(e);
-                } catch (ExecutionException e) {
-                    try {
-                        throw e.getCause();
-                    } catch (Error | RuntimeException r) {
-                        throw r;
-                    } catch (Throwable throwable) {
-                        throw new IllegalStateException(throwable);
-                    }
-                }
-        }
         return metadata.get(pair);
     }
 
@@ -160,8 +146,9 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange {
     }
 
     @Override
-    public void start() {
+    public void start() throws Exception{
         exchangeScheduler = executor.scheduleAtFixedRate(runnableScheduler, 0, rate, TimeUnit.MILLISECONDS);
+        metadata = accountService.getMetadata(null).get();
     }
 
     @Override

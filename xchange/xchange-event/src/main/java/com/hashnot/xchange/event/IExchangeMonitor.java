@@ -30,7 +30,7 @@ public interface IExchangeMonitor {
 
     MarketMetadata getMarketMetadata(CurrencyPair pair);
 
-    void start();
+    void start() throws Exception;
 
     void stop();
 

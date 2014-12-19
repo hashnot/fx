@@ -11,6 +11,7 @@ import com.xeiam.xchange.dto.trade.MarketOrder;
 
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.concurrent.Future;
 
 /**
  * @author Rafał Krupiński
@@ -44,13 +45,12 @@ public class WalletTracker implements IWalletMonitor, IOrderPlacementListener, I
         disableWalletMonitor();
     }
 
-    public void update() {
-        walletMonitor.update();
+    public Future<Map<String, BigDecimal>> update() {
+        return walletMonitor.update();
     }
 
     @Override
     public void marketOrderPlaced(OrderPlacementEvent<MarketOrder> evt) {
-        update();
     }
 
     @Override
