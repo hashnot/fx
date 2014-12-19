@@ -4,7 +4,6 @@ import com.hashnot.fx.framework.IOrderBookSideListener;
 import com.hashnot.fx.framework.OrderBookSideUpdateEvent;
 import com.hashnot.fx.util.OrderBooks;
 import com.hashnot.xchange.event.IExchangeMonitor;
-import com.hashnot.xchange.ext.util.Orders;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import org.slf4j.Logger;
@@ -16,6 +15,8 @@ import java.util.Map;
 
 import static com.hashnot.xchange.ext.util.BigDecimals.TWO;
 import static com.hashnot.xchange.ext.util.Comparables.lt;
+import static com.hashnot.xchange.ext.util.Orders.getNetPrice;
+import static com.hashnot.xchange.ext.util.Orders.revert;
 import static com.hashnot.xchange.ext.util.Prices.isFurther;
 import static java.math.BigDecimal.ZERO;
 
@@ -86,7 +87,7 @@ public class PairOrderBookSideListener implements IOrderBookSideListener {
         {
             LimitOrder closeOrder = evt.newOrders.get(0);
             closingPrice = closeOrder.getLimitPrice();
-            closingNetPrice = Orders.getNetPrice(closeOrder, closeMonitor.getMarketMetadata(closeOrder.getCurrencyPair()).getOrderFeeFactor());
+            closingNetPrice = getNetPrice(closeOrder.getLimitPrice(), revert(closeOrder.getType()), closeMonitor.getMarketMetadata(closeOrder.getCurrencyPair()).getOrderFeeFactor());
         }
 
         BigDecimal openGrossPrice = data.getBestOffers().get(data.getOpenExchange());
@@ -115,7 +116,7 @@ public class PairOrderBookSideListener implements IOrderBookSideListener {
 
         OrderBinding event = DealerHelper.deal(openOrder, openMonitor, limited, closeMonitor, orderStrategy);
         if (event != null) {
-            log.info("Place {}", event.openedOrder);
+            log.info("Place {} @{}", event.openedOrder, openMonitor);
             orderManager.update(event);
         } else if (orderManager.isActive())
             orderManager.cancel();
@@ -131,7 +132,7 @@ public class PairOrderBookSideListener implements IOrderBookSideListener {
     }
 
     private BigDecimal getOpenNetPrice(BigDecimal openGrossPrice) {
-        return Orders.getNetPrice(openGrossPrice, config.side, monitors.get(data.getOpenExchange()).getMarketMetadata(config.listing).getOrderFeeFactor());
+        return getNetPrice(openGrossPrice, config.side, monitors.get(data.getOpenExchange()).getMarketMetadata(config.listing).getOrderFeeFactor());
     }
 
     protected static BigDecimal getLimit(IExchangeMonitor monitor, String currency) {
