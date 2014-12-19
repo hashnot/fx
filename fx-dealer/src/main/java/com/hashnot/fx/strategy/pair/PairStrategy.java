@@ -8,10 +8,11 @@ import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 
 import javax.inject.Inject;
-import javax.management.*;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+import java.math.BigDecimal;
+import java.util.*;
+import java.util.concurrent.Future;
 
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
 import static com.xeiam.xchange.dto.Order.OrderType.BID;
@@ -25,13 +26,16 @@ public class PairStrategy implements IStrategy {
     MBeanServer mBeanServer;
 
     @Override
-    public void init(Collection<IExchangeMonitor> exchangeMonitors, Collection<CurrencyPair> pairs) throws MalformedObjectNameException, NotCompliantMBeanException, InstanceAlreadyExistsException, MBeanRegistrationException {
+    public void init(Collection<IExchangeMonitor> exchangeMonitors, Collection<CurrencyPair> pairs) throws Exception {
         HashMap<Exchange, IExchangeMonitor> monitorMap = new HashMap<>();
 
+        List<Future<Map<String, BigDecimal>>> futures = new ArrayList<>(monitorMap.size());
         for (IExchangeMonitor monitor : exchangeMonitors) {
             monitorMap.put(monitor.getExchange(), monitor);
-            monitor.getWalletMonitor().update();
+            futures.add(monitor.getWalletMonitor().update());
         }
+        for (Future<Map<String, BigDecimal>> future : futures)
+            future.get();
 
         BestOfferMonitor bestOfferMonitor = new BestOfferMonitor(monitorMap);
 
@@ -49,13 +53,6 @@ public class PairStrategy implements IStrategy {
                 registerBestOfferListener(bestOfferMonitor, bidDealer, x);
             }
         }
-    }
-
-    private static Map<Exchange, IExchangeMonitor> map(Iterable<IExchangeMonitor> monitors) {
-        HashMap<Exchange, IExchangeMonitor> result = new HashMap<>();
-        for (IExchangeMonitor monitor : monitors)
-            result.put(monitor.getExchange(), monitor);
-        return result;
     }
 
     private static void registerBestOfferListener(BestOfferMonitor bestOfferMonitor, Dealer dealer, Exchange exchange) {
