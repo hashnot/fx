@@ -88,10 +88,10 @@ public class AsyncTradeService implements IAsyncTradeService {
         log.debug("Cancel {}@{}", orderId, this);
         boolean result = service.cancelOrder(orderId);
         listeners.fire(new OrderCancelEvent(orderId, exchange, result), IOrderPlacementListener::orderCanceled);
-        if (result) {
+        if (result)
             log.debug("Order {} canceled @{}", orderId, this);
-        }
-        log.warn("Unsuccessful cancel order {}@{}", orderId, this);
+        else
+            log.warn("Unsuccessful cancel order {}@{}", orderId, this);
 
         return result;
     }
