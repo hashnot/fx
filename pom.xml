@@ -44,15 +44,9 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>net.sourceforge.htmlunit</groupId>
-                <artifactId>htmlunit</artifactId>
-                <version>${v.htmlunit}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                </exclusions>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${v.guava}</version>
             </dependency>
             <dependency>
                 <groupId>junit</groupId>
