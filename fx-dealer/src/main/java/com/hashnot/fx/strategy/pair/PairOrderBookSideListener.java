@@ -65,10 +65,6 @@ public class PairOrderBookSideListener implements IOrderBookSideListener {
 
         //TODO change may mean that we need to change the open order to smaller one
 
-        // open or update order
-        IExchangeMonitor closeMonitor = monitors.get(data.getCloseExchange());
-        List<LimitOrder> limited = OrderBooks.removeOverLimit(evt.newOrders, getLimit(closeMonitor, config.listing.baseSymbol), getLimit(closeMonitor, config.listing.counterSymbol));
-
         if (orderManager.isActive()) {
             orderManager.update(evt.newOrders);
             // return if there is open and profitable order
@@ -81,11 +77,23 @@ public class PairOrderBookSideListener implements IOrderBookSideListener {
                 orderManager.cancel();
             }
         }
+        closingOrdersUpdated(evt.newOrders);
+    }
+
+    public void openBestOfferUpdated() {
+        closingOrdersUpdated(data.orderBinding.closingOrders);
+    }
+
+    protected void closingOrdersUpdated(List<LimitOrder> orders) {
+        // open or update order
+        IExchangeMonitor closeMonitor = monitors.get(data.getCloseExchange());
+
+        List<LimitOrder> limited = OrderBooks.removeOverLimit(orders, getLimit(closeMonitor, config.listing.baseSymbol), getLimit(closeMonitor, config.listing.counterSymbol));
 
         BigDecimal closingNetPrice;
         BigDecimal closingPrice;
         {
-            LimitOrder closeOrder = evt.newOrders.get(0);
+            LimitOrder closeOrder = orders.get(0);
             closingPrice = closeOrder.getLimitPrice();
             closingNetPrice = getNetPrice(closeOrder.getLimitPrice(), revert(closeOrder.getType()), closeMonitor.getMarketMetadata(closeOrder.getCurrencyPair()).getOrderFeeFactor());
         }
@@ -138,5 +146,4 @@ public class PairOrderBookSideListener implements IOrderBookSideListener {
     protected static BigDecimal getLimit(IExchangeMonitor monitor, String currency) {
         return monitor.getWalletMonitor().getWallet(currency).multiply(TWO);
     }
-
 }

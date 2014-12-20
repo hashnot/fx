@@ -1,6 +1,9 @@
 package com.hashnot.fx.strategy.pair;
 
-import com.hashnot.fx.framework.*;
+import com.hashnot.fx.framework.BestOfferEvent;
+import com.hashnot.fx.framework.IBestOfferListener;
+import com.hashnot.fx.framework.IOrderBookSideMonitor;
+import com.hashnot.fx.framework.MarketSide;
 import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.ext.util.Orders;
 import com.xeiam.xchange.Exchange;
@@ -26,7 +29,7 @@ public class Dealer implements IBestOfferListener {
 
     final private PairTradeListener orderManager;
     final private IOrderBookSideMonitor orderBookSideMonitor;
-    final private IOrderBookSideListener orderBookSideListener;
+    final private PairOrderBookSideListener orderBookSideListener;
 
     final private Map<Exchange, IExchangeMonitor> monitors;
 
@@ -60,13 +63,13 @@ public class Dealer implements IBestOfferListener {
 
         log.info("Best offer {} @{}/{}; mine {}@{}", newPrice, config.side, eventExchange, data.getOpenPrice(), getOpenExchange());
 
-        boolean cancel = false;
+        boolean update = false;
         {
             LimitOrder order = orderManager.getOpenOrder();
-            if (order != null) {
+            if (order != null && data.getOpenExchange().equals(eventExchange)) {
                 if (isFurther(order.getLimitPrice(), newPrice, config.side)) {
                     log.debug("My order fell from the top");
-                    cancel = true;
+                    update = true;
                 } else {
                     log.debug("Mine on top");
                     return;
@@ -106,9 +109,9 @@ public class Dealer implements IBestOfferListener {
 
         if (dirty) {
             updateCloseMarket(oldClose);
-        }
-        if (dirty && orderManager.isActive() || cancel)
             orderManager.cancel();
+        } else if (update)
+            orderBookSideListener.openBestOfferUpdated();
     }
 
     private void updateCloseMarket(Exchange oldExchange) {
@@ -169,7 +172,7 @@ public class Dealer implements IBestOfferListener {
         this(orderBookSideMonitor, orderManager, monitors, config, new PairOrderBookSideListener(config, data, orderManager, orderStrategy, monitors), data);
     }
 
-    public Dealer(IOrderBookSideMonitor orderBookSideMonitor, PairTradeListener orderManager, Map<Exchange, IExchangeMonitor> monitors, DealerConfig config, IOrderBookSideListener orderBookSideListener, DealerData data) {
+    public Dealer(IOrderBookSideMonitor orderBookSideMonitor, PairTradeListener orderManager, Map<Exchange, IExchangeMonitor> monitors, DealerConfig config, PairOrderBookSideListener orderBookSideListener, DealerData data) {
         this.orderBookSideMonitor = orderBookSideMonitor;
         this.monitors = monitors;
         this.config = config;
