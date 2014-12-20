@@ -17,7 +17,7 @@ public class OpenOrdersMonitor extends AbstractParameterLessMonitor<IOpenOrdersL
     final private Exchange exchange;
 
     public OpenOrdersMonitor(Exchange exchange, RunnableScheduler scheduler) {
-        super(scheduler, IOpenOrdersListener::openOrders);
+        super(scheduler, IOpenOrdersListener::openOrders, exchange.getExchangeSpecification().getExchangeName());
         this.exchange = exchange;
     }
 

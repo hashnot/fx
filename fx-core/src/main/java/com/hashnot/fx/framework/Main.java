@@ -6,7 +6,6 @@ import com.google.inject.Injector;
 import com.google.inject.name.Names;
 import com.hashnot.fx.util.ConfigurableThreadFactory;
 import com.hashnot.xchange.event.IExchangeMonitor;
-import com.hashnot.xchange.ext.util.MDCRunnable;
 import com.xeiam.xchange.currency.CurrencyPair;
 import groovy.lang.GroovyShell;
 import org.slf4j.Logger;
@@ -19,8 +18,8 @@ import java.lang.management.ManagementFactory;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 
 /**
@@ -57,12 +56,7 @@ public class Main {
 
     protected static ScheduledExecutorService scheduler() {
         ThreadFactory tf = new ConfigurableThreadFactory();
-        return new ScheduledThreadPoolExecutor(10, tf) {
-            @Override
-            public void execute(Runnable command) {
-                super.execute(new MDCRunnable(command));
-            }
-        };
+        return Executors.newScheduledThreadPool(10, tf);
     }
 
     private Collection<IExchangeMonitor> monitors;
@@ -78,12 +72,13 @@ public class Main {
 
     public void start() {
         Runtime.getRuntime().addShutdownHook(shutdownHook);
-        for (IExchangeMonitor monitor : monitors) {
-            monitor.start();
-        }
         try {
+            for (IExchangeMonitor monitor : monitors) {
+                monitor.start();
+            }
             strategy.init(monitors, Arrays.asList(pair));
         } catch (Exception e) {
+            log.error("Exception during the start", e);
             stop();
         }
     }

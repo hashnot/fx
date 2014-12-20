@@ -24,8 +24,8 @@ public abstract class AbstractParametrizedMonitor<P, L, R, I> extends AbstractPo
     final protected ListenerMap<P, L> listeners = new ListenerMap<>(this, this::enable, this::disable);
     final private BiConsumer<L, R> listenerFunction;
 
-    public AbstractParametrizedMonitor(RunnableScheduler scheduler, BiConsumer<L, R> listenerFunction) {
-        super(scheduler);
+    public AbstractParametrizedMonitor(RunnableScheduler scheduler, BiConsumer<L, R> listenerFunction, String name) {
+        super(scheduler, name);
         this.listenerFunction = listenerFunction;
     }
 

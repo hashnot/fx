@@ -70,7 +70,7 @@ public class UserTradesMonitor extends AbstractParameterLessMonitor<IUserTradesL
     }
 
     public UserTradesMonitor(Exchange exchange, RunnableScheduler scheduler) {
-        super(scheduler, IUserTradesListener::trades);
+        super(scheduler, IUserTradesListener::trades, exchange.getExchangeSpecification().getExchangeName());
         this.exchange = exchange;
         this.tradeService = exchange.getPollingTradeService();
     }

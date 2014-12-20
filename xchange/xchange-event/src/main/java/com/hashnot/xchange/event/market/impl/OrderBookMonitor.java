@@ -27,7 +27,7 @@ public class OrderBookMonitor extends AbstractParametrizedMonitor<CurrencyPair, 
     final private Map<CurrencyPair, Long> timestamps = new HashMap<>();
 
     public OrderBookMonitor(Exchange exchange, RunnableScheduler runnableScheduler, IAsyncMarketDataService marketDataService) {
-        super(runnableScheduler, IOrderBookListener::orderBookChanged);
+        super(runnableScheduler, IOrderBookListener::orderBookChanged, exchange.getExchangeSpecification().getExchangeName());
         this.marketDataService = marketDataService;
         this.exchange = exchange;
     }

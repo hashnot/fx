@@ -71,10 +71,10 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange {
         this.executor = executor;
         this.rate = rate;
 
-        runnableScheduler = new RoundRobinScheduler(executor, exchange.getExchangeSpecification().getExchangeName());
-        tradeService = new AsyncTradeService(executor, exchange);
-        accountService = new AsyncAccountService(executor, exchange.getPollingAccountService());
-        marketDataService = new AsyncMarketDataService(executor, exchange.getPollingMarketDataService());
+        runnableScheduler = new RoundRobinScheduler(executor);
+        tradeService = new AsyncTradeService(runnableScheduler, exchange);
+        accountService = new AsyncAccountService(runnableScheduler, exchange.getPollingAccountService());
+        marketDataService = new AsyncMarketDataService(runnableScheduler, exchange.getPollingMarketDataService());
 
         openOrdersMonitor = new OpenOrdersMonitor(exchange, runnableScheduler);
         userTradesMonitor = new UserTradesMonitor(exchange, runnableScheduler);

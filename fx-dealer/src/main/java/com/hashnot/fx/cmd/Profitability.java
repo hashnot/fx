@@ -46,7 +46,7 @@ public class Profitability implements IStrategy {
     private Runnable exitHook;
 
     @Override
-    public void init(Collection<IExchangeMonitor> monitors, Collection<CurrencyPair> pairs) throws InterruptedException {
+    public void init(Collection<IExchangeMonitor> monitors, Collection<CurrencyPair> pairs) throws Exception {
         Map<IExchangeMonitor, OrderBook> books = new ConcurrentHashMap<>();
 
         CountDownLatch count = new CountDownLatch(monitors.size());

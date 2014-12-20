@@ -1,5 +1,6 @@
 package com.hashnot.xchange.async.impl;
 
+import com.hashnot.xchange.ext.util.MDCRunnable;
 import org.junit.Test;
 
 import static org.mockito.Mockito.*;
@@ -8,9 +9,9 @@ public class RoundRobinSchedulerTest {
 
     @Test
     public void testRun() throws Exception {
-        RoundRobinScheduler sched = new RoundRobinScheduler(Runnable::run, "test");
+        RoundRobinScheduler sched = new RoundRobinScheduler(Runnable::run);
 
-        Runnable runnable = mock(Runnable.class);
+        Runnable runnable = mock(MDCRunnable.class);
         sched.addTask(runnable);
 
         sched.run();
@@ -20,33 +21,28 @@ public class RoundRobinSchedulerTest {
         sched.run();
         verify(runnable).run();
     }
+
     @Test
     public void testMultiTask() throws Exception {
-        RoundRobinScheduler sched = new RoundRobinScheduler(Runnable::run, "test");
+        RoundRobinScheduler sched = new RoundRobinScheduler(Runnable::run);
 
-        Runnable runnable = mock(Runnable.class);
-        Runnable run1 = mock(Runnable.class);
-        sched.addTask(runnable);
-        sched.addTask(run1);
+        Runnable task0 = mock(MDCRunnable.class, "task0");
+        Runnable task1 = mock(MDCRunnable.class, "task1");
+        sched.addTask(task0);
+        sched.addTask(task1);
 
         sched.run();
-        verify(run1, never()).run();
-        verify(runnable).run();
-
-        reset(runnable);
         sched.run();
-        verify(run1).run();
 
-        reset(run1);
-        sched.run();
-        verify(runnable).run();
+        verify(task0).run();
+        verify(task1).run();
     }
 
     @Test
     public void testRunPriority() throws Exception {
-        RoundRobinScheduler sched = new RoundRobinScheduler(Runnable::run, "test");
+        RoundRobinScheduler sched = new RoundRobinScheduler(Runnable::run);
 
-        Runnable task = mock(Runnable.class);
+        Runnable task = mock(MDCRunnable.class);
         sched.addTask(task);
 
         Runnable priority = mock(Runnable.class);

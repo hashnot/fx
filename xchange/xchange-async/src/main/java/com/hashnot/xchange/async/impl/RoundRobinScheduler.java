@@ -1,15 +1,15 @@
 package com.hashnot.xchange.async.impl;
 
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Sets;
+import com.hashnot.xchange.ext.util.MDCRunnable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -24,34 +24,26 @@ final public class RoundRobinScheduler implements Runnable, RunnableScheduler, R
     final private static Logger log = LoggerFactory.getLogger(RoundRobinScheduler.class);
 
     final private Executor executor;
-    final private String name;
 
     private final BlockingQueue<Runnable> priorityQueue = new LinkedBlockingQueue<>();
-    private final List<Runnable> runnables = new CopyOnWriteArrayList<>();
+    final private Set<Runnable> runnables = Sets.newConcurrentHashSet();
     private final Iterator<Runnable> iterator = Iterators.cycle(runnables);
     private final AtomicBoolean skipPriorityQueue = new AtomicBoolean(false);
 
-    public RoundRobinScheduler(Executor executor, String name) {
+    public RoundRobinScheduler(Executor executor) {
         this.executor = executor;
-        this.name = name;
     }
 
     @Override
     public void run() {
-        MDC.put("name", name);
-        try {
-            // unless skipPriorityQueue was set (when we run a task from it in the previous run)
-            if (!skipPriorityQueue.compareAndSet(true, false)) {
-                // try running a priority task
-                if (runPriority()) return;
-            }
-            if (!runTask()) {
+        // unless skipPriorityQueue was set (when we run a task from it in the previous run)
+        if (skipPriorityQueue.compareAndSet(true, false)) {
+            if (!runTask())
                 runPriority();
-            }
-        } catch (Throwable e) {
-            log.warn("Error", e);
-        } finally {
-            MDC.clear();
+        } else {
+            // try running a priority task
+            if (!runPriority())
+                runTask();
         }
     }
 
@@ -59,7 +51,7 @@ final public class RoundRobinScheduler implements Runnable, RunnableScheduler, R
         if (!iterator.hasNext()) {
             return false;
         }
-        executor.execute(iterator.next()::run);
+        tryRun(iterator.next());
         return true;
     }
 
@@ -69,22 +61,35 @@ final public class RoundRobinScheduler implements Runnable, RunnableScheduler, R
             return false;
         }
         skipPriorityQueue.set(true);
-        executor.execute(priority::run);
+        tryRun(priority);
         return true;
     }
 
-    public synchronized void addTask(Runnable r) {
+    private void tryRun(Runnable runnable) {
+        try {
+            executor.execute(runnable);
+        } catch (Exception e) {
+            log.error("Error queuing {}", runnable, e);
+        } catch (Error e) {
+            log.error("Error", e);
+            throw e;
+        }
+    }
+
+    public void addTask(Runnable r) {
         assert r != null;
+        assert r instanceof MDCRunnable;
         runnables.add(r);
     }
 
-    public synchronized void removeTask(Runnable r) {
+    public void removeTask(Runnable r) {
         runnables.remove(r);
     }
 
     public void execute(Runnable r) {
         assert r != null;
-        priorityQueue.add(r);
+        assert !(r instanceof MDCRunnable);
+        priorityQueue.add(new MDCRunnable(r));
     }
 
     @Override

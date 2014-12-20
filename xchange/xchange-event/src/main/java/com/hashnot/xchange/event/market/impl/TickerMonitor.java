@@ -43,7 +43,7 @@ public class TickerMonitor extends AbstractParametrizedMonitor<CurrencyPair, ITi
     }
 
     public TickerMonitor(IAsyncMarketDataService marketDataService, Exchange exchange, RunnableScheduler scheduler) {
-        super(scheduler, ITickerListener::ticker);
+        super(scheduler, ITickerListener::ticker, exchange.getExchangeSpecification().getExchangeName());
         this.marketDataService = marketDataService;
         this.exchange = exchange;
     }

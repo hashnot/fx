@@ -12,8 +12,13 @@ public class MDCRunnable implements Runnable {
     final private Map<String, String> mdc;
 
     public MDCRunnable(Runnable run) {
+        this(run, MDC.getCopyOfContextMap());
+    }
+
+    public MDCRunnable(Runnable run, Map<String, String> mdc) {
+        assert run != null;
         this.run = run;
-        mdc = MDC.getCopyOfContextMap();
+        this.mdc = mdc;
     }
 
     @Override
@@ -26,6 +31,20 @@ public class MDCRunnable implements Runnable {
             if (mdc != null)
                 MDC.clear();
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o || o != null && o instanceof MDCRunnable && equals((MDCRunnable) o);
+    }
+
+    private boolean equals(MDCRunnable that) {
+        return run.equals(that.run);
+    }
+
+    @Override
+    public int hashCode() {
+        return run.hashCode();
     }
 
     @Override
