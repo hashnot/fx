@@ -17,7 +17,7 @@ public abstract class AbstractParameterLessMonitor<L, R> extends AbstractPolling
     final private BiConsumer<L, R> listenerFunction;
     final protected ListenerCollection<L> listeners = new ListenerCollection<>(this, this::enable, this::disable);
 
-    public AbstractParameterLessMonitor(RunnableScheduler scheduler, BiConsumer<L, R> listenerFunction, String name) {
+    protected AbstractParameterLessMonitor(RunnableScheduler scheduler, BiConsumer<L, R> listenerFunction, String name) {
         super(scheduler, name);
         this.listenerFunction = listenerFunction;
     }

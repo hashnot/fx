@@ -9,5 +9,5 @@ import java.util.Map;
  * @author Rafał Krupiński
  */
 public interface OrderTrackerMBean extends ParameterlessMonitorMBean {
-    Map<String,BigDecimal> getOrderIds();
+    Map<String, BigDecimal> getOrderIds();
 }

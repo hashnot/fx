@@ -40,6 +40,6 @@ public class MarketSide {
 
     @Override
     public String toString() {
-        return side.name() + '/' + market.toString();
+        return side.name() + '@' + market.toString();
     }
 }

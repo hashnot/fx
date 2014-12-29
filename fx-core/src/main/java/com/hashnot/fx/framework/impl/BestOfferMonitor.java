@@ -11,6 +11,8 @@ import com.hashnot.xchange.ext.Market;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.marketdata.Ticker;
 import com.xeiam.xchange.dto.trade.LimitOrder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -35,6 +37,7 @@ import static com.xeiam.xchange.dto.Order.OrderType.BID;
  * @author Rafał Krupiński
  */
 public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOfferMonitor, IOrderBookSideMonitor, IOrderBookSideListener, ITickerListener, BestOfferMonitorMBean {
+    final private static Logger log = LoggerFactory.getLogger(BestOfferMonitor.class);
     final private Map<Market, Multimap<OrderType, IBestOfferListener>> bestOfferListeners = new HashMap<>();
 
     // (exchange, currencyPair, OrderType) -> best offer price
@@ -66,7 +69,7 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
     protected void checkBestOffer(BigDecimal price, MarketSide key) {
         BigDecimal cached = cache.put(key, price);
         if (!eq(price, cached)) {
-            log.info("New best offer @{} = {}", key, price);
+            log.info("New best offer {} = {}", key, price);
             notifyBestOfferListeners(new BestOfferEvent(price, key));
         } else
             log.debug("Best offer @{} didn't change", key);

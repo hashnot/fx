@@ -32,7 +32,7 @@ import static com.xeiam.xchange.dto.Order.OrderType.BID;
  * @author Rafał Krupiński
  */
 public class OrderBookSideMonitor implements IOrderBookSideMonitor, IOrderBookListener {
-    final protected Logger log = LoggerFactory.getLogger(getClass());
+    final private static Logger log = LoggerFactory.getLogger(OrderBookSideMonitor.class);
     final protected Map<Exchange, IExchangeMonitor> monitors;
 
     final private Map<Market, OrderBook> orderBooks = new ConcurrentHashMap<>();

@@ -15,4 +15,9 @@ public class DealerConfig {
         this.side = side;
         this.listing = listing;
     }
+
+    @Override
+    public String toString() {
+        return side + "@" + listing;
+    }
 }
