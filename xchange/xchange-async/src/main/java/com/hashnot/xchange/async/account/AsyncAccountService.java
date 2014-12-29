@@ -42,6 +42,6 @@ public class AsyncAccountService implements IAsyncAccountService {
 
     @Override
     public Future<Map<CurrencyPair, ? extends MarketMetadata>> getMetadata(Consumer<Future<Map<CurrencyPair, ? extends MarketMetadata>>> consumer) {
-        return call(service::getMetadata, consumer, executor);
+        return call(service::getMarketMetadata, consumer, executor);
     }
 }
