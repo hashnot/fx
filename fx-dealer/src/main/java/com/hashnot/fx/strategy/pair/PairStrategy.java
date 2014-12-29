@@ -4,8 +4,10 @@ import com.hashnot.fx.framework.IStrategy;
 import com.hashnot.fx.framework.MarketSide;
 import com.hashnot.fx.framework.impl.BestOfferMonitor;
 import com.hashnot.xchange.event.IExchangeMonitor;
+import com.hashnot.xchange.ext.util.MDCRunnable;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
+import com.xeiam.xchange.dto.Order;
 
 import javax.inject.Inject;
 import javax.management.MBeanServer;
@@ -13,9 +15,7 @@ import javax.management.ObjectName;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.Future;
-
-import static com.xeiam.xchange.dto.Order.OrderType.ASK;
-import static com.xeiam.xchange.dto.Order.OrderType.BID;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * @author Rafał Krupiński
@@ -24,6 +24,11 @@ public class PairStrategy implements IStrategy {
 
     @Inject
     MBeanServer mBeanServer;
+
+    @Inject
+    ScheduledExecutorService executor;
+
+    private Future<?> listenerHandle;
 
     @Override
     public void init(Collection<IExchangeMonitor> exchangeMonitors, Collection<CurrencyPair> pairs) throws Exception {
@@ -45,19 +50,23 @@ public class PairStrategy implements IStrategy {
         SimpleOrderCloseStrategy orderCloseStrategy = new SimpleOrderCloseStrategy();
 
         for (CurrencyPair pair : pairs) {
-            Dealer askDealer = new Dealer(bestOfferMonitor, monitorMap, new DealerConfig(ASK, pair), orderOpenStrategy, orderCloseStrategy);
-            Dealer bidDealer = new Dealer(bestOfferMonitor, monitorMap, new DealerConfig(BID, pair), orderOpenStrategy, orderCloseStrategy);
+            for (Order.OrderType side : Order.OrderType.values()) {
+                Dealer dealer = new Dealer(bestOfferMonitor, monitorMap, new DealerConfig(side, pair), orderOpenStrategy, orderCloseStrategy);
+                PairEventManager listener = new PairEventManager(dealer);
 
-            for (Exchange x : monitorMap.keySet()) {
-                registerBestOfferListener(bestOfferMonitor, askDealer, x);
-                registerBestOfferListener(bestOfferMonitor, bidDealer, x);
+                listenerHandle = executor.submit(new MDCRunnable(listener, side.toString() + '@' + pair + '@'));
+
+                dealer.setListener(listener);
+
+                for (Exchange x : monitorMap.keySet())
+                    bestOfferMonitor.addBestOfferListener(listener, new MarketSide(x, pair, side));
             }
         }
     }
 
-    private static void registerBestOfferListener(BestOfferMonitor bestOfferMonitor, Dealer dealer, Exchange exchange) {
-        DealerConfig config = dealer.getConfig();
-        bestOfferMonitor.addBestOfferListener(dealer, new MarketSide(exchange, config.listing, config.side));
+    @Override
+    public void destroy() {
+        listenerHandle.cancel(true);
     }
 
 }

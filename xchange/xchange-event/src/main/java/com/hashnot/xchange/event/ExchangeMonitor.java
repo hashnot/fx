@@ -4,7 +4,6 @@ import com.hashnot.xchange.async.IAsyncExchange;
 import com.hashnot.xchange.async.account.AsyncAccountService;
 import com.hashnot.xchange.async.account.IAsyncAccountService;
 import com.hashnot.xchange.async.impl.RoundRobinScheduler;
-import com.hashnot.xchange.async.impl.RunnableScheduler;
 import com.hashnot.xchange.async.market.AsyncMarketDataService;
 import com.hashnot.xchange.async.market.IAsyncMarketDataService;
 import com.hashnot.xchange.async.trade.AsyncTradeService;
@@ -22,7 +21,7 @@ import com.hashnot.xchange.event.trade.IUserTradesMonitor;
 import com.hashnot.xchange.event.trade.impl.OpenOrdersMonitor;
 import com.hashnot.xchange.event.trade.impl.OrderTracker;
 import com.hashnot.xchange.event.trade.impl.UserTradesMonitor;
-import com.hashnot.xchange.ext.IExchange;
+import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.marketdata.MarketMetadata;
 import com.xeiam.xchange.dto.trade.LimitOrder;
@@ -31,7 +30,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.management.*;
 import java.lang.management.ManagementFactory;
-import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -48,7 +46,7 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange {
     protected ScheduledFuture<?> exchangeScheduler;
     final protected RoundRobinScheduler runnableScheduler;
 
-    final protected IExchange exchange;
+    final protected Exchange exchange;
     private ScheduledExecutorService executor;
     private long rate;
 
@@ -62,11 +60,11 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange {
     final protected IAsyncAccountService accountService;
     final protected IAsyncMarketDataService marketDataService;
 
-    final protected Iterable<AbstractPollingMonitor> closeables;
+    final protected AbstractPollingMonitor[] closeables;
 
     protected Map<CurrencyPair, ? extends MarketMetadata> metadata;
 
-    public ExchangeMonitor(IExchange parent, ScheduledExecutorService executor, long rate) throws Exception {
+    public ExchangeMonitor(Exchange parent, ScheduledExecutorService executor, long rate) throws Exception {
         this.exchange = parent;
         this.executor = executor;
         this.rate = rate;
@@ -86,7 +84,7 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange {
         walletTracker = new WalletTracker(orderTracker, walletMonitor);
 
         tradeService.addLimitOrderPlacedListener(orderTracker);
-        closeables = Arrays.asList(openOrdersMonitor, userTradesMonitor, tickerMonitor, orderBookMonitor);
+        closeables = new AbstractPollingMonitor[]{openOrdersMonitor, userTradesMonitor, tickerMonitor, orderBookMonitor};
 
         MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
         registerMBean(mBeanServer, "com.hashnot.xchange.async", runnableScheduler);
@@ -137,16 +135,17 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange {
     }
 
     protected void stopAll() {
-        closeables.forEach(AbstractPollingMonitor::disable);
+        for (AbstractPollingMonitor closeable : closeables)
+            closeable.disable();
     }
 
     @Override
     public String toString() {
-        return getExchange().toString();
+        return "Monitor:" + getExchange().getExchangeSpecification().getExchangeName();
     }
 
     @Override
-    public void start() throws Exception{
+    public void start() throws Exception {
         exchangeScheduler = executor.scheduleAtFixedRate(runnableScheduler, 0, rate, TimeUnit.MILLISECONDS);
         metadata = accountService.getMetadata(null).get();
     }
@@ -177,7 +176,7 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange {
     }
 
     @Override
-    public IExchange getExchange() {
+    public Exchange getExchange() {
         return exchange;
     }
 
@@ -203,9 +202,5 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange {
     @Override
     public IAsyncMarketDataService getMarketDataService() {
         return marketDataService;
-    }
-
-    public RunnableScheduler getRunnableScheduler() {
-        return runnableScheduler;
     }
 }

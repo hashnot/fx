@@ -95,6 +95,11 @@ public class Profitability implements IStrategy {
         exitHook.run();
     }
 
+    @Override
+    public void destroy() {
+
+    }
+
     protected static void getValues(Table<BigDecimal, MarketSide, BigDecimal> values, Order.OrderType type, OrderBook orderBook, Exchange exchange) {
         List<BigDecimal> myValues = compute(orderBook, type);
         update(values, myValues, new MarketSide(exchange, CurrencyPair.BTC_EUR, type));

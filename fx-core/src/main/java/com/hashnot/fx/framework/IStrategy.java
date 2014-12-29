@@ -10,4 +10,6 @@ import java.util.Collection;
  */
 public interface IStrategy {
     void init(Collection<IExchangeMonitor> exchangeMonitors, Collection<CurrencyPair> pairs) throws Exception;
+
+    void destroy();
 }

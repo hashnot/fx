@@ -60,6 +60,11 @@ public class TickerVerifier implements IStrategy, ITickerListener, IOrderBookLis
         orderBook(evt, BID);
     }
 
+    @Override
+    public void destroy() {
+
+    }
+
     protected void orderBook(OrderBookUpdateEvent evt, Order.OrderType type) {
         MarketSide key = new MarketSide(evt.source, type);
         best.put(key, evt.orderBook.getOrders(type).get(0).getLimitPrice());

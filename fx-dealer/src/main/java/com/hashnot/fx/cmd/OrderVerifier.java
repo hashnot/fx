@@ -27,12 +27,10 @@ public class OrderVerifier implements IStrategy {
     @Named("exitHook")
     private Runnable exitHook;
 
-    private CountDownLatch count;
-
     @Override
     public void init(Collection<IExchangeMonitor> exchangeMonitors, Collection<CurrencyPair> pairs) throws Exception {
         CurrencyPair pair = pairs.iterator().next();
-        count = new CountDownLatch(exchangeMonitors.size());
+        CountDownLatch count = new CountDownLatch(exchangeMonitors.size());
         for (IExchangeMonitor mon : exchangeMonitors) {
             testExchange(pair, mon);
         }
@@ -49,10 +47,11 @@ public class OrderVerifier implements IStrategy {
         BigDecimal myPrice = topPrice.subtract(meta.getPriceStep());
 
         LimitOrder order = new LimitOrder.Builder(ASK, pair).tradableAmount(meta.getAmountMinimum()).limitPrice(myPrice).build();
-        String orderId = mon.getAsyncExchange().getTradeService().placeLimitOrder(order);
+        //String orderId = mon.getAsyncExchange().getTradeService().placeLimitOrder(order);
     }
 
-    private void afterPlaceLimitOrder(Future<String> future) {
+    @Override
+    public void destroy() {
 
     }
 }

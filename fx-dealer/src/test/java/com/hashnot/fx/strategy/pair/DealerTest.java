@@ -5,7 +5,6 @@ import com.hashnot.fx.framework.IOrderBookSideMonitor;
 import com.hashnot.fx.framework.MarketSide;
 import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.event.trade.IOrderTracker;
-import com.hashnot.xchange.ext.IExchange;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.Order;
 import org.junit.Test;
@@ -28,6 +27,7 @@ import static org.mockito.Mockito.*;
 @RunWith(Parameterized.class)
 public class DealerTest {
 
+
     protected static SimpleOrderOpenStrategy orderOpenStrategy = new SimpleOrderOpenStrategy();
 
     private Order.OrderType side;
@@ -47,8 +47,8 @@ public class DealerTest {
      */
     @Test
     public void testUpdateBestOffer() throws Exception {
-        IExchange closeExchange = mock(IExchange.class);
-        IExchangeMonitor closeMonitor = getExchangeMonitor(closeExchange);
+        Exchange closeExchange = mock(Exchange.class, "closeExchange");
+        IExchangeMonitor closeMonitor = getExchangeMonitor(closeExchange, "closeMonitor");
         Map<Exchange, IExchangeMonitor> monitors = map(closeExchange, closeMonitor);
 
         IOrderTracker orderTracker = mock(IOrderTracker.class);
@@ -56,91 +56,92 @@ public class DealerTest {
 
         DealerData data = new DealerData();
 
-        Dealer dealer = new Dealer(orderBookSideMonitor, new PairTradeListener(orderCloseStrategy, monitors, data), monitors, new DealerConfig(side, p), orderOpenStrategy, data);
+        Dealer dealer = new Dealer(orderBookSideMonitor, monitors, new DealerConfig(side, p), orderOpenStrategy, orderCloseStrategy, data);
 
         BigDecimal closePrice = TWO;
 
 
         // step 1: register first exchange - close
         MarketSide closeSide = new MarketSide(closeExchange, p, side);
-        dealer.updateBestOffer(new BestOfferEvent(closePrice, closeSide));
+        dealer.updateBestOffers(asList(new BestOfferEvent(closePrice, closeSide)));
 
         verify(orderTracker, never()).addTradeListener(any());
         verifyZeroInteractions(orderBookSideMonitor);
-        assertEquals(new DealerData(closeExchange, closeExchange, map(closeExchange, closePrice)), data);
+        assertEquals(new DealerData(closeMonitor, closeMonitor, map(closeExchange, closePrice)), data);
     }
 
     /**
-     * register two exchanges in proper order (close, open) - doesn't reregisters order book listener
+     * register two exchanges in proper order (close, open) - doesn't re-registers order book listener
      */
     @Test
     public void testUpdateBestOfferBoth() throws Exception {
         IOrderTracker orderTracker = mock(IOrderTracker.class);
         IOrderBookSideMonitor orderBookSideMonitor = mock(IOrderBookSideMonitor.class);
 
-        IExchange openExchange = mock(IExchange.class);
-        IExchangeMonitor openMonitor = getExchangeMonitor(openExchange);
+        Exchange openExchange = mock(Exchange.class, "openExchange");
+        IExchangeMonitor openMonitor = getExchangeMonitor(openExchange, "openMonitor");
 
-        IExchange closeExchange = mock(IExchange.class);
-        IExchangeMonitor closeMonitor = getExchangeMonitor(closeExchange);
-        Map<Exchange, IExchangeMonitor> monitors = map(openExchange, openMonitor, closeExchange, closeMonitor);
+        Exchange closeExchange = mock(Exchange.class, "closeExchange");
+        IExchangeMonitor closeMonitor = getExchangeMonitor(closeExchange, "closeMonitor");
+        Map<Exchange, IExchangeMonitor> monitors = map(openExchange, closeExchange, openMonitor, closeMonitor);
+
+        Listener listener = mock(Listener.class, "dealerListener");
 
         BigDecimal closePrice = TWO;
-        DealerData data = data(closeExchange, closePrice);
+        DealerData data = data(closeMonitor, closePrice);
 
-        PairTradeListener orderManager = new PairTradeListener(orderCloseStrategy, monitors, data);
         DealerConfig config = new DealerConfig(side, p);
-        PairOrderBookSideListener orderBookSideListener = new PairOrderBookSideListener(config, data, orderManager, orderOpenStrategy, monitors);
-        Dealer dealer = new Dealer(orderBookSideMonitor, orderManager, monitors, config, orderBookSideListener, data);
+        Dealer dealer = new Dealer(orderBookSideMonitor, monitors, config, orderOpenStrategy, orderCloseStrategy, data);
+        dealer.setListener(listener);
 
 
         // step 2: register second exchange - open
         MarketSide openSide = new MarketSide(openExchange, p, side);
 
         BigDecimal openPrice = closePrice.add(side == ASK ? ONE : _ONE);
-        dealer.updateBestOffer(new BestOfferEvent(openPrice, openSide));
+        dealer.updateBestOffers(asList(new BestOfferEvent(openPrice, openSide)));
 
         verify(orderTracker, never()).addTradeListener(any());
 
-        verify(orderBookSideMonitor).addOrderBookSideListener(eq(orderBookSideListener), eq(new MarketSide(closeExchange, p, side)));
+        verify(orderBookSideMonitor).addOrderBookSideListener(eq(listener), eq(new MarketSide(closeExchange, p, side)));
         verifyNoMoreInteractions(orderBookSideMonitor);
-        assertEquals(new DealerData(openExchange, closeExchange, map(openExchange, openPrice, closeExchange, closePrice)), data);
+        assertEquals(new DealerData(openMonitor, closeMonitor, map(openExchange, closeExchange, openPrice, closePrice)), data);
     }
 
     @Test
     public void testUpdateBestOfferBothReverse() throws Exception {
-        IExchange openExchange = mock(IExchange.class);
-        IExchangeMonitor openMonitor = getExchangeMonitor(openExchange);
+        Exchange openExchange = mock(Exchange.class, "openExchange");
+        IExchangeMonitor openMonitor = getExchangeMonitor(openExchange, "openMonitor");
 
-        IExchange closeExchange = mock(IExchange.class);
-        IExchangeMonitor closeMonitor = getExchangeMonitor(closeExchange);
-        Map<Exchange, IExchangeMonitor> monitors = map(openExchange, openMonitor, closeExchange, closeMonitor);
+        Exchange closeExchange = mock(Exchange.class, "closeExchange");
+        IExchangeMonitor closeMonitor = getExchangeMonitor(closeExchange, "closeMonitor");
+        Map<Exchange, IExchangeMonitor> monitors = map(openExchange, closeExchange, openMonitor, closeMonitor);
 
         IOrderTracker orderTracker = mock(IOrderTracker.class);
         IOrderBookSideMonitor orderBookSideMonitor = mock(IOrderBookSideMonitor.class);
 
+        Listener listener = mock(Listener.class, "dealerListener");
 
         // step 1: register first exchange - open
         BigDecimal closePrice = TWO;
         BigDecimal openPrice = closePrice.add(side == ASK ? ONE : _ONE);
-        DealerData data = data(openExchange, openPrice);
-        PairTradeListener orderManager = new PairTradeListener(orderCloseStrategy, monitors, data);
+        DealerData data = data(openMonitor, openPrice);
         DealerConfig config = new DealerConfig(side, p);
-        PairOrderBookSideListener orderBookSideListener = new PairOrderBookSideListener(config, data, orderManager, orderOpenStrategy, monitors);
-        Dealer dealer = new Dealer(orderBookSideMonitor, orderManager, monitors, config, orderBookSideListener, data);
+        Dealer dealer = new Dealer(orderBookSideMonitor, monitors, config, orderOpenStrategy, orderCloseStrategy, data);
+        dealer.setListener(listener);
 
 
         // step 2: register first exchange - close
         MarketSide closeSide = new MarketSide(closeExchange, p, side);
-        dealer.updateBestOffer(new BestOfferEvent(closePrice, closeSide));
+        dealer.updateBestOffers(asList(new BestOfferEvent(closePrice, closeSide)));
 
         verify(orderTracker, never()).addTradeListener(any());
-        verify(orderBookSideMonitor).addOrderBookSideListener(eq(orderBookSideListener), eq(closeSide));
-        assertEquals(new DealerData(openExchange, closeExchange, map(openExchange, openPrice, closeExchange, closePrice)), data);
+        verify(orderBookSideMonitor).addOrderBookSideListener(eq(listener), eq(closeSide));
+        assertEquals(new DealerData(openMonitor, closeMonitor, map(openExchange, closeExchange, openPrice, closePrice)), data);
     }
 
-    protected DealerData data(Exchange exchange, BigDecimal price) {
-        return new DealerData(exchange, exchange, map(exchange, price));
+    protected DealerData data(IExchangeMonitor exchange, BigDecimal price) {
+        return new DealerData(exchange, exchange, map(exchange.getExchange(), price));
     }
 
 }

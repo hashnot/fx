@@ -2,6 +2,7 @@ package com.hashnot.xchange.ext.util;
 
 import org.slf4j.MDC;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -13,6 +14,16 @@ public class MDCRunnable implements Runnable {
 
     public MDCRunnable(Runnable run) {
         this(run, MDC.getCopyOfContextMap());
+    }
+
+    public MDCRunnable(Runnable run, String value) {
+        this(run, map("name", value));
+    }
+
+    private static <K, V> Map<K, V> map(K key, V value) {
+        Map<K, V> result = new HashMap<>(1);
+        result.put(key, value);
+        return result;
     }
 
     public MDCRunnable(Runnable run, Map<String, String> mdc) {

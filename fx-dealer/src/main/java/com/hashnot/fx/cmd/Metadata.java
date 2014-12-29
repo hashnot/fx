@@ -38,4 +38,9 @@ public class Metadata implements IStrategy {
         count.await();
         exitHook.run();
     }
+
+    @Override
+    public void destroy() {
+
+    }
 }

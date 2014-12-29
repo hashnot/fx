@@ -1,6 +1,6 @@
 package com.hashnot.fx.util;
 
-import com.google.common.collect.Multimap;
+import com.google.common.collect.SetMultimap;
 
 import java.util.Collections;
 
@@ -9,11 +9,11 @@ import java.util.Collections;
  */
 final public class Multimaps {
 
-    private static final Multimap<?, ?> EMPTY_MULTIMAP = com.google.common.collect.Multimaps.newSetMultimap(Collections.emptyMap(), Collections::emptySet);
+    private static final SetMultimap<?, ?> EMPTY_MULTIMAP = com.google.common.collect.Multimaps.newSetMultimap(Collections.emptyMap(), Collections::emptySet);
 
     @SuppressWarnings("unchecked")
-    public static <K, V> Multimap<K, V> emptyMultimap() {
-        return (Multimap<K, V>) EMPTY_MULTIMAP;
+    public static <K, V> SetMultimap<K, V> emptyMultimap() {
+        return (SetMultimap<K, V>) EMPTY_MULTIMAP;
     }
 
 }

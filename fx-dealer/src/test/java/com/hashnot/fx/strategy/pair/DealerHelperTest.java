@@ -11,6 +11,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
 
 import static com.google.common.collect.Lists.transform;
@@ -20,6 +21,7 @@ import static com.xeiam.xchange.dto.Order.OrderType.BID;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyMap;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
@@ -28,10 +30,12 @@ import static org.mockito.Mockito.when;
 @RunWith(Parameterized.class)
 public class DealerHelperTest {
     private OrderType side;
+    private DealerConfig config;
     private SimpleOrderOpenStrategy s = new SimpleOrderOpenStrategy();
 
     public DealerHelperTest(OrderType side) {
         this.side = side;
+        config = new DealerConfig(side, P);
     }
 
     @Parameterized.Parameters
@@ -44,15 +48,17 @@ public class DealerHelperTest {
      */
     @Test
     public void testDeal() throws Exception {
-        LimitOrder openTempl = order(side, ONE, P, ONE);
         List<LimitOrder> closeOrders = asList(
                 order(side, v(".5"), P, p(ONE, v("-.2"))),
                 order(side, ONE, P, p(ONE, v("-.1")))
         );
-        OrderBinding deal = DealerHelper.deal(openTempl, m1, closeOrders, m2, s);
+        DealerData data = new DealerData(m1, m2, emptyMap());
+        data.closingOrders = closeOrders;
+
+        LimitOrder deal = DealerHelper.deal(config, data, ONE, s);
 
         assertNotNull(deal);
-        BigDecimal amount = deal.openedOrder.getTradableAmount();
+        BigDecimal amount = deal.getTradableAmount();
         assertTrue(amount.toString(), eq(amount, ONE));
     }
 
@@ -61,87 +67,97 @@ public class DealerHelperTest {
      */
     @Test
     public void testDealHalfOpenWallet() throws Exception {
-        LimitOrder openTempl = order(side, ONE, P, ONE);
         List<LimitOrder> closeOrders = asList(
                 order(side, v(".5"), P, p(ONE, v("-.2"))),
                 order(side, TEN, P, p(ONE, v("-.1")))
         );
 
 
-        OrderBinding deal = DealerHelper.deal(openTempl, m("myOpenExchange", v(2)), closeOrders, m2, s);
+        DealerData data = new DealerData(m("myOpenExchange", v(2)), m2, new HashMap<>());
+        data.closingOrders = closeOrders;
+
+        LimitOrder deal = DealerHelper.deal(config, data, ONE, s);
 
         assertNotNull(deal);
-        assertTrue("tradableAmount=" + deal.openedOrder.getTradableAmount(), eq(deal.openedOrder.getTradableAmount(), ONE));
+        assertTrue("tradableAmount=" + deal.getTradableAmount(), eq(deal.getTradableAmount(), ONE));
     }
 
     @Test
     public void testDealHalfCloseWallet() throws Exception {
-        LimitOrder openTempl = order(side, ONE, P, ONE);
         List<LimitOrder> closeOrders = asList(
                 order(side, v(".5"), P, p(ONE, v("-.2"))),
                 order(side, ONE, P, p(ONE, v("-.1")))
         );
 
 
-        OrderBinding deal = DealerHelper.deal(openTempl, m1, closeOrders, m("myCloseExchange", v(2)), s);
+        DealerData data = new DealerData(m1, m("myCloseExchange", v(2)), new HashMap<>());
+        data.closingOrders = closeOrders;
+
+        LimitOrder deal = DealerHelper.deal(config, data, ONE, s);
 
         assertNotNull(deal);
-        assertTrue("tradableAmount=" + deal.openedOrder.getTradableAmount(), eq(deal.openedOrder.getTradableAmount(), ONE));
+        assertTrue("tradableAmount=" + deal.getTradableAmount(), eq(deal.getTradableAmount(), ONE));
     }
 
 
     @Test
     public void testDealLowOpenWallet() throws Exception {
-        LimitOrder openTempl = order(side, ONE, P, ONE);
         List<LimitOrder> closeOrders = asList(
                 order(side, v(".5"), P, p(ONE, v("-.2"))),
                 order(side, ONE, P, p(ONE, v("-.1")))
         );
 
         BigDecimal small = v(".01");
-        OrderBinding deal = DealerHelper.deal(openTempl, m("myOpenExchange", small), closeOrders, m2, s);
+        DealerData data = new DealerData(m("myOpenExchange", small), m2, emptyMap());
+        data.closingOrders = closeOrders;
+
+        LimitOrder deal = DealerHelper.deal(config, data, ONE, s);
 
         if (side == BID) {
             // skip BID
             assertNull(deal);
         } else {
             assertNotNull(deal);
-            assertTrue("tradableAmount=" + deal.openedOrder.getTradableAmount(), eq(deal.openedOrder.getTradableAmount(), small));
+            assertTrue("tradableAmount=" + deal.getTradableAmount(), eq(deal.getTradableAmount(), small));
         }
     }
 
     @Test
     public void testDealLowCloseWallet() throws Exception {
-        LimitOrder openTempl = order(side, ONE, P, ONE);
         List<LimitOrder> closeOrders = asList(
                 order(side, v(".5"), P, p(ONE, v("-.2"))),
                 order(side, ONE, P, p(ONE, v("-.1")))
         );
 
         BigDecimal small = v(".01");
-        OrderBinding deal = DealerHelper.deal(openTempl, m1, closeOrders, m("myCloseExchange", small), s);
+        DealerData data = new DealerData(m1, m("myCloseExchange", small), emptyMap());
+        data.closingOrders = closeOrders;
+
+        LimitOrder deal = DealerHelper.deal(config, data, ONE, s);
 
         if (side == BID) {
             // skip BID
             assertNull(deal);
         } else {
             assertNotNull(deal);
-            assertTrue("tradableAmount=" + deal.openedOrder.getTradableAmount(), eq(deal.openedOrder.getTradableAmount(), small));
+            assertTrue("tradableAmount=" + deal.getTradableAmount(), eq(deal.getTradableAmount(), small));
         }
     }
 
     @Ignore("fees are currently ignored")
     @Test
     public void testDealFee() throws Exception {
-        LimitOrder openTempl = order(side, ONE, P, ONE);
         List<LimitOrder> closeOrders = asList(
                 order(side, v(".5"), P, p(ONE, v("-.2"))),
                 order(side, ONE, P, p(ONE, v("-.1")))
         );
-        OrderBinding deal = DealerHelper.deal(openTempl, m1, closeOrders, m2, s);
+        DealerData data = new DealerData(m1, m2, emptyMap());
+        data.closingOrders = closeOrders;
+
+        LimitOrder deal = DealerHelper.deal(config, data, ONE, s);
 
         assertNotNull(deal);
-        assertTrue("tradableAmount=" + deal.openedOrder.getTradableAmount(), eq(deal.openedOrder.getTradableAmount(), new BigDecimal("1.5")));
+        assertTrue("tradableAmount=" + deal.getTradableAmount(), eq(deal.getTradableAmount(), new BigDecimal("1.5")));
     }
 
     protected BigDecimal p(BigDecimal base, BigDecimal delta) {

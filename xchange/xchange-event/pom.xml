@@ -22,12 +22,11 @@
             <artifactId>xchange-async</artifactId>
             <version>${project.version}</version>
         </dependency>
-
         <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>xchange-ext</artifactId>
+            <version>${project.version}</version>
         </dependency>
-
 
         <dependency>
             <groupId>junit</groupId>
@@ -36,8 +35,6 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>1.9.5</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>

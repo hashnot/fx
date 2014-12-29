@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.ListIterator;
 
 import static com.hashnot.xchange.ext.util.BigDecimals.isZero;
-import static com.hashnot.xchange.ext.util.Comparables.gt;
+import static com.hashnot.xchange.ext.util.Comparables.lte;
 import static com.hashnot.xchange.ext.util.Prices.compareTo;
 import static com.xeiam.xchange.dto.trade.LimitOrder.Builder.from;
 
@@ -51,7 +51,7 @@ public class OrderBooks {
 
         Iterator<LimitOrder> oi = orders.iterator();
         int i = 0;
-        while (oi.hasNext() && (!gt(totalValue, counterLimit) || !gt(totalAmount, baseLimit))) {
+        while (oi.hasNext() && (lte(totalValue, counterLimit) || lte(totalAmount, baseLimit))) {
             ++i;
 
             LimitOrder order = oi.next();
@@ -112,7 +112,6 @@ public class OrderBooks {
                 result.add(after);
                 after = next(afterIter);
             } else {
-                assert before != null;
                 result.add(from(before).tradableAmount(before.getLimitPrice().negate()).build());
                 before = next(beforeIter);
             }

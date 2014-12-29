@@ -99,6 +99,7 @@ public class Main {
         } catch (InterruptedException e) {
             log.warn("Interrupted!", e);
         }
+        strategy.destroy();
         scheduler.shutdownNow();
         log.info("Good bye");
     }
