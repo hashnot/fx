@@ -2,6 +2,7 @@ package com.hashnot.xchange.ext.util;
 
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
+import com.xeiam.xchange.dto.marketdata.MarketMetadata;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +10,8 @@ import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.hashnot.xchange.ext.util.Comparables.eq;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
@@ -35,6 +38,10 @@ public class Orders {
 
     public static int factor(Order.OrderType type) {
         return type == ASK ? 1 : -1;
+    }
+
+    public static BigDecimal bigFactor(Order.OrderType type) {
+        return type == ASK ? ONE : BigDecimals._ONE;
     }
 
     public static Order.OrderType revert(Order.OrderType type) {
@@ -88,4 +95,22 @@ public class Orders {
             throw new IllegalArgumentException("Orders in different direction");
     }
 
+    /**
+     * Simulate wallet changes if the limit order is filled
+     */
+    public static Map<String, BigDecimal> simulateTrade(LimitOrder order, Map<String, BigDecimal> wallet, MarketMetadata meta) {
+        Map<String, BigDecimal> result = new HashMap<>(wallet);
+
+        BigDecimal factor = bigFactor(order.getType());
+        BigDecimal amount = order.getTradableAmount();
+        BigDecimal value = getNetPrice(order,meta.getOrderFeeFactor()).multiply(amount);
+
+        String baseSymbol = order.getCurrencyPair().baseSymbol;
+        result.put(baseSymbol, result.get(baseSymbol).subtract(amount.multiply(factor)));
+
+        String counterSymbol = order.getCurrencyPair().counterSymbol;
+        result.put(counterSymbol, result.get(counterSymbol).add(value.multiply(factor)));
+
+        return result;
+    }
 }
