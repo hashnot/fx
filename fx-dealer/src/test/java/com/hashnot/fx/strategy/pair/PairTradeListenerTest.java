@@ -18,6 +18,7 @@ import org.junit.Test;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
+import static com.hashnot.xchange.ext.util.Maps.keys;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
 import static com.xeiam.xchange.dto.Order.OrderType.BID;
 import static java.math.BigDecimal.ONE;
@@ -49,7 +50,7 @@ public class PairTradeListenerTest {
         when(closeMonitor.getAsyncExchange()).thenReturn(cx);
         when(cx.getTradeService()).thenReturn(closeTradeService);
 
-        Dealer orderManager = new Dealer(mock(IOrderBookSideMonitor.class), PairTestUtils.map(openExchange, closeExchange, iem, closeMonitor), new DealerConfig(null, null), new SimpleOrderOpenStrategy(), new SimpleOrderCloseStrategy(), new DealerData());
+        Dealer orderManager = new Dealer(mock(IOrderBookSideMonitor.class), keys(openExchange, closeExchange).map(iem, closeMonitor), new DealerConfig(null, null), new SimpleOrderOpenStrategy(), new SimpleOrderCloseStrategy(), new DealerData());
 
         LimitOrder openOrder = new LimitOrder.Builder(ASK, p).limitPrice(ONE).tradableAmount(ONE).build();
 

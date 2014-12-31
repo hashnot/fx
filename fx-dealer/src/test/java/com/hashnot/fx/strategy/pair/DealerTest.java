@@ -18,6 +18,8 @@ import java.util.stream.Collectors;
 import static com.hashnot.fx.strategy.pair.PairTestUtils.*;
 import static com.hashnot.xchange.ext.util.BigDecimals.TWO;
 import static com.hashnot.xchange.ext.util.BigDecimals._ONE;
+import static com.hashnot.xchange.ext.util.Maps.keys;
+import static com.hashnot.xchange.ext.util.Maps.map;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
 import static java.math.BigDecimal.ONE;
 import static java.util.Arrays.asList;
@@ -83,7 +85,7 @@ public class DealerTest {
 
         Exchange closeExchange = mock(Exchange.class, "closeExchange");
         IExchangeMonitor closeMonitor = getExchangeMonitor(closeExchange, "closeMonitor");
-        Map<Exchange, IExchangeMonitor> monitors = map(openExchange, closeExchange, openMonitor, closeMonitor);
+        Map<Exchange, IExchangeMonitor> monitors = keys(openExchange, closeExchange).map(openMonitor, closeMonitor);
 
         Listener listener = mock(Listener.class, "dealerListener");
 
@@ -105,7 +107,7 @@ public class DealerTest {
 
         verify(orderBookSideMonitor).addOrderBookSideListener(eq(listener), eq(new MarketSide(closeExchange, p, side)));
         verifyNoMoreInteractions(orderBookSideMonitor);
-        assertEquals(new DealerData(openMonitor, closeMonitor, map(openExchange, closeExchange, openPrice, closePrice)), data);
+        assertEquals(new DealerData(openMonitor, closeMonitor, keys(openExchange, closeExchange).map(openPrice, closePrice)), data);
     }
 
     @Test
@@ -115,7 +117,7 @@ public class DealerTest {
 
         Exchange closeExchange = mock(Exchange.class, "closeExchange");
         IExchangeMonitor closeMonitor = getExchangeMonitor(closeExchange, "closeMonitor");
-        Map<Exchange, IExchangeMonitor> monitors = map(openExchange, closeExchange, openMonitor, closeMonitor);
+        Map<Exchange, IExchangeMonitor> monitors = keys(openExchange, closeExchange).map(openMonitor, closeMonitor);
 
         IOrderTracker orderTracker = mock(IOrderTracker.class);
         IOrderBookSideMonitor orderBookSideMonitor = mock(IOrderBookSideMonitor.class);
@@ -137,7 +139,7 @@ public class DealerTest {
 
         verify(orderTracker, never()).addTradeListener(any());
         verify(orderBookSideMonitor).addOrderBookSideListener(eq(listener), eq(closeSide));
-        assertEquals(new DealerData(openMonitor, closeMonitor, map(openExchange, closeExchange, openPrice, closePrice)), data);
+        assertEquals(new DealerData(openMonitor, closeMonitor, keys(openExchange, closeExchange).map(openPrice, closePrice)), data);
     }
 
     protected DealerData data(IExchangeMonitor exchange, BigDecimal price) {

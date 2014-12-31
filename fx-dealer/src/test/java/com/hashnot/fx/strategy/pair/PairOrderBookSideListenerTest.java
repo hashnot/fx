@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 import static com.hashnot.fx.strategy.pair.DealerTest.orderOpenStrategy;
 import static com.hashnot.fx.strategy.pair.PairTestUtils.*;
 import static com.hashnot.xchange.ext.util.BigDecimals.TWO;
+import static com.hashnot.xchange.ext.util.Maps.keys;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
 import static com.xeiam.xchange.dto.trade.LimitOrder.Builder.from;
 import static java.math.BigDecimal.ONE;
@@ -54,7 +55,8 @@ public class PairOrderBookSideListenerTest {
 
         Exchange closeExchange = mock(Exchange.class);
         IExchangeMonitor closeMonitor = getExchangeMonitor(closeExchange, withSettings().defaultAnswer(RETURNS_DEFAULTS));
-        Map<Exchange, IExchangeMonitor> monitors = map(openExchange, closeExchange, openMonitor, closeMonitor);
+
+        Map<Exchange, IExchangeMonitor> monitors = keys(openExchange, closeExchange).map(openMonitor, closeMonitor);
 
         BigDecimal openPrice = TWO;
         BigDecimal priceDiff = ONE;

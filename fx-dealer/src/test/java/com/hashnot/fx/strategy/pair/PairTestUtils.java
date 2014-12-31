@@ -7,14 +7,10 @@ import com.hashnot.xchange.event.account.IWalletMonitor;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.marketdata.BaseMarketMetadata;
-import org.junit.Assert;
 import org.mockito.MockSettings;
 
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 
 import static java.math.BigDecimal.*;
 import static org.mockito.Matchers.any;
@@ -50,30 +46,6 @@ public class PairTestUtils {
         when(monitor.getAsyncExchange()).thenReturn(ax);
         when(ax.getTradeService()).thenReturn(mock(IAsyncTradeService.class));
         return monitor;
-    }
-
-    protected static <K, V> Map<K, V> map(K key, V value) {
-        HashMap<K, V> result = new HashMap<>();
-        result.put(key, value);
-        return result;
-    }
-
-    protected static <K, V> Map<K, V> map(Collection<K> keys, Collection<V> values) {
-        Assert.assertEquals(keys.size(), values.size());
-        Map<K, V> result = new HashMap<>(keys.size());
-        Iterator<V> vi = values.iterator();
-        for (K key : keys) {
-            V value = vi.next();
-            result.put(key, value);
-        }
-        return result;
-    }
-
-    protected static <K, V> Map<K, V> map(K key1, K key2, V value1, V value2) {
-        HashMap<K, V> result = new HashMap<>();
-        result.put(key1, value1);
-        result.put(key2, value2);
-        return result;
     }
 
     protected static DealerData data(IExchangeMonitor openExchange, BigDecimal openPrice, IExchangeMonitor closeExchange, BigDecimal closePrice) {
