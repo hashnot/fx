@@ -27,6 +27,9 @@ import java.util.concurrent.ThreadFactory;
  */
 public class Main {
     final private static Logger log = LoggerFactory.getLogger(Main.class);
+
+    public static final String EXIT_HOOK = "exitHook";
+
     private static final CurrencyPair pair = CurrencyPair.BTC_EUR;
     private static final String DEFAULT_STRATEGY = "com.hashnot.fx.strategy.pair.PairStrategy";
     private Thread shutdownHook = new Thread(this::stop, "Shutdown");
@@ -45,7 +48,7 @@ public class Main {
             @Override
             protected void configure() {
                 bind(ScheduledExecutorService.class).toInstance(scheduler);
-                bind(Runnable.class).annotatedWith(Names.named("exitHook")).toInstance(framework::stop);
+                bind(Runnable.class).annotatedWith(Names.named(EXIT_HOOK)).toInstance(framework::stop);
                 bind(MBeanServer.class).toProvider(ManagementFactory::getPlatformMBeanServer);
             }
         });

@@ -14,12 +14,20 @@ public final class Comparables {
     public static <T extends Comparable<T>> boolean lt(T o1, T o2) {
         return o1.compareTo(o2) < 0;
     }
+
     public static <T extends Comparable<T>> boolean lte(T o1, T o2) {
         return o1.compareTo(o2) >= 0;
     }
 
     public static <T extends Comparable<T>> boolean gt(T o1, T o2) {
         return o1.compareTo(o2) > 0;
+    }
+
+    /**
+     * @return o1 >= o2
+     */
+    public static <T extends Comparable<T>> boolean gte(T o1, T o2) {
+        return o1.compareTo(o2) >= 0;
     }
 
     private Comparables() {
