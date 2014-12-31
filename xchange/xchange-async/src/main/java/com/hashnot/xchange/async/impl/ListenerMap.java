@@ -62,6 +62,10 @@ public class ListenerMap<K, L> {
         });
     }
 
+    public Iterable<K> params() {
+        return listeners.keySet();
+    }
+
     public Iterable<Map.Entry<K, Collection<L>>> map() {
         return listeners.entrySet();
     }
