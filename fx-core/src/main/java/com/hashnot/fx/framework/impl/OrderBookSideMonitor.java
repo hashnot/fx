@@ -1,7 +1,7 @@
 package com.hashnot.fx.framework.impl;
 
-import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
+import com.google.common.collect.SetMultimap;
 import com.hashnot.fx.framework.IOrderBookSideListener;
 import com.hashnot.fx.framework.IOrderBookSideMonitor;
 import com.hashnot.fx.framework.MarketSide;
@@ -37,7 +37,7 @@ public class OrderBookSideMonitor implements IOrderBookSideMonitor, IOrderBookLi
 
     final private Map<Market, OrderBook> orderBooks = new ConcurrentHashMap<>();
 
-    final protected Map<Market, Multimap<OrderType, IOrderBookSideListener>> listeners = new LinkedHashMap<>();
+    final protected Map<Market, SetMultimap<OrderType, IOrderBookSideListener>> listeners = new LinkedHashMap<>();
 
     public OrderBookSideMonitor(Map<Exchange, IExchangeMonitor> monitors) {
         this.monitors = monitors;
@@ -46,7 +46,7 @@ public class OrderBookSideMonitor implements IOrderBookSideMonitor, IOrderBookLi
     @Override
     public void addOrderBookSideListener(IOrderBookSideListener listener, MarketSide source) {
         Market market = source.market;
-        Multimap<OrderType, IOrderBookSideListener> marketListeners = listeners.computeIfAbsent(market, k -> MultimapBuilder.SetMultimapBuilder.enumKeys(OrderType.class).linkedHashSetValues().build());
+        SetMultimap<OrderType, IOrderBookSideListener> marketListeners = listeners.computeIfAbsent(market, k -> MultimapBuilder.SetMultimapBuilder.enumKeys(OrderType.class).linkedHashSetValues().build());
 
         if (marketListeners.put(source.side, listener)) {
             log.info("{}@{} + {}", source, this, listener);
@@ -59,7 +59,7 @@ public class OrderBookSideMonitor implements IOrderBookSideMonitor, IOrderBookLi
     @Override
     public void removeOrderBookSideListener(IOrderBookSideListener listener, MarketSide source) {
         Market market = source.market;
-        Multimap<OrderType, IOrderBookSideListener> marketListeners = listeners.get(market);
+        SetMultimap<OrderType, IOrderBookSideListener> marketListeners = listeners.get(market);
 
         if (marketListeners == null) {
             log.debug("No such listener {} @ {}@", listener, source, this);
@@ -77,7 +77,7 @@ public class OrderBookSideMonitor implements IOrderBookSideMonitor, IOrderBookLi
 
     @Override
     public void orderBookChanged(OrderBookUpdateEvent evt) {
-        Multimap<OrderType, IOrderBookSideListener> marketListeners = listeners.get(evt.source);
+        SetMultimap<OrderType, IOrderBookSideListener> marketListeners = listeners.get(evt.source);
         if (marketListeners == null) {
             log.warn("Got unexpected OrderBook from {}", evt.source);
             return;
@@ -96,7 +96,7 @@ public class OrderBookSideMonitor implements IOrderBookSideMonitor, IOrderBookLi
         checkOrderBookUpdate(oldBook, newBook, marketListeners, market, BID);
     }
 
-    private void checkOrderBookUpdate(OrderBook oldBook, OrderBook newBook, Multimap<OrderType, IOrderBookSideListener> marketListeners, Market market, OrderType side) {
+    private void checkOrderBookUpdate(OrderBook oldBook, OrderBook newBook, SetMultimap<OrderType, IOrderBookSideListener> marketListeners, Market market, OrderType side) {
         if (!marketListeners.containsKey(side))
             return;
 

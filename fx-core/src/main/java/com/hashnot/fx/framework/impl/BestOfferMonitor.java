@@ -1,8 +1,8 @@
 package com.hashnot.fx.framework.impl;
 
-import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder.SetMultimapBuilder;
 import com.google.common.collect.Multimaps;
+import com.google.common.collect.SetMultimap;
 import com.hashnot.fx.framework.*;
 import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.event.market.ITickerListener;
@@ -38,7 +38,8 @@ import static com.xeiam.xchange.dto.Order.OrderType.BID;
  */
 public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOfferMonitor, IOrderBookSideMonitor, IOrderBookSideListener, ITickerListener, BestOfferMonitorMBean {
     final private static Logger log = LoggerFactory.getLogger(BestOfferMonitor.class);
-    final private Map<Market, Multimap<OrderType, IBestOfferListener>> bestOfferListeners = new HashMap<>();
+
+    final private Map<Market, SetMultimap<OrderType, IBestOfferListener>> bestOfferListeners = new HashMap<>();
 
     // (exchange, currencyPair, OrderType) -> best offer price
     final private Map<MarketSide, BigDecimal> cache = new ConcurrentHashMap<>();
@@ -57,7 +58,7 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
             return;
         }
 
-        if (!bestOfferListeners.containsKey(market)) {
+        if (!hasBestOfferListener(market)) {
             log.warn("Received a ticker update from {} but not listening", market);
             return;
         }
@@ -81,7 +82,7 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
         // they are here just so we know what to listen to.
 
         // we should only be notified only if we have both best offer and order book listeners
-        if (!(hasListener(evt.source.market) && !bestOfferListeners.getOrDefault(evt.source.market, emptyMultimap()).isEmpty())) {
+        if (!(hasListener(evt.source.market) && hasBestOfferListener(evt.source.market))) {
             log.warn("Received an OrderBook update bot no listeners are registered");
             return;
         }
@@ -107,7 +108,7 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
 
     protected void notifyBestOfferListeners(BestOfferEvent bestOfferEvent) {
         MarketSide source = bestOfferEvent.source;
-        multiplex(bestOfferListeners.getOrDefault(source.market, emptyMultimap()).get(source.side), bestOfferEvent, IBestOfferListener::updateBestOffer);
+        multiplex(getBestOfferListeners(source.market).get(source.side), bestOfferEvent, IBestOfferListener::updateBestOffer);
     }
 
 
@@ -117,7 +118,7 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
     @Override
     public void addBestOfferListener(IBestOfferListener listener, MarketSide source) {
         Market market = source.market;
-        Multimap<OrderType, IBestOfferListener> marketListeners = bestOfferListeners.computeIfAbsent(market, (k) -> SetMultimapBuilder.enumKeys(OrderType.class).linkedHashSetValues().build());
+        SetMultimap<OrderType, IBestOfferListener> marketListeners = bestOfferListeners.computeIfAbsent(market, (k) -> SetMultimapBuilder.enumKeys(OrderType.class).linkedHashSetValues().build());
         if (marketListeners.containsEntry(source.side, listener)) {
             log.debug("Duplicate registration {} @ {}", listener, source);
             return;
@@ -137,7 +138,7 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
     public void removeBestOfferListener(IBestOfferListener listener, MarketSide source) {
         Market market = source.market;
         OrderType side = source.side;
-        Multimap<OrderType, IBestOfferListener> marketBestOfferListeners = bestOfferListeners.getOrDefault(market, emptyMultimap());
+        SetMultimap<OrderType, IBestOfferListener> marketBestOfferListeners = getBestOfferListeners(market);
         if (!marketBestOfferListeners.containsEntry(side, listener)) {
             log.debug("No such listener {} @ {}", listener, source);
             return;
@@ -168,7 +169,7 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
         super.addOrderBookSideListener(listener, source);
 
         Market market = source.market;
-        if (bestOfferListeners.containsKey(market)) {
+        if (hasBestOfferListener(market)) {
             registerAsOrderBookListener(market);
         }
     }
@@ -187,9 +188,9 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
 
         // start listening on ticker monitor if there are no other order book listeners for given market
 
-        Multimap<OrderType, IOrderBookSideListener> marketListeners = listeners.getOrDefault(market, emptyMultimap());
+        SetMultimap<OrderType, IOrderBookSideListener> marketListeners = listeners.getOrDefault(market, emptyMultimap());
         if (marketListeners.size() == 2) {
-            if (bestOfferListeners.containsKey(market)) {
+            if (hasBestOfferListener(market)) {
                 registerAsTickerListener(market);
             }
         }
@@ -217,5 +218,13 @@ public class BestOfferMonitor extends OrderBookSideMonitor implements IBestOffer
     @Override
     public Map<String, BigDecimal> getBestPrices() {
         return cache.entrySet().stream().collect(Collectors.toMap(e -> e.getKey().toString(), Map.Entry::getValue));
+    }
+
+    private boolean hasBestOfferListener(Market market){
+        return !getBestOfferListeners(market).isEmpty();
+    }
+
+    private SetMultimap<OrderType, IBestOfferListener> getBestOfferListeners(Market market) {
+        return bestOfferListeners.getOrDefault(market, emptyMultimap());
     }
 }
