@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 import static com.hashnot.xchange.ext.util.BigDecimals.TWO;
 import static com.hashnot.xchange.ext.util.Comparables.lt;
@@ -18,7 +17,8 @@ import static com.hashnot.xchange.ext.util.Orders.c;
 import static com.hashnot.xchange.ext.util.Orders.revert;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
 import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.ROUND_FLOOR;
+import static java.math.RoundingMode.FLOOR;
+import static java.math.RoundingMode.HALF_EVEN;
 
 /**
  * @author Rafał Krupiński
@@ -47,8 +47,8 @@ public class DealerHelper {
             BigDecimal openBaseAmount = data.getOpenExchange().getWalletMonitor().getWallet(config.listing.baseSymbol);
             BigDecimal closeBaseAmount = data.getCloseExchange().getWalletMonitor().getWallet(config.listing.baseSymbol);
 
-            BigDecimal openBaseHalf = openBaseAmount.divide(TWO, openMetadata.getAmountMinimum().scale(), ROUND_FLOOR);
-            BigDecimal closeBaseHalf = closeBaseAmount.divide(TWO, closeMetadata.getAmountMinimum().scale(), ROUND_FLOOR);
+            BigDecimal openBaseHalf = openBaseAmount.divide(TWO, openMetadata.getAmountMinimum().scale(), FLOOR);
+            BigDecimal closeBaseHalf = closeBaseAmount.divide(TWO, closeMetadata.getAmountMinimum().scale(), FLOOR);
 
             BigDecimal openLowLimit = openMetadata.getAmountMinimum();
             BigDecimal closeLowLimit = closeMetadata.getAmountMinimum();
@@ -60,8 +60,8 @@ public class DealerHelper {
                     return null;
                 }
             } else {
-                openOutGross = openOutGross.divide(TWO, openMetadata.getAmountMinimum().scale(), ROUND_FLOOR);
-                closeOutGross = closeOutGross.divide(TWO, closeMetadata.getAmountMinimum().scale(), ROUND_FLOOR);
+                openOutGross = openOutGross.divide(TWO, openMetadata.getAmountMinimum().scale(), FLOOR);
+                closeOutGross = closeOutGross.divide(TWO, closeMetadata.getAmountMinimum().scale(), FLOOR);
             }
         }
 
@@ -87,7 +87,7 @@ public class DealerHelper {
 
         BigDecimal openAmount = openOutGross;
         if (config.side == Order.OrderType.BID)
-            openAmount = openOutGross.divide(limitPrice, openMetadata.getAmountMinimum().scale());
+            openAmount = openOutGross.divide(limitPrice, openMetadata.getAmountMinimum().scale(), HALF_EVEN);
 
         BigDecimal closeAmount = data.getCloseAmount(config.side, openAmount, limitPrice);
 
@@ -95,7 +95,7 @@ public class DealerHelper {
         log.debug("available: {}", closeAmount);
         log.debug("close: {}", closeOutGross);
 
-        BigDecimal openAmountActual = Ordering.natural().min(openAmount, closeAmount, closeOutGross).setScale(getScale(openMetadata, closeMetadata), RoundingMode.FLOOR);
+        BigDecimal openAmountActual = Ordering.natural().min(openAmount, closeAmount, closeOutGross).setScale(getScale(openMetadata, closeMetadata), FLOOR);
 
         if (!checkMinima(openAmountActual, openMetadata)) {
             log.debug("Amount {} less than minimum", openAmountActual);

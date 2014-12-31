@@ -125,11 +125,22 @@ public class Dealer {
             }
         }
 
+
         if (dirty) {
             updateCloseMarket(oldClose);
+            if (data.state == DealerState.Waiting) {
+                // if current event is from open, may open new order.
+                // if it's from close, must cancel, because don't know current order book
+                cancel(openMonitor);
+                if (eventMonitor.equals(data.getOpenExchange()))
+                    openIfProfitable();
+                return;
+            }
+        }
+        if (update) {
             cancel(openMonitor);
-        } else if (update)
-            profitableOrCancel(openMonitor);
+            openIfProfitable();
+        }
     }
 
     private void updateCloseMarket(IExchangeMonitor oldExchange) {
@@ -179,7 +190,7 @@ public class Dealer {
             case Waiting:
                 //TODO change may mean that we need to change the open order to smaller one
                 profitableOrCancel(data.getOpenExchange());
-                // try opening new order
+                break;
             case NotProfitable:
                 openIfProfitable();
                 break;
@@ -226,6 +237,7 @@ public class Dealer {
         } else {
             log.info("Unprofitable {}", data.openedOrder);
             cancel(exchange);
+            openIfProfitable();
         }
     }
 
@@ -293,7 +305,8 @@ public class Dealer {
                 doCancel(exchange);
                 break;
             case Opening:
-                onOpen = () -> cancel(data.getOpenExchange());
+                log.warn("Cancel while opening");
+                onOpen = () -> doCancel(exchange);
                 break;
             case Cancelling:
             case NotProfitable:
@@ -306,9 +319,9 @@ public class Dealer {
 
     private void doCancel(IExchangeMonitor exchange) {
         log.info("Cancel @{} {} {}", exchange, data.openOrderId, data.openedOrder);
-        IAsyncTradeService tradeService = data.openExchange.getAsyncExchange().getTradeService();
+        IAsyncTradeService tradeService = exchange.getAsyncExchange().getTradeService();
         String orderId = data.openOrderId;
-        tradeService.cancelOrder(data.openOrderId, (future) -> {
+        tradeService.cancelOrder(orderId, (future) -> {
             data.state = DealerState.NotProfitable;
             try {
                 if (!future.get()) {

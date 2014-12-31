@@ -77,7 +77,15 @@ public class PairEventManager implements Listener, Runnable {
                 }
             }
         } catch (InterruptedException e) {
-            log.warn("Interrupted!", e);
+            if (log.isDebugEnabled())
+                log.warn("Interrupted!", e);
+            else
+                log.warn("Interrupted!");
+        } catch (Error e) {
+            log.error("Error in {}", this, e);
+            throw e;
+        } catch (RuntimeException e) {
+            log.warn("Error in {}", this, e);
         }
     }
 
