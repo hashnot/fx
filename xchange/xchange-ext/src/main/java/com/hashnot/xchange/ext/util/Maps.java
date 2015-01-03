@@ -1,8 +1,6 @@
 package com.hashnot.xchange.ext.util;
 
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -13,17 +11,6 @@ public class Maps {
     public static <K, V> Map<K, V> map(K key, V value) {
         HashMap<K, V> result = new HashMap<>();
         result.put(key, value);
-        return result;
-    }
-
-    public static <K, V> Map<K, V> map(Collection<K> keys, Collection<V> values) {
-        assert keys.size() == values.size();
-        Map<K, V> result = new HashMap<>(keys.size());
-        Iterator<V> vi = values.iterator();
-        for (K key : keys) {
-            V value = vi.next();
-            result.put(key, value);
-        }
         return result;
     }
 

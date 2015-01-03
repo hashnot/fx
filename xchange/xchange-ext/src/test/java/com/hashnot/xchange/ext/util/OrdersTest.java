@@ -13,7 +13,6 @@ import static com.xeiam.xchange.dto.Order.OrderType.ASK;
 import static com.xeiam.xchange.dto.Order.OrderType.BID;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
-import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 
 public class OrdersTest {
@@ -30,7 +29,7 @@ public class OrdersTest {
         MarketMetadata meta = new BaseMarketMetadata(percent, 2, percent);
         Map<String, BigDecimal> walletIn = Maps.keys(P.baseSymbol, P.counterSymbol).map(TEN, TEN);
 
-        Map<String, BigDecimal> walletOut = Maps.map(asList(P.baseSymbol, P.counterSymbol), asList(valueOf(9), valueOf("10.99")));
+        Map<String, BigDecimal> walletOut = Maps.keys(P.baseSymbol, P.counterSymbol).map(valueOf(9), valueOf("10.99"));
 
         Map<String, BigDecimal> result = Orders.simulateTrade(order, walletIn, meta);
         assertEquals(result, walletOut);
@@ -46,7 +45,7 @@ public class OrdersTest {
         MarketMetadata meta = new BaseMarketMetadata(percent, 2, percent);
         Map<String, BigDecimal> walletIn = Maps.keys(P.baseSymbol, P.counterSymbol).map(TEN, TEN);
 
-        Map<String, BigDecimal> walletOut = Maps.map(asList(P.baseSymbol, P.counterSymbol), asList(valueOf(11), valueOf("8.99")));
+        Map<String, BigDecimal> walletOut = Maps.keys(P.baseSymbol, P.counterSymbol).map(valueOf(11), valueOf("8.99"));
 
         Map<String, BigDecimal> result = Orders.simulateTrade(order, walletIn, meta);
         assertEquals(result, walletOut);
