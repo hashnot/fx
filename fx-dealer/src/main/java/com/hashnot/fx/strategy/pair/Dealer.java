@@ -159,8 +159,6 @@ public class Dealer {
     public void orderBookSideChanged(OrderBookSideUpdateEvent evt) {
         assertConfig(evt.source.side, evt.source.market.listing);
 
-        // enable when we have at open!=close exchanges before listening to order books
-        // TODO initial state assert !getCloseExchange().equals(getOpenExchange()) : "Didn't find 2 exchanges with sufficient funds " + side;
         if (data.getCloseExchange().equals(data.getOpenExchange())) {
             log.info("Didn't find 2 exchanges with sufficient funds {}", config.side);
             return;
@@ -183,7 +181,6 @@ public class Dealer {
 
         switch (data.state) {
             case Waiting:
-                //TODO change may mean that we need to change the open order to smaller one
                 if (!profitableOrCancel(data.getOpenExchange()))
                     openIfProfitable();
                 break;
