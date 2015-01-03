@@ -49,12 +49,12 @@ public class PairOrderBookSideListenerTest {
         Exchange openExchange = mock(Exchange.class);
         when(openExchange.getPollingTradeService()).thenReturn(tradeService);
 
-        IExchangeMonitor openMonitor = getExchangeMonitor(openExchange, withSettings().defaultAnswer(RETURNS_DEFAULTS));
+        IExchangeMonitor openMonitor = getExchangeMonitor(openExchange);
         IOrderTracker orderTracker = mock(IOrderTracker.class);
         when(openMonitor.getOrderTracker()).thenReturn(orderTracker);
 
         Exchange closeExchange = mock(Exchange.class);
-        IExchangeMonitor closeMonitor = getExchangeMonitor(closeExchange, withSettings().defaultAnswer(RETURNS_DEFAULTS));
+        IExchangeMonitor closeMonitor = getExchangeMonitor(closeExchange);
 
         Map<Exchange, IExchangeMonitor> monitors = keys(openExchange, closeExchange).map(openMonitor, closeMonitor);
 

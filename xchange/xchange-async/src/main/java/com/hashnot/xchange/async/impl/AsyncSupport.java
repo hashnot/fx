@@ -45,6 +45,8 @@ final public class AsyncSupport {
             Throwable cause = e.getCause();
             if (cause instanceof RuntimeException)
                 throw (RuntimeException) cause;
+            if (cause instanceof Error)
+                throw (Error) cause;
             else if (cause instanceof IOException)
                 throw (IOException) cause;
             else

@@ -8,9 +8,12 @@ import com.hashnot.xchange.async.impl.AsyncSupport;
 import com.hashnot.xchange.async.trade.IAsyncTradeService;
 import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.event.trade.UserTradeEvent;
+import com.hashnot.xchange.ext.util.Collections;
+import com.hashnot.xchange.ext.util.Comparators;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
+import com.xeiam.xchange.dto.marketdata.MarketMetadata;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.dto.trade.UserTrade;
 import org.slf4j.Logger;
@@ -19,16 +22,19 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import static com.hashnot.fx.strategy.pair.DealerHelper.hasMinimumMoney;
 import static com.hashnot.xchange.ext.util.Comparables.eq;
-import static com.hashnot.xchange.ext.util.Orders.getNetPrice;
-import static com.hashnot.xchange.ext.util.Orders.revert;
-import static com.hashnot.xchange.ext.util.Prices.*;
+import static com.hashnot.xchange.ext.util.Orders.*;
+import static com.hashnot.xchange.ext.util.Prices.isFurther;
+import static com.xeiam.xchange.dto.Order.OrderType.ASK;
+import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
+import static java.math.RoundingMode.HALF_EVEN;
 
 /**
  * @author Rafał Krupiński
@@ -48,6 +54,8 @@ public class Dealer {
 
     final private DealerConfig config;
 
+    private Comparator<Map.Entry<Exchange, BigDecimal>> offerComparator;
+
     public void updateBestOffers(Collection<BestOfferEvent> bestOfferEvents) {
         for (BestOfferEvent bestOfferEvent : bestOfferEvents)
             updateBestOffer(bestOfferEvent);
@@ -56,103 +64,90 @@ public class Dealer {
     /**
      * If the new price is the best, update internal state and change order book monitor to monitor new best market
      */
-    private void updateBestOffer(BestOfferEvent evt) {
+    protected void updateBestOffer(BestOfferEvent evt) {
         assertConfig(evt.source.side, evt.source.market.listing);
+        updateBestOffer(evt.source.market.exchange, evt.price);
+    }
 
-        Exchange eventExchange = evt.source.market.exchange;
-        if (!hasMinimumMoney(monitors.get(eventExchange), evt.price, config)) {
-            log.debug("Ignore exchange {} without enough money", evt.source);
+    protected void updateBestOffer(Exchange eventExchange, BigDecimal newPrice) {
+        if (!hasMinimumMoney(monitors.get(eventExchange), newPrice, config)) {
+            log.debug("Ignore exchange {} without enough money", eventExchange);
             return;
         }
 
-        BigDecimal newPrice = evt.price;
-
-        BigDecimal oldPrice = data.getBestOffers().get(eventExchange);
+        BigDecimal oldPrice = data.getBestOffers().put(eventExchange, newPrice);
 
         // don't update the order if the new 3rd party order is not better
-        if (oldPrice != null && eq(newPrice, oldPrice)) {
+        if (eq(oldPrice, newPrice)) {
             log.warn("Price didn't change");
             return;
         }
 
-        data.getBestOffers().put(eventExchange, newPrice);
-
         IExchangeMonitor openMonitor = data.getOpenExchange();
+        IExchangeMonitor closeMonitor = data.getCloseExchange();
         IExchangeMonitor eventMonitor = monitors.get(eventExchange);
         log.info("Best offer {} @{}/{}; mine {}@{}", newPrice, config.side, eventExchange, data.getOpenPrice(), openMonitor);
 
         // if the open exchange has changed - cancel
         // if close - check profitability
-        boolean update = false;
-        {
-            if (data.state == DealerState.Waiting && openMonitor.equals(eventMonitor)) {
-                if (isFurther(data.openedOrder.getLimitPrice(), newPrice, config.side)) {
-                    log.debug("My order fell from the top");
-                    update = true;
-                } else {
-                    log.debug("Mine on top");
-                    return;
-                }
-            }
-        }
 
         // it's important to first update open before close exchange,
         // because we register ourselves as a listener for close order book if close != open
 
-        boolean dirty = false;
-        if (!eventMonitor.equals(openMonitor)) {
-            BigDecimal oldOpenPrice = forNull(revert(config.side));
-            if (openMonitor != null)
-                oldOpenPrice = data.getBestOffers().getOrDefault(openMonitor.getExchange(), oldOpenPrice);
+        Collections.MinMax<Map.Entry<Exchange, BigDecimal>> minMax = Collections.minMax(data.getBestOffers().entrySet(), offerComparator);
 
-            // worse is better, because we open between closer and further on the further exchange
-            if (isFurther(newPrice, oldOpenPrice, config.side)) {
-                data.setOpenExchange(eventMonitor);
-                dirty = true;
-            }
-        }
+        Exchange newOpenExchange = minMax.min.getKey();
+        data.setOpenExchange(monitors.get(newOpenExchange));
 
-        IExchangeMonitor oldClose = data.getCloseExchange();
+        Exchange newCloseExchange = minMax.max.getKey();
+        data.setCloseExchange(monitors.get(newCloseExchange));
 
-        if (!eventMonitor.equals(data.getCloseExchange())) {
-            BigDecimal closeMarketPrice = forNull(config.side);
-            if (data.getCloseExchange() != null)
-                closeMarketPrice = data.getBestOffers().getOrDefault(data.getCloseExchange().getExchange(), closeMarketPrice);
-
-            if (isCloser(newPrice, closeMarketPrice, config.side)) {
-                data.setCloseExchange(eventMonitor);
-                dirty = true;
-            }
-        }
-
-
-        if (dirty) {
-            updateCloseMarket(oldClose);
-            if (data.state == DealerState.Waiting) {
-                // if current event is from open, may open new order.
-                // if it's from close, must cancel, because don't know current order book
-                cancel(openMonitor);
-                if (eventMonitor.equals(data.getOpenExchange()))
-                    openIfProfitable();
-                return;
-            }
-        }
-        if (update) {
+        if (data.getOpenExchange().equals(data.getCloseExchange())) {
+            log.info("open = close = {}", eventExchange);
             cancel(openMonitor);
-            openIfProfitable();
+            //return;
+        }
+
+        if (!data.getCloseExchange().equals(closeMonitor))
+            updateCloseMarket(closeMonitor);
+
+        if (!data.getOpenExchange().equals(openMonitor)) {
+            if (data.state == DealerState.Waiting) {
+                cancel(openMonitor);
+                openIfProfitable();
+            }
+        } else if (!data.getCloseExchange().equals(closeMonitor)) {
+            cancel(openMonitor);
+            // cannot open because we don't have current order book from the closing exchange
+        } else {
+            // only if eventExchange == openExchange
+            if (data.state == DealerState.Waiting && openMonitor.equals(eventMonitor)) {
+                if (isFurther(data.openedOrder.getLimitPrice(), newPrice, config.side)) {
+                    log.debug("My order fell from the top");
+                    cancel(openMonitor);
+                    openIfProfitable();
+                } else {
+                    log.debug("Mine on top");
+                }
+            }
         }
     }
 
-    private void updateCloseMarket(IExchangeMonitor oldExchange) {
-        log.debug("open {} old close {} new close {}", data.getOpenExchange(), oldExchange, data.getCloseExchange());
-        if (oldExchange != null && !oldExchange.equals(data.getCloseExchange())) {
-            MarketSide oldCloseSide = new MarketSide(oldExchange.getExchange(), config.listing, config.side);
+    private void updateCloseMarket(IExchangeMonitor oldCloseMonitor) {
+        IExchangeMonitor newCloseMonitor = data.getCloseExchange();
+        IExchangeMonitor newOpenMonitor = data.getOpenExchange();
+        log.debug("open {} old close {} new close {}", newOpenMonitor, oldCloseMonitor, newCloseMonitor);
+        if (oldCloseMonitor != null && (
+                !oldCloseMonitor.equals(newCloseMonitor)
+                        || newCloseMonitor.equals(newOpenMonitor))
+                ) {
+            MarketSide oldCloseSide = new MarketSide(oldCloseMonitor.getExchange(), config.listing, config.side);
             log.debug("Remove OBL from {}", oldCloseSide);
             orderBookSideMonitor.removeOrderBookSideListener(listener, oldCloseSide);
         }
 
-        if (!data.getCloseExchange().equals(data.getOpenExchange())) {
-            MarketSide marketSide = new MarketSide(data.getCloseExchange().getExchange(), config.listing, config.side);
+        if (!newCloseMonitor.equals(newOpenMonitor)) {
+            MarketSide marketSide = new MarketSide(newCloseMonitor.getExchange(), config.listing, config.side);
             log.debug("Add OBL to {}", marketSide);
             orderBookSideMonitor.addOrderBookSideListener(listener, marketSide);
         }
@@ -189,7 +184,8 @@ public class Dealer {
         switch (data.state) {
             case Waiting:
                 //TODO change may mean that we need to change the open order to smaller one
-                profitableOrCancel(data.getOpenExchange());
+                if (!profitableOrCancel(data.getOpenExchange()))
+                    openIfProfitable();
                 break;
             case NotProfitable:
                 openIfProfitable();
@@ -231,50 +227,73 @@ public class Dealer {
         }
     }
 
-    private void profitableOrCancel(IExchangeMonitor exchange) {
-        if (data.checkProfitable()) {
+    /**
+     * @return true if profitable, false if not profitable (and cancelled) or no opened order
+     */
+    private boolean profitableOrCancel(IExchangeMonitor exchange) {
+        if (data.state != DealerState.Waiting) {
+            log.debug("No order");
+            return false;
+        } else if (data.checkProfitable()) {
             log.debug("Order still profitable");
+            return true;
         } else {
             log.info("Unprofitable {}", data.openedOrder);
             cancel(exchange);
-            openIfProfitable();
+            return false;
         }
     }
 
     protected void openIfProfitable() {
-        BigDecimal closingNetPrice;
-        BigDecimal closingPrice;
-        {
-            LimitOrder closeOrder = data.closingOrders.get(0);
-            closingPrice = closeOrder.getLimitPrice();
-            closingNetPrice = getNetPrice(closeOrder.getLimitPrice(), revert(closeOrder.getType()), data.getCloseExchange().getMarketMetadata(closeOrder.getCurrencyPair()).getOrderFeeFactor());
-        }
+        BigDecimal openPrice = profitableOpenPrice();
+        if (openPrice == null)
+            return;
 
-        BigDecimal openGrossPrice = data.getBestOffers().get(data.getOpenExchange().getExchange());
-        BigDecimal openNetPrice = getOpenNetPrice(openGrossPrice);
-        BigDecimal diff = openNetPrice.subtract(closingNetPrice);
+        LimitOrder open = DealerHelper.deal(config, data, openPrice, orderStrategy);
+        if (open != null) {
+            log.info("Place {} @{}", open, data.getOpenExchange());
+            data.openedOrder = open;
+            open();
+        }
+    }
+
+    BigDecimal profitableOpenPrice() {
+        IExchangeMonitor openMonitor = data.getOpenExchange();
+        BigDecimal openBest = data.getBestOffers().get(openMonitor.getExchange());
+        BigDecimal closeBest = data.getBestOffers().get(data.getCloseExchange().getExchange());
+        MarketMetadata openMeta = openMonitor.getMarketMetadata(config.listing);
+        MarketMetadata closeMeta = data.getCloseExchange().getMarketMetadata(config.listing);
+
+        //BigDecimal openInitial = openBest.add(openMeta.getPriceStep().multiply(bigFactor(revert(config.side))));
+
+        BigDecimal diff = openBest.subtract(closeBest);
 
         // ask -> diff > 0
         boolean profitable = isFurther(diff, ZERO, config.side);
 
-        IExchangeMonitor openMonitor = monitors.get(data.getOpenExchange().getExchange());
-        if (profitable) {
-            int scale = openMonitor.getMarketMetadata(config.listing).getPriceScale();
-            // TODO use getAmount
-            openGrossPrice = orderStrategy.getPrice(openGrossPrice, diff, scale, config.side);
-            openNetPrice = getOpenNetPrice(openGrossPrice);
+        log.info("gross open {} {} <=> {} close {}profitable", config.side, openBest, closeBest, profitable ? "" : "not ");
+        if (!profitable) {
+            return null;
         }
 
-        log.info("open {} {} {} <=> {} {} close {}profitable", config.side, openGrossPrice, openNetPrice, closingNetPrice, closingPrice, profitable ? "" : "not ");
-        if (!profitable)
-            return;
+        BigDecimal factor;
+        if (config.side == ASK)
+            factor = ONE.subtract(openMeta.getOrderFeeFactor()).divide(ONE.add(closeMeta.getOrderFeeFactor()), openMeta.getPriceScale(), HALF_EVEN);
+        else
+            factor = ONE.add(closeMeta.getOrderFeeFactor()).divide(ONE.subtract(openMeta.getOrderFeeFactor()), openMeta.getPriceScale(), HALF_EVEN);
+        BigDecimal priceCloseInitial = openBest.multiply(factor).setScale(openMeta.getPriceScale(), HALF_EVEN);
 
-        LimitOrder open = DealerHelper.deal(config, data, openGrossPrice, orderStrategy);
-        if (open != null) {
-            log.info("Place {} @{}", open, openMonitor);
-            data.openedOrder = open;
-            open();
-        }
+        BigDecimal priceOpen = orderStrategy.getPrice(priceCloseInitial, diff, openMeta.getPriceScale(), config.side);
+
+        BigDecimal myOpen = priceOpen.divide(factor, openMeta.getPriceScale(), HALF_EVEN);
+
+        BigDecimal myOpenNet = getNetPrice(priceOpen, config.side, openMeta.getOrderFeeFactor()).setScale(openMeta.getPriceScale(), HALF_EVEN);
+        BigDecimal closeNet = getNetPrice(closeBest, revert(config.side), closeMeta.getOrderFeeFactor()).setScale(closeMeta.getPriceScale(), HALF_EVEN);
+
+        profitable = isFurther(myOpenNet, closeNet, config.side);
+        log.info("open {} {} {} <=> {} {} close {}profitable", config.side, myOpen, myOpenNet, closeNet, closeBest, profitable ? "" : "not ");
+
+        return profitable ? myOpen : null;
     }
 
     Runnable onOpen;
@@ -299,19 +318,19 @@ public class Dealer {
         data.openExchange.getOrderTracker().addTradeListener(listener);
     }
 
-    protected void cancel(IExchangeMonitor exchange) {
+    protected boolean cancel(IExchangeMonitor exchange) {
         switch (data.state) {
             case Waiting:
                 doCancel(exchange);
-                break;
+                return true;
             case Opening:
                 log.warn("Cancel while opening");
                 onOpen = () -> doCancel(exchange);
-                break;
+                return true;
             case Cancelling:
             case NotProfitable:
-                log.info("Cancel while is state: {}", data.state);
-                break;
+                log.info("Cancel while in state: {}", data.state);
+                return false;
             default:
                 throw new IllegalStateException(data.state.name());
         }
@@ -358,10 +377,7 @@ public class Dealer {
         this.orderStrategy = orderStrategy;
         this.orderCloseStrategy = orderCloseStrategy;
         this.data = data;
-    }
-
-    private BigDecimal getOpenNetPrice(BigDecimal openGrossPrice) {
-        return getNetPrice(openGrossPrice, config.side, data.getOpenExchange().getMarketMetadata(config.listing).getOrderFeeFactor());
+        offerComparator = new Comparators.MultiplyingComparator<>(new Comparators.EntryValueComparator<>(), -factor(config.side));
     }
 
     public void setListener(Listener listener) {

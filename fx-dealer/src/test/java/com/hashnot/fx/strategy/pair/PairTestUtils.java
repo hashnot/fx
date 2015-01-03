@@ -11,6 +11,7 @@ import org.mockito.MockSettings;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.Map;
 
 import static java.math.BigDecimal.*;
 import static org.mockito.Matchers.any;
@@ -25,21 +26,30 @@ public class PairTestUtils {
     protected static SimpleOrderCloseStrategy orderCloseStrategy = new SimpleOrderCloseStrategy();
 
     protected static IExchangeMonitor getExchangeMonitor(Exchange x) {
-        return getExchangeMonitor(x, withSettings().defaultAnswer(RETURNS_DEFAULTS));
+        return getExchangeMonitor(x, withSettings().defaultAnswer(RETURNS_DEFAULTS), ZERO);
     }
 
     protected static IExchangeMonitor getExchangeMonitor(Exchange x, String name) {
-        return getExchangeMonitor(x, withSettings().name(name));
+        return getExchangeMonitor(x, withSettings().name(name), ZERO);
     }
 
-    protected static IExchangeMonitor getExchangeMonitor(Exchange x, MockSettings settings) {
+    protected static IExchangeMonitor getExchangeMonitor(Exchange x, String name, BigDecimal feeFactor) {
+        return getExchangeMonitor(x, withSettings().name(name), feeFactor);
+    }
+
+    protected static IExchangeMonitor getExchangeMonitor(Exchange x, MockSettings settings, BigDecimal feeFactor) {
         IExchangeMonitor monitor = mock(IExchangeMonitor.class, settings);
+
+        @SuppressWarnings("unchecked")
+        Map<String, BigDecimal> wallet = mock(Map.class);
+        when(wallet.get(any(String.class))).thenReturn(TEN);
 
         IWalletMonitor walletMonitor = mock(IWalletMonitor.class);
         when(walletMonitor.getWallet(any())).thenReturn(TEN);
+        when(walletMonitor.getWallet()).thenReturn(wallet);
 
         when(monitor.getWalletMonitor()).thenReturn(walletMonitor);
-        when(monitor.getMarketMetadata(p)).thenReturn(new BaseMarketMetadata(ONE.movePointLeft(SCALE), SCALE, ZERO));
+        when(monitor.getMarketMetadata(p)).thenReturn(new BaseMarketMetadata(ONE.movePointLeft(SCALE), SCALE, feeFactor));
         when(monitor.getExchange()).thenReturn(x);
 
         IAsyncExchange ax = mock(IAsyncExchange.class);

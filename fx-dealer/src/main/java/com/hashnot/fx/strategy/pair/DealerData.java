@@ -183,6 +183,10 @@ public class DealerData {
                 "bestOffers=" + bestOffers +
                 ", closeExchange=" + closeExchange +
                 ", openExchange=" + openExchange +
+                ", openedOrder=" + openedOrder +
+                ", openOrderId='" + openOrderId + '\'' +
+                ", closingOrders=" + closingOrders +
+                ", state=" + state +
                 '}';
     }
 

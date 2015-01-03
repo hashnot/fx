@@ -54,7 +54,7 @@ public class PairStrategy implements IStrategy {
                 Dealer dealer = new Dealer(bestOfferMonitor, monitorMap, new DealerConfig(side, pair), orderOpenStrategy, orderCloseStrategy);
                 PairEventManager listener = new PairEventManager(dealer);
 
-                listenerHandle = executor.submit(new MDCRunnable(listener, side.toString() + '@' + pair + '@'));
+                listenerHandle = executor.submit(new MDCRunnable(listener, side.toString() + '@' + pair));
 
                 dealer.setListener(listener);
 

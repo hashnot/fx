@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
+import java.util.Map;
 
 import static com.hashnot.xchange.ext.util.BigDecimals.TWO;
 import static com.hashnot.xchange.ext.util.Comparables.lt;
@@ -35,8 +36,11 @@ public class DealerHelper {
 
         String closeOutCur = incomingCurrency(config);
 
-        BigDecimal openOutGross = data.getOpenExchange().getWalletMonitor().getWallet(openOutgoingCur);
-        BigDecimal closeOutGross = data.getCloseExchange().getWalletMonitor().getWallet(closeOutCur);
+        Map<String, BigDecimal> openWallet = data.getOpenExchange().getWalletMonitor().getWallet();
+        Map<String, BigDecimal> closeWallet = data.getCloseExchange().getWalletMonitor().getWallet();
+
+        BigDecimal openOutGross = openWallet.get(openOutgoingCur);
+        BigDecimal closeOutGross = closeWallet.get(closeOutCur);
 
         MarketMetadata openMetadata = data.getOpenExchange().getMarketMetadata(config.listing);
         MarketMetadata closeMetadata = data.getCloseExchange().getMarketMetadata(config.listing);
@@ -44,11 +48,11 @@ public class DealerHelper {
         // adjust amounts by dividing by two and check if it's not below minima
         {
             // amount of base currency
-            BigDecimal openBaseAmount = data.getOpenExchange().getWalletMonitor().getWallet(config.listing.baseSymbol);
-            BigDecimal closeBaseAmount = data.getCloseExchange().getWalletMonitor().getWallet(config.listing.baseSymbol);
+            BigDecimal openBaseAmount = openWallet.get(config.listing.baseSymbol);
+            BigDecimal closeBaseAmount = closeWallet.get(config.listing.baseSymbol);
 
-            BigDecimal openBaseHalf = openBaseAmount.divide(TWO, openMetadata.getAmountMinimum().scale(), FLOOR);
-            BigDecimal closeBaseHalf = closeBaseAmount.divide(TWO, closeMetadata.getAmountMinimum().scale(), FLOOR);
+            BigDecimal openBaseHalf = openBaseAmount.divide(TWO, FLOOR);
+            BigDecimal closeBaseHalf = closeBaseAmount.divide(TWO, FLOOR);
 
             BigDecimal openLowLimit = openMetadata.getAmountMinimum();
             BigDecimal closeLowLimit = closeMetadata.getAmountMinimum();
@@ -60,19 +64,14 @@ public class DealerHelper {
                     return null;
                 }
             } else {
-                openOutGross = openOutGross.divide(TWO, openMetadata.getAmountMinimum().scale(), FLOOR);
-                closeOutGross = closeOutGross.divide(TWO, closeMetadata.getAmountMinimum().scale(), FLOOR);
+                openOutGross = openOutGross.divide(TWO, FLOOR);
+                closeOutGross = closeOutGross.divide(TWO, FLOOR);
             }
         }
 
-        {
-            BigDecimal openOutNet = applyFeeToWallet(openOutGross, openMetadata);
-            BigDecimal closeOutNet = applyFeeToWallet(closeOutGross, closeMetadata);
-
-            log.debug("type: {}, open {}, close {}", config.side, data.getOpenExchange(), data.getCloseExchange());
-            log.debug("open  {} {} -> {}", openOutgoingCur, openOutGross, openOutNet);
-            log.debug("close {} {} -> {}", closeOutCur, closeOutGross, closeOutNet);
-        }
+        log.debug("type: {}, open {}, close {}", config.side, data.getOpenExchange(), data.getCloseExchange());
+        log.debug("open  {} {}", openOutgoingCur, openOutGross);
+        log.debug("close {} {}", closeOutCur, closeOutGross);
 
         // limit po stronie open ASK = base wallet
         //                  close/ BID = suma( otwarte ASK-> cena*liczba) < base wallet
@@ -84,10 +83,9 @@ public class DealerHelper {
         //                  openOut = counter
         //                  closeOut = base
 
-
         BigDecimal openAmount = openOutGross;
         if (config.side == Order.OrderType.BID)
-            openAmount = openOutGross.divide(limitPrice, openMetadata.getAmountMinimum().scale(), HALF_EVEN);
+            openAmount = openOutGross.divide(limitPrice, openWallet.get(closeOutCur).scale(), HALF_EVEN);
 
         BigDecimal closeAmount = data.getCloseAmount(config.side, openAmount, limitPrice);
 

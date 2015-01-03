@@ -5,7 +5,6 @@ import com.hashnot.xchange.event.account.IWalletMonitor;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.marketdata.BaseMarketMetadata;
 import com.xeiam.xchange.dto.trade.LimitOrder;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -13,6 +12,7 @@ import org.junit.runners.Parameterized;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.google.common.collect.Lists.transform;
 import static com.hashnot.xchange.ext.util.Comparables.eq;
@@ -144,22 +144,6 @@ public class DealerHelperTest {
         }
     }
 
-    @Ignore("fees are currently ignored")
-    @Test
-    public void testDealFee() throws Exception {
-        List<LimitOrder> closeOrders = asList(
-                order(side, v(".5"), P, p(ONE, v("-.2"))),
-                order(side, ONE, P, p(ONE, v("-.1")))
-        );
-        DealerData data = new DealerData(m1, m2, emptyMap());
-        data.closingOrders = closeOrders;
-
-        LimitOrder deal = DealerHelper.deal(config, data, ONE, s);
-
-        assertNotNull(deal);
-        assertTrue("tradableAmount=" + deal.getTradableAmount(), eq(deal.getTradableAmount(), new BigDecimal("1.5")));
-    }
-
     protected BigDecimal p(BigDecimal base, BigDecimal delta) {
         BigDecimal myDelta = side == OrderType.ASK ? delta : delta.negate();
         return base.add(myDelta);
@@ -181,8 +165,11 @@ public class DealerHelperTest {
     }
 
     private IExchangeMonitor m(String name, BigDecimal walletAmount) {
-        IWalletMonitor walletMon = mock(IWalletMonitor.class);
+        IWalletMonitor walletMon = mock(IWalletMonitor.class, "Monitor:" + name);
         when(walletMon.getWallet(any())).thenReturn(walletAmount);
+        Map<String, BigDecimal> wallet = mock(Map.class);
+        when(wallet.get(any())).thenReturn(walletAmount);
+        when(walletMon.getWallet()).thenReturn(wallet);
         return m(name, walletMon);
     }
 
