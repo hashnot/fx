@@ -17,11 +17,6 @@
             <artifactId>fx-core</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-ext</artifactId>
-            <version>${v.slf4j}</version>
-        </dependency>
 
         <dependency>
             <groupId>junit</groupId>
