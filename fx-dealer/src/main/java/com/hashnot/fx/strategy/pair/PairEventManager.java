@@ -8,48 +8,75 @@ import com.hashnot.xchange.ext.event.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
-
-import static java.util.stream.Collectors.toMap;
 
 /**
  * @author Rafał Krupiński
  */
 public class PairEventManager implements Listener, Runnable {
     final private static Logger log = LoggerFactory.getLogger(PairEventManager.class);
-    final private BlockingQueue<EventWrapper> queue = new LinkedBlockingQueue<>();
+
+    final private BlockingDeque<EventWrapper> queue = new LinkedBlockingDeque<>();
+
     final private Dealer dealer;
 
     @Override
     public void updateBestOffer(BestOfferEvent event) {
-        EventWrapper evt = new EventWrapper(EventType.BestOffer, event);
-        addEvent(evt);
+        addEvent(EventType.BestOffer, event);
     }
 
-    private void addEvent(EventWrapper evt) {
+    private void addEvent(EventType type, Event event) {
+        EventWrapper evt = new EventWrapper(type, event);
         int size;
+        boolean success;
         synchronized (queue) {
-            queue.offer(evt);
+            success = queue.offer(evt);
             size = queue.size();
         }
+        if (!success)
+            log.warn("Could not add element {}", evt.event);
         log.debug("Queue size={}", size);
     }
 
     @Override
     public void orderBookSideChanged(OrderBookSideUpdateEvent event) {
-        EventWrapper evt = new EventWrapper(EventType.OrderBook, event);
-        addEvent(evt);
+        addEvent(EventType.OrderBook, event);
     }
 
     @Override
     public void trade(UserTradeEvent event) {
-        EventWrapper evt = new EventWrapper(EventType.Trade, event);
-        addEvent(evt);
+        addEvent(EventType.Trade, event);
+    }
+
+    @Override
+    public Consumer<Future<Boolean>> onCancel() {
+        return f -> addEventHead(EventType.Cancel, f);
+    }
+
+    @Override
+    public Consumer<Future<String>> onOpen() {
+        return f -> addEventHead(EventType.Open, f);
+    }
+
+    public void addEventHead(EventType type, Object event) {
+        EventWrapper evt = new EventWrapper(type, event);
+        int size;
+        boolean success;
+        synchronized (queue) {
+            success = queue.offerFirst(evt);
+            size = queue.size();
+        }
+        if (!success)
+            log.warn("Could not add element {}", evt.event);
+        log.debug("Queue size={}", size);
     }
 
     @Override
@@ -71,6 +98,12 @@ public class PairEventManager implements Listener, Runnable {
                         break;
                     case Trade:
                         handleTrade(all);
+                        break;
+                    case Open:
+                        handleOpen(all);
+                        break;
+                    case Cancel:
+                        handleCancel(all);
                         break;
                     default:
                         throw new IllegalArgumentException(event.toString());
@@ -112,8 +145,28 @@ public class PairEventManager implements Listener, Runnable {
     }
 
     private void handleBestOffer(List<EventWrapper> bestOfferEvents) {
-        Map<MarketSide, BestOfferEvent> events = bestOfferEvents.stream().map(e -> (BestOfferEvent) e.event).collect(toMap(e -> e.source, e -> e));
+        Map<MarketSide, BestOfferEvent> events = new LinkedHashMap<>();
+        for (EventWrapper event : bestOfferEvents) {
+            BestOfferEvent e = (BestOfferEvent) event.event;
+            events.put(e.source, e);
+        }
         dealer.updateBestOffers(events.values());
+    }
+
+    private void handleOpen(List<EventWrapper> events) {
+        for (EventWrapper event : events) {
+            @SuppressWarnings("unchecked")
+            Future<String> f = (Future<String>) event.event;
+            dealer.handleOpened(f);
+        }
+    }
+
+    private void handleCancel(List<EventWrapper> events) {
+        for (EventWrapper event : events) {
+            @SuppressWarnings("unchecked")
+            Future<Boolean> f = (Future<Boolean>) event.event;
+            dealer.handleCanceled(f);
+        }
     }
 
     public PairEventManager(Dealer dealer) {
@@ -123,19 +176,21 @@ public class PairEventManager implements Listener, Runnable {
     static enum EventType {
         BestOffer,
         OrderBook,
-        Trade
+        Trade,
+        Cancel,
+        Open
     }
 
     static class EventWrapper {
         final public EventType type;
-        final public Event event;
+        final public Object event;
 
-        EventWrapper(EventType type, Event event) {
+        EventWrapper(EventType type, Object event) {
             this.type = type;
             this.event = event;
         }
 
-        public Event getEvent() {
+        public Object getEvent() {
             return event;
         }
     }

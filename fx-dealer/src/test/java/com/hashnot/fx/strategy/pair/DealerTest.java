@@ -15,7 +15,6 @@ import com.xeiam.xchange.dto.trade.LimitOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,10 +57,6 @@ public class DealerTest {
     public DealerTest(Order.OrderType side) {
         this.side = side;
         config = new DealerConfig(side, P);
-    }
-
-    static {
-        Mockito.withSettings().invocationListeners(e -> log.debug("{}", e));
     }
 
     @Parameterized.Parameters
@@ -260,16 +255,19 @@ public class DealerTest {
     @Test
     public void testDeal() throws Exception {
         List<LimitOrder> closeOrders = asList(
-                order(side, v(".5"), P, p(ONE, v("-.2"))),
-                order(side, ONE, P, p(ONE, v("-.1")))
+                order(side, v(".5"), P, p(TWO, v("-.2"))),
+                order(side, ONE, P, p(TWO, v("-.1")))
         );
-        DealerData data = new DealerData(m1, m2, emptyMap());
+        IExchangeMonitor openMonitor = getExchangeMonitor(mock(Exchange.class, X_OPEN));
+        IExchangeMonitor closeMonitor = getExchangeMonitor(mock(Exchange.class, X_CLOSE));
+        DealerData data = new DealerData(openMonitor, closeMonitor, emptyMap());
         data.closingOrders = closeOrders;
         Dealer dealer = new Dealer(mock(IOrderBookSideMonitor.class), emptyMap(), config, orderOpenStrategy, mock(SimpleOrderCloseStrategy.class), data);
 
-        LimitOrder deal = dealer.deal(ONE);
+        LimitOrder deal = dealer.deal(TWO);
 
         assertNotNull(deal);
+        log.info("deal={}", deal);
         BigDecimal amount = deal.getTradableAmount();
         assertThat(amount, new BigDecimalMatcher(ONE));
     }
@@ -369,14 +367,6 @@ public class DealerTest {
         return base.add(myDelta);
     }
 
-    protected static BigDecimal v(final String s) {
-        return new BigDecimal(s);
-    }
-
-    protected static BigDecimal v(long s) {
-        return new BigDecimal(s);
-    }
-
     IExchangeMonitor m1 = m("exchange1");
     IExchangeMonitor m2 = m("exchange2");
 
@@ -387,8 +377,9 @@ public class DealerTest {
     private IExchangeMonitor m(String name, BigDecimal walletAmount) {
         IWalletMonitor walletMon = mock(IWalletMonitor.class, "Monitor:" + name);
         when(walletMon.getWallet(any())).thenReturn(walletAmount);
+        @SuppressWarnings("unchecked")
         Map<String, BigDecimal> wallet = mock(Map.class);
-        when(wallet.get(any())).thenReturn(walletAmount);
+        when(wallet.get(any(String.class))).thenReturn(walletAmount);
         when(walletMon.getWallet()).thenReturn(wallet);
         return m(name, walletMon);
     }
