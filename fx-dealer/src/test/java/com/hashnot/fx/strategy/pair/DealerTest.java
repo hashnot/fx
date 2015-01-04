@@ -3,10 +3,14 @@ package com.hashnot.fx.strategy.pair;
 import com.hashnot.fx.framework.BestOfferEvent;
 import com.hashnot.fx.framework.IOrderBookSideMonitor;
 import com.hashnot.fx.framework.MarketSide;
+import com.hashnot.fx.uttl.BigDecimalMatcher;
 import com.hashnot.xchange.event.IExchangeMonitor;
+import com.hashnot.xchange.event.account.IWalletMonitor;
 import com.hashnot.xchange.event.trade.IOrderTracker;
 import com.xeiam.xchange.Exchange;
+import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
+import com.xeiam.xchange.dto.marketdata.BaseMarketMetadata;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,6 +20,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -26,16 +32,17 @@ import static com.hashnot.xchange.ext.util.Maps.keys;
 import static com.hashnot.xchange.ext.util.Maps.map;
 import static com.hashnot.xchange.ext.util.Orders.*;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
+import static com.xeiam.xchange.dto.Order.OrderType.BID;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
+import static java.util.Collections.emptyMap;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 @RunWith(Parameterized.class)
 public class DealerTest {
     final static private Logger log = LoggerFactory.getLogger(DealerTest.class);
-
 
     public static final String X_OPEN = "openExchange";
     public static final String X_CLOSE = "closeExchange";
@@ -45,8 +52,12 @@ public class DealerTest {
 
     private Order.OrderType side;
 
+    private DealerConfig config;
+    static CurrencyPair P = CurrencyPair.BTC_EUR;
+
     public DealerTest(Order.OrderType side) {
         this.side = side;
+        config = new DealerConfig(side, P);
     }
 
     static {
@@ -241,5 +252,151 @@ public class DealerTest {
         Dealer dealer = new Dealer(orderBookSideMonitor, monitors, config, orderOpenStrategy, orderCloseStrategy, data);
         dealer.setListener(listener);
         return dealer;
+    }
+
+    /**
+     * Standard deal: deal amount: as much as can close, wallet at least 2x
+     */
+    @Test
+    public void testDeal() throws Exception {
+        List<LimitOrder> closeOrders = asList(
+                order(side, v(".5"), P, p(ONE, v("-.2"))),
+                order(side, ONE, P, p(ONE, v("-.1")))
+        );
+        DealerData data = new DealerData(m1, m2, emptyMap());
+        data.closingOrders = closeOrders;
+        Dealer dealer = new Dealer(mock(IOrderBookSideMonitor.class), emptyMap(), config, orderOpenStrategy, mock(SimpleOrderCloseStrategy.class), data);
+
+        LimitOrder deal = dealer.deal(ONE);
+
+        assertNotNull(deal);
+        BigDecimal amount = deal.getTradableAmount();
+        assertThat(amount, new BigDecimalMatcher(ONE));
+    }
+
+    /**
+     * Deal with amount of half the wallet @open exchange
+     */
+    @Test
+    public void testDealHalfOpenWallet() throws Exception {
+        List<LimitOrder> closeOrders = asList(
+                order(side, v(".5"), P, p(ONE, v("-.2"))),
+                order(side, TEN, P, p(ONE, v("-.1")))
+        );
+
+
+        DealerData data = new DealerData(m("myOpenExchange", v(2)), m2, new HashMap<>());
+        data.closingOrders = closeOrders;
+        Dealer dealer = new Dealer(mock(IOrderBookSideMonitor.class), emptyMap(), config, orderOpenStrategy, mock(SimpleOrderCloseStrategy.class), data);
+
+        LimitOrder deal = dealer.deal(ONE);
+
+        assertNotNull(deal);
+        assertThat("tradableAmount", deal.getTradableAmount(), new BigDecimalMatcher(ONE));
+    }
+
+    @Test
+    public void testDealHalfCloseWallet() throws Exception {
+        List<LimitOrder> closeOrders = asList(
+                order(side, v(".5"), P, p(ONE, v("-.2"))),
+                order(side, ONE, P, p(ONE, v("-.1")))
+        );
+
+
+        DealerData data = new DealerData(m1, m("myCloseExchange", v(2)), new HashMap<>());
+        data.closingOrders = closeOrders;
+        Dealer dealer = new Dealer(mock(IOrderBookSideMonitor.class), emptyMap(), config, orderOpenStrategy, mock(SimpleOrderCloseStrategy.class), data);
+
+        LimitOrder deal = dealer.deal(ONE);
+
+        assertNotNull(deal);
+        assertThat("tradableAmount", deal.getTradableAmount(), new BigDecimalMatcher(ONE));
+    }
+
+
+    @Test
+    public void testDealLowOpenWallet() throws Exception {
+        List<LimitOrder> closeOrders = asList(
+                order(side, v(".5"), P, p(ONE, v("-.2"))),
+                order(side, ONE, P, p(ONE, v("-.1")))
+        );
+
+        BigDecimal small = ONE.movePointLeft(2);
+        DealerData data = new DealerData(m("myOpenExchange", small), m2, emptyMap());
+        data.closingOrders = closeOrders;
+        Dealer dealer = new Dealer(mock(IOrderBookSideMonitor.class), emptyMap(), config, orderOpenStrategy, mock(SimpleOrderCloseStrategy.class), data);
+
+        LimitOrder deal = dealer.deal(ONE);
+
+        if (side == BID) {
+            // skip BID
+            assertNull(deal);
+        } else {
+            assertNotNull(deal);
+            assertThat("tradableAmount", deal.getTradableAmount(), new BigDecimalMatcher(small));
+        }
+    }
+
+    @Test
+    public void testDealLowCloseWallet() throws Exception {
+        List<LimitOrder> closeOrders = asList(
+                order(side, v(".5"), P, p(ONE, v("-.2"))),
+                order(side, ONE, P, p(ONE, v("-.1")))
+        );
+
+        BigDecimal small = v(".01");
+        DealerData data = new DealerData(m1, m("myCloseExchange", small), emptyMap());
+        data.closingOrders = closeOrders;
+        Dealer dealer = new Dealer(mock(IOrderBookSideMonitor.class), emptyMap(), config, orderOpenStrategy, mock(SimpleOrderCloseStrategy.class), data);
+
+        LimitOrder deal = dealer.deal(ONE);
+
+        if (side == BID) {
+            // skip BID
+            assertNull(deal);
+        } else {
+            assertNotNull(deal);
+            assertThat("tradableAmount", deal.getTradableAmount(), new BigDecimalMatcher(small));
+        }
+    }
+
+    protected static LimitOrder order(Order.OrderType type, BigDecimal tradableAmount, CurrencyPair pair, BigDecimal limitPrice) {
+        return new LimitOrder(type, tradableAmount, pair, null, null, limitPrice);
+    }
+
+    protected BigDecimal p(BigDecimal base, BigDecimal delta) {
+        BigDecimal myDelta = side == Order.OrderType.ASK ? delta : delta.negate();
+        return base.add(myDelta);
+    }
+
+    protected static BigDecimal v(final String s) {
+        return new BigDecimal(s);
+    }
+
+    protected static BigDecimal v(long s) {
+        return new BigDecimal(s);
+    }
+
+    IExchangeMonitor m1 = m("exchange1");
+    IExchangeMonitor m2 = m("exchange2");
+
+    private IExchangeMonitor m(String name) {
+        return m(name, TEN);
+    }
+
+    private IExchangeMonitor m(String name, BigDecimal walletAmount) {
+        IWalletMonitor walletMon = mock(IWalletMonitor.class, "Monitor:" + name);
+        when(walletMon.getWallet(any())).thenReturn(walletAmount);
+        Map<String, BigDecimal> wallet = mock(Map.class);
+        when(wallet.get(any())).thenReturn(walletAmount);
+        when(walletMon.getWallet()).thenReturn(wallet);
+        return m(name, walletMon);
+    }
+
+    private IExchangeMonitor m(String name, IWalletMonitor walletMon) {
+        IExchangeMonitor m = mock(IExchangeMonitor.class, name);
+        when(m.getWalletMonitor()).thenReturn(walletMon);
+        when(m.getMarketMetadata(any())).thenReturn(new BaseMarketMetadata(ONE.movePointLeft(2), 2, ONE.movePointLeft(2)));
+        return m;
     }
 }

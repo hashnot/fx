@@ -1,5 +1,6 @@
 package com.hashnot.fx.strategy.pair;
 
+import com.google.common.collect.Ordering;
 import com.hashnot.fx.framework.BestOfferEvent;
 import com.hashnot.fx.framework.IOrderBookSideMonitor;
 import com.hashnot.fx.framework.MarketSide;
@@ -28,12 +29,14 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import static com.hashnot.fx.strategy.pair.DealerHelper.hasMinimumMoney;
+import static com.hashnot.xchange.ext.util.BigDecimals.TWO;
 import static com.hashnot.xchange.ext.util.Comparables.eq;
+import static com.hashnot.xchange.ext.util.Comparables.lt;
 import static com.hashnot.xchange.ext.util.Orders.*;
 import static com.hashnot.xchange.ext.util.Prices.isFurther;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
 import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.ZERO;
+import static java.math.RoundingMode.FLOOR;
 import static java.math.RoundingMode.HALF_EVEN;
 
 /**
@@ -246,7 +249,7 @@ public class Dealer {
         if (openPrice == null)
             return;
 
-        LimitOrder open = DealerHelper.deal(config, data, openPrice, orderStrategy);
+        LimitOrder open = deal(openPrice);
         if (open != null) {
             log.info("Place {} @{}", open, data.getOpenExchange());
             data.openedOrder = open;
@@ -263,12 +266,15 @@ public class Dealer {
 
         //BigDecimal openInitial = openBest.add(openMeta.getPriceStep().multiply(bigFactor(revert(config.side))));
 
+        BigDecimal closeNet = getNetPrice(closeBest, revert(config.side), closeMeta.getOrderFeeFactor()).setScale(closeMeta.getPriceScale(), HALF_EVEN);
+        BigDecimal openNet = getNetPrice(openBest, config.side, closeMeta.getOrderFeeFactor()).setScale(closeMeta.getPriceScale(), HALF_EVEN);
+
         BigDecimal diff = openBest.subtract(closeBest);
 
         // ask -> diff > 0
-        boolean profitable = isFurther(diff, ZERO, config.side);
+        boolean profitable = isFurther(openNet, closeNet, config.side);
 
-        log.info("gross open {} {} <=> {} close {}profitable", config.side, openBest, closeBest, profitable ? "" : "not ");
+        log.info("gross open {} {} {} <=> {} {} close {}profitable", config.side, openBest, openNet, closeNet, closeBest, profitable ? "" : "not ");
         if (!profitable) {
             return null;
         }
@@ -285,7 +291,6 @@ public class Dealer {
         BigDecimal myOpen = priceOpen.divide(factor, openMeta.getPriceScale(), HALF_EVEN);
 
         BigDecimal myOpenNet = getNetPrice(priceOpen, config.side, openMeta.getOrderFeeFactor()).setScale(openMeta.getPriceScale(), HALF_EVEN);
-        BigDecimal closeNet = getNetPrice(closeBest, revert(config.side), closeMeta.getOrderFeeFactor()).setScale(closeMeta.getPriceScale(), HALF_EVEN);
 
         profitable = isFurther(myOpenNet, closeNet, config.side);
         log.info("open {} {} {} <=> {} {} close {}profitable", config.side, myOpen, myOpenNet, closeNet, closeBest, profitable ? "" : "not ");
@@ -350,6 +355,81 @@ public class Dealer {
             }
         });
         data.state = DealerState.Cancelling;
+    }
+
+    public LimitOrder deal(BigDecimal limitPrice) {
+
+        //after my open order is closed at the open exchange, this money should disappear
+        String openOutgoingCur = config.outgoingCurrency();
+
+        String closeOutCur = config.incomingCurrency();
+
+        Map<String, BigDecimal> openWallet = data.getOpenExchange().getWalletMonitor().getWallet();
+        Map<String, BigDecimal> closeWallet = data.getCloseExchange().getWalletMonitor().getWallet();
+
+        BigDecimal openOutGross = openWallet.get(openOutgoingCur);
+        BigDecimal closeOutGross = closeWallet.get(closeOutCur);
+
+        MarketMetadata openMetadata = data.getOpenExchange().getMarketMetadata(config.listing);
+        MarketMetadata closeMetadata = data.getCloseExchange().getMarketMetadata(config.listing);
+
+        // adjust amounts by dividing by two and check if it's not below minima
+        {
+            // amount of base currency
+            BigDecimal openBaseAmount = openWallet.get(config.listing.baseSymbol);
+            BigDecimal closeBaseAmount = closeWallet.get(config.listing.baseSymbol);
+
+            BigDecimal openBaseHalf = openBaseAmount.divide(TWO, FLOOR);
+            BigDecimal closeBaseHalf = closeBaseAmount.divide(TWO, FLOOR);
+
+            BigDecimal openLowLimit = openMetadata.getAmountMinimum();
+            BigDecimal closeLowLimit = closeMetadata.getAmountMinimum();
+
+            // if half of the wallet is greater than minimum, open for half, if less, open for full amount but only if it's ASK (arbitrary, avoid wallet collision)
+            if (lt(openBaseHalf, openLowLimit) || lt(closeBaseHalf, closeLowLimit)) {
+                if (config.side == Order.OrderType.BID) {
+                    log.info("Skip BID to avoid wallet collision over BID/ASK");
+                    return null;
+                }
+            } else {
+                openOutGross = openOutGross.divide(TWO, FLOOR);
+                closeOutGross = closeOutGross.divide(TWO, FLOOR);
+            }
+        }
+
+        log.debug("type: {}, open {}, close {}", config.side, data.getOpenExchange(), data.getCloseExchange());
+        log.debug("open  {} {}", openOutgoingCur, openOutGross);
+        log.debug("close {} {}", closeOutCur, closeOutGross);
+
+        // limit po stronie open ASK = base wallet
+        //                  close/ BID = suma( otwarte ASK-> cena*liczba) < base wallet
+        //                  openOut = base
+        //                  closeOut = counter
+        //                  -- OR --
+        //                  open BID = counter wallet/cena
+        //                  close/ ASK = suma (otwarte BID -> liczba) < base wallet
+        //                  openOut = counter
+        //                  closeOut = base
+
+        BigDecimal openAmount = openOutGross;
+        if (config.side == Order.OrderType.BID)
+            openAmount = openOutGross.divide(limitPrice, openWallet.get(closeOutCur).scale(), HALF_EVEN);
+
+        BigDecimal closeAmount = data.getCloseAmount(config.side, openAmount, limitPrice);
+
+        log.debug("open: {}", openAmount);
+        log.debug("available: {}", closeAmount);
+        log.debug("close: {}", closeOutGross);
+
+        BigDecimal openAmountActual = Ordering.natural().min(openAmount, closeAmount, closeOutGross).setScale(DealerHelper.getScale(openMetadata, closeMetadata), FLOOR);
+
+        if (!DealerHelper.checkMinima(openAmountActual, openMetadata)) {
+            log.debug("Amount {} less than minimum", openAmountActual);
+            return null;
+        }
+
+        openAmountActual = orderStrategy.getAmount(openAmountActual, closeMetadata.getAmountMinimum());
+        return new LimitOrder.Builder(config.side, config.listing).limitPrice(limitPrice).tradableAmount(openAmountActual).build();
     }
 
     private void assertConfig(Order.OrderType side, CurrencyPair listing) {

@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.hashnot.xchange.ext.util.Comparables.gte;
 import static com.hashnot.xchange.ext.util.Comparables.lt;
 import static com.hashnot.xchange.ext.util.Orders.c;
 import static com.hashnot.xchange.ext.util.Prices.isFurther;
@@ -59,7 +60,7 @@ public class DealerData {
     }
 
     private BigDecimal getCloseAmount(Order.OrderType side, CurrencyPair listing, BigDecimal limitPrice) {
-        String closeOutCur = DealerHelper.incomingCurrency(side, listing);
+        String closeOutCur = DealerConfig.incomingCurrency(side, listing);
 
         BigDecimal closeOutGross = closeExchange.getWalletMonitor().getWallet(closeOutCur);
         BigDecimal closeOutNet = DealerHelper.applyFeeToWallet(closeOutGross, closeExchange.getMarketMetadata(listing));
@@ -87,7 +88,7 @@ public class DealerData {
 
             totalAmount = totalAmount.add(order.getTradableAmount());
 
-            if (!lt(totalAmount, amountLimit)) {
+            if (gte(totalAmount, amountLimit)) {
                 break;
             }
         }
