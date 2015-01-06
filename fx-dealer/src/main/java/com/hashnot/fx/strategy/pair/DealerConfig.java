@@ -35,4 +35,8 @@ public class DealerConfig {
     public String toString() {
         return side + "@" + listing;
     }
+
+    public boolean is(Order.OrderType side) {
+        return this.side == side;
+    }
 }

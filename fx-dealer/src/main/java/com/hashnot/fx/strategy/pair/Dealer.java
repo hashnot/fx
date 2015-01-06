@@ -61,18 +61,15 @@ public class Dealer {
     private Comparator<Map.Entry<Exchange, BigDecimal>> offerComparator;
 
     public void updateBestOffers(Collection<BestOfferEvent> bestOfferEvents) {
-        for (BestOfferEvent bestOfferEvent : bestOfferEvents)
-            updateBestOffer(bestOfferEvent);
+        for (BestOfferEvent bestOfferEvent : bestOfferEvents) {
+            assertConfig(bestOfferEvent.source.side, bestOfferEvent.source.market.listing);
+            updateBestOffer(bestOfferEvent.source.market.exchange, bestOfferEvent.price);
+        }
     }
 
     /**
      * If the new price is the best, update internal state and change order book monitor to monitor new best market
      */
-    protected void updateBestOffer(BestOfferEvent evt) {
-        assertConfig(evt.source.side, evt.source.market.listing);
-        updateBestOffer(evt.source.market.exchange, evt.price);
-    }
-
     protected void updateBestOffer(Exchange eventExchange, BigDecimal newPrice) {
         if (!hasMinimumMoney(monitors.get(eventExchange), newPrice, config)) {
             log.debug("Ignore exchange {} without enough money", eventExchange);
@@ -89,7 +86,6 @@ public class Dealer {
 
         IExchangeMonitor openMonitor = data.getOpenExchange();
         IExchangeMonitor closeMonitor = data.getCloseExchange();
-        IExchangeMonitor eventMonitor = monitors.get(eventExchange);
         log.info("Best offer {}@{}; mine {}@{}", newPrice, eventExchange, data.getOpenPrice(), openMonitor);
 
         // if the open exchange has changed - cancel
@@ -101,38 +97,37 @@ public class Dealer {
         Collections.MinMax<Map.Entry<Exchange, BigDecimal>> minMax = Collections.minMax(data.getBestOffers().entrySet(), offerComparator);
 
         Exchange newOpenExchange = minMax.min.getKey();
-        data.setOpenExchange(monitors.get(newOpenExchange));
-
         Exchange newCloseExchange = minMax.max.getKey();
-        data.setCloseExchange(monitors.get(newCloseExchange));
 
-        if (data.getOpenExchange().equals(data.getCloseExchange())) {
-            log.info("open = close = {}", eventExchange);
-            cancel(openMonitor);
-            //return;
+        if (newOpenExchange.equals(newCloseExchange)) {
+            log.info("open = close = {}", newCloseExchange);
+            cancel();
         }
 
-        if (!data.getCloseExchange().equals(closeMonitor))
-            updateCloseMarket(closeMonitor);
-
-        if (!data.getOpenExchange().equals(openMonitor)) {
+        if (!newOpenExchange.equals(openMonitor.getExchange())) {
             if (data.state == DealerState.Waiting) {
-                update(openMonitor);
+                update();
             }
-        } else if (!data.getCloseExchange().equals(closeMonitor)) {
-            cancel(openMonitor);
+        } else if (!newCloseExchange.equals(closeMonitor.getExchange())) {
+            cancel();
             // cannot open because we don't have current order book from the closing exchange
         } else {
-            // only if eventExchange == openExchange
-            if (data.state == DealerState.Waiting && openMonitor.equals(eventMonitor)) {
+            // only if open and close exchange haven't changed
+            if (data.state == DealerState.Waiting) {
                 if (isFurther(data.openedOrder.getLimitPrice(), newPrice, config.side)) {
                     log.debug("My order fell from the top");
-                    update(openMonitor);
+                    update();
                 } else {
                     log.debug("Mine on top");
                 }
             }
         }
+
+        data.setOpenExchange(monitors.get(newOpenExchange));
+        data.setCloseExchange(monitors.get(newCloseExchange));
+
+        if (!newCloseExchange.equals(closeMonitor.getExchange()))
+            updateCloseMarket(closeMonitor);
     }
 
     private void updateCloseMarket(IExchangeMonitor oldCloseMonitor) {
@@ -183,7 +178,7 @@ public class Dealer {
 
         switch (data.state) {
             case Waiting:
-                if (!profitableOrCancel(data.getOpenExchange()))
+                if (!profitableOrCancel())
                     openIfProfitable();
                 break;
             case NotProfitable:
@@ -229,7 +224,7 @@ public class Dealer {
     /**
      * @return true if profitable, false if not profitable (and cancelled) or no opened order
      */
-    private boolean profitableOrCancel(IExchangeMonitor exchange) {
+    private boolean profitableOrCancel() {
         if (data.state != DealerState.Waiting) {
             log.debug("No order");
             return false;
@@ -238,7 +233,7 @@ public class Dealer {
             return true;
         } else {
             log.info("Unprofitable {}", data.openedOrder);
-            cancel(exchange);
+            cancel();
             return false;
         }
     }
@@ -279,7 +274,7 @@ public class Dealer {
         }
 
         BigDecimal factor;
-        if (is(ASK))
+        if (config.is(ASK))
             factor = ONE.subtract(openMeta.getOrderFeeFactor()).divide(ONE.add(closeMeta.getOrderFeeFactor()), openMeta.getPriceScale(), HALF_EVEN);
         else
             factor = ONE.add(closeMeta.getOrderFeeFactor()).divide(ONE.subtract(openMeta.getOrderFeeFactor()), openMeta.getPriceScale(), HALF_EVEN);
@@ -297,9 +292,9 @@ public class Dealer {
         return profitable ? myOpen : null;
     }
 
-    void update(IExchangeMonitor cancelMonitor) {
+    void update() {
         onCancel = this::openIfProfitable;
-        cancel(cancelMonitor);
+        cancel();
     }
 
     Runnable onOpen;
@@ -330,14 +325,14 @@ public class Dealer {
         }
     }
 
-    protected boolean cancel(IExchangeMonitor exchange) {
+    protected boolean cancel() {
         switch (data.state) {
             case Waiting:
-                doCancel(exchange);
+                doCancel();
                 return true;
             case Opening:
                 log.warn("Cancel while opening");
-                onOpen = () -> doCancel(exchange);
+                onOpen = this::doCancel;
                 return true;
             case Cancelling:
             case NotProfitable:
@@ -348,11 +343,11 @@ public class Dealer {
         }
     }
 
-    private void doCancel(IExchangeMonitor exchange) {
+    private void doCancel() {
         assert data.state == DealerState.Waiting;
-        log.info("Cancel @{} {} {}", exchange, data.openOrderId, data.openedOrder);
+        log.info("Cancel @{} {} {}", data.getOpenExchange(), data.openOrderId, data.openedOrder);
         data.state = DealerState.Cancelling;
-        exchange.getAsyncExchange().getTradeService().cancelOrder(data.openOrderId, listener.onCancel());
+        data.getOpenExchange().getAsyncExchange().getTradeService().cancelOrder(data.openOrderId, listener.onCancel());
     }
 
     public void handleCanceled(Future<Boolean> future) {
@@ -405,7 +400,7 @@ public class Dealer {
 
             // if half of the wallet is greater than minimum, open for half, if less, open for full amount but only if it's ASK (arbitrary, avoid wallet collision)
             if (lt(openBaseHalf, openLowLimit) || lt(closeBaseHalf, closeLowLimit)) {
-                if (is(BID)) {
+                if (config.is(BID)) {
                     log.info("Skip BID to avoid wallet collision over BID/ASK");
                     return null;
                 }
@@ -430,7 +425,7 @@ public class Dealer {
         //                  closeOut = base
 
         BigDecimal openAmount = openOutGross;
-        if (is(BID))
+        if (config.is(BID))
             openAmount = openOutGross.divide(limitPrice, openWallet.get(closeOutCur).scale(), HALF_EVEN);
 
         BigDecimal closableAmount = data.getCloseAmount(config.side, openAmount, limitPrice);
@@ -448,10 +443,6 @@ public class Dealer {
 
         openAmountActual = orderStrategy.getAmount(openAmountActual, closeMetadata.getAmountMinimum());
         return new LimitOrder.Builder(config.side, config.listing).limitPrice(limitPrice).tradableAmount(openAmountActual).build();
-    }
-
-    private boolean is(Order.OrderType side) {
-        return config.side == side;
     }
 
     private void assertConfig(Order.OrderType side, CurrencyPair listing) {

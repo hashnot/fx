@@ -34,6 +34,7 @@ public class PairEventManager implements Listener, Runnable {
     }
 
     private void addEvent(EventType type, Event event) {
+        log.debug("{}", type);
         EventWrapper evt = new EventWrapper(type, event);
         int size;
         boolean success;
