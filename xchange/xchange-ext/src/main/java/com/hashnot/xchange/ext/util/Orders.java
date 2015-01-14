@@ -2,10 +2,8 @@ package com.hashnot.xchange.ext.util;
 
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
-import com.xeiam.xchange.dto.marketdata.MarketMetadata;
+import com.xeiam.xchange.dto.account.AccountInfo;
 import com.xeiam.xchange.dto.trade.LimitOrder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -24,7 +22,6 @@ import static java.math.BigDecimal.ONE;
  * @author Rafał Krupiński
  */
 public class Orders {
-    final private static Logger log = LoggerFactory.getLogger(Orders.class);
     public static MathContext c = new MathContext(16, RoundingMode.HALF_UP);
 
     public static boolean equals(LimitOrder o1, LimitOrder o2) {
@@ -98,12 +95,12 @@ public class Orders {
     /**
      * Simulate wallet changes if the limit order is filled
      */
-    public static Map<String, BigDecimal> simulateTrade(LimitOrder order, Map<String, BigDecimal> wallet, MarketMetadata meta) {
+    public static Map<String, BigDecimal> simulateTrade(LimitOrder order, Map<String, BigDecimal> wallet, AccountInfo info) {
         Map<String, BigDecimal> result = new HashMap<>(wallet);
 
         BigDecimal factor = bigFactor(order.getType());
         BigDecimal amount = order.getTradableAmount();
-        BigDecimal value = getNetPrice(order,meta.getOrderFeeFactor()).multiply(amount);
+        BigDecimal value = getNetPrice(order, info.getTradingFee()).multiply(amount);
 
         String baseSymbol = order.getCurrencyPair().baseSymbol;
         result.put(baseSymbol, result.get(baseSymbol).subtract(amount.multiply(factor)));

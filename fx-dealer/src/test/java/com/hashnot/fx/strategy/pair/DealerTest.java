@@ -10,6 +10,7 @@ import com.hashnot.xchange.event.trade.IOrderTracker;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
+import com.xeiam.xchange.dto.account.AccountInfo;
 import com.xeiam.xchange.dto.marketdata.BaseMarketMetadata;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import org.junit.Test;
@@ -167,8 +168,8 @@ public class DealerTest {
         BigDecimal openPrice = closePrice.add(side == ASK ? ONE : _ONE);
         Exchange openExchange = mock(Exchange.class, X_OPEN);
         Exchange closeExchange = mock(Exchange.class, X_CLOSE);
-        IExchangeMonitor openMonitor = getExchangeMonitor(openExchange, M_OPEN, FEE);
-        IExchangeMonitor closeMonitor = getExchangeMonitor(closeExchange, M_CLOSE, FEE);
+        IExchangeMonitor openMonitor = getExchangeMonitor(openExchange, M_OPEN);
+        IExchangeMonitor closeMonitor = getExchangeMonitor(closeExchange, M_CLOSE);
 
         Map<Exchange, BigDecimal> bestOffers = keys(openExchange, closeExchange).map(openPrice, closePrice);
 
@@ -183,7 +184,7 @@ public class DealerTest {
 
         Map<String, BigDecimal> open = keys(p.baseSymbol, p.counterSymbol).map(TEN, TEN);
         //Map<String, BigDecimal> close = new HashMap<>(open);
-        Map<String, BigDecimal> wallet = simulateTrade(new LimitOrder(side, ONE, p, null, null, price), open, openMonitor.getMarketMetadata(p));
+        Map<String, BigDecimal> wallet = simulateTrade(new LimitOrder(side, ONE, p, null, null, price), open, openMonitor.getAccountInfo());
         log.debug("{}", wallet);
     }
 
@@ -387,7 +388,8 @@ public class DealerTest {
     private IExchangeMonitor m(String name, IWalletMonitor walletMon) {
         IExchangeMonitor m = mock(IExchangeMonitor.class, name);
         when(m.getWalletMonitor()).thenReturn(walletMon);
-        when(m.getMarketMetadata(any())).thenReturn(new BaseMarketMetadata(ONE.movePointLeft(2), 2, ONE.movePointLeft(2)));
+        when(m.getMarketMetadata(any())).thenReturn(new BaseMarketMetadata(ONE.movePointLeft(2), 2));
+        when(m.getAccountInfo()).thenReturn(new AccountInfo(null, FEE, null));
         return m;
     }
 }

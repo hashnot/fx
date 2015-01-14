@@ -26,7 +26,7 @@ public class Metadata implements IStrategy {
     public void init(Collection<IExchangeMonitor> exchangeMonitors, Collection<CurrencyPair> pairs) throws Exception {
         CountDownLatch count = new CountDownLatch(exchangeMonitors.size() * pairs.size());
         for (IExchangeMonitor monitor : exchangeMonitors) {
-            monitor.getAsyncExchange().getAccountService().getMetadata((future) -> {
+            monitor.getAsyncExchange().getTradeService().getMetadata((future) -> {
                 count.countDown();
                 try {
                     log.info("{}", future.get());

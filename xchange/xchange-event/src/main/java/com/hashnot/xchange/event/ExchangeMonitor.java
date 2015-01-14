@@ -8,9 +8,7 @@ import com.hashnot.xchange.async.market.AsyncMarketDataService;
 import com.hashnot.xchange.async.market.IAsyncMarketDataService;
 import com.hashnot.xchange.async.trade.AsyncTradeService;
 import com.hashnot.xchange.async.trade.IAsyncTradeService;
-import com.hashnot.xchange.event.account.IWalletMonitor;
-import com.hashnot.xchange.event.account.WalletMonitor;
-import com.hashnot.xchange.event.account.WalletTracker;
+import com.hashnot.xchange.event.account.*;
 import com.hashnot.xchange.event.market.IOrderBookMonitor;
 import com.hashnot.xchange.event.market.ITickerMonitor;
 import com.hashnot.xchange.event.market.impl.OrderBookMonitor;
@@ -23,6 +21,7 @@ import com.hashnot.xchange.event.trade.impl.OrderTracker;
 import com.hashnot.xchange.event.trade.impl.UserTradesMonitor;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
+import com.xeiam.xchange.dto.account.AccountInfo;
 import com.xeiam.xchange.dto.marketdata.MarketMetadata;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import org.slf4j.Logger;
@@ -40,7 +39,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author Rafał Krupiński
  */
-public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange {
+public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange, IAccountInfoListener {
     final private static Logger log = LoggerFactory.getLogger(ExchangeMonitor.class);
 
     protected ScheduledFuture<?> exchangeScheduler;
@@ -59,10 +58,12 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange {
     final protected IAsyncTradeService tradeService;
     final protected IAsyncAccountService accountService;
     final protected IAsyncMarketDataService marketDataService;
+    final protected IAccountInfoMonitor accountInfoMonitor;
 
     final protected AbstractPollingMonitor[] closeables;
 
     protected Map<CurrencyPair, ? extends MarketMetadata> metadata;
+    protected AccountInfo accountInfo;
 
     public ExchangeMonitor(Exchange parent, ScheduledExecutorService executor, long rate) throws Exception {
         this.exchange = parent;
@@ -76,7 +77,9 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange {
 
         openOrdersMonitor = new OpenOrdersMonitor(exchange, runnableScheduler);
         userTradesMonitor = new UserTradesMonitor(exchange, runnableScheduler);
-        WalletMonitor walletMonitor = new WalletMonitor(exchange, accountService);
+        accountInfoMonitor = new AccountInfoMonitor(exchange, accountService);
+
+        WalletMonitor walletMonitor = new WalletMonitor(exchange, accountInfoMonitor);
         tickerMonitor = new TickerMonitor(marketDataService, exchange, runnableScheduler);
         orderBookMonitor = new OrderBookMonitor(exchange, runnableScheduler, marketDataService);
 
@@ -147,7 +150,20 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange {
     @Override
     public void start() throws Exception {
         exchangeScheduler = executor.scheduleAtFixedRate(runnableScheduler, 0, rate, TimeUnit.MILLISECONDS);
-        metadata = accountService.getMetadata(null).get();
+        metadata = tradeService.getMetadata(null).get();
+    }
+
+    @Override
+    public void onAccountInfo(AccountInfoEvent evt) {
+        assert evt.source.equals(exchange);
+        AccountInfo accountInfo = evt.accountInfo;
+        assert accountInfo != null;
+        this.accountInfo = accountInfo;
+    }
+
+    @Override
+    public AccountInfo getAccountInfo() {
+        return accountInfo;
     }
 
     @Override

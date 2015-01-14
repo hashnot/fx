@@ -6,6 +6,7 @@ import com.hashnot.xchange.ext.trade.OrderCancelEvent;
 import com.hashnot.xchange.ext.trade.OrderPlacementEvent;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
+import com.xeiam.xchange.dto.marketdata.MarketMetadata;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.dto.trade.MarketOrder;
 import com.xeiam.xchange.dto.trade.OpenOrders;
@@ -17,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
@@ -117,6 +119,11 @@ public class AsyncTradeService implements IAsyncTradeService {
     }
 
     @Override
+    public Future<Map<CurrencyPair, ? extends MarketMetadata>> getMetadata(Consumer<Future<Map<CurrencyPair, ? extends MarketMetadata>>> consumer) {
+        return call(service::getMarketMetadata, consumer, executor);
+    }
+
+    @Override
     public void addLimitOrderPlacedListener(IOrderPlacementListener listener) {
         listeners.addListener(listener);
     }
@@ -130,4 +137,5 @@ public class AsyncTradeService implements IAsyncTradeService {
     public String toString() {
         return "AsyncTradeService" + "@" + exchange;
     }
+
 }

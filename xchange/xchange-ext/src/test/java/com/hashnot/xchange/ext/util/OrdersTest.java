@@ -1,8 +1,7 @@
 package com.hashnot.xchange.ext.util;
 
 import com.xeiam.xchange.currency.CurrencyPair;
-import com.xeiam.xchange.dto.marketdata.BaseMarketMetadata;
-import com.xeiam.xchange.dto.marketdata.MarketMetadata;
+import com.xeiam.xchange.dto.account.AccountInfo;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import org.junit.Test;
 
@@ -26,12 +25,12 @@ public class OrdersTest {
     public void testSimulateTradeAsk() throws Exception {
         LimitOrder order = new LimitOrder.Builder(ASK, P).limitPrice(ONE).tradableAmount(ONE).build();
         BigDecimal percent = BigDecimal.ONE.movePointLeft(2);
-        MarketMetadata meta = new BaseMarketMetadata(percent, 2, percent);
+        AccountInfo info = new AccountInfo(null, percent, null);
         Map<String, BigDecimal> walletIn = Maps.keys(P.baseSymbol, P.counterSymbol).map(TEN, TEN);
 
         Map<String, BigDecimal> walletOut = Maps.keys(P.baseSymbol, P.counterSymbol).map(valueOf(9), valueOf("10.99"));
 
-        Map<String, BigDecimal> result = Orders.simulateTrade(order, walletIn, meta);
+        Map<String, BigDecimal> result = Orders.simulateTrade(order, walletIn, info);
         assertEquals(result, walletOut);
     }
 
@@ -42,12 +41,12 @@ public class OrdersTest {
     public void testSimulateTradeBid() throws Exception {
         LimitOrder order = new LimitOrder.Builder(BID, P).limitPrice(ONE).tradableAmount(ONE).build();
         BigDecimal percent = BigDecimal.ONE.movePointLeft(2);
-        MarketMetadata meta = new BaseMarketMetadata(percent, 2, percent);
+        AccountInfo info = new AccountInfo(null, percent, null);
         Map<String, BigDecimal> walletIn = Maps.keys(P.baseSymbol, P.counterSymbol).map(TEN, TEN);
 
         Map<String, BigDecimal> walletOut = Maps.keys(P.baseSymbol, P.counterSymbol).map(valueOf(11), valueOf("8.99"));
 
-        Map<String, BigDecimal> result = Orders.simulateTrade(order, walletIn, meta);
+        Map<String, BigDecimal> result = Orders.simulateTrade(order, walletIn, info);
         assertEquals(result, walletOut);
     }
 

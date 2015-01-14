@@ -1,19 +1,20 @@
 package com.hashnot.xchange.event.account;
 
+import com.google.common.util.concurrent.ForwardingFuture;
 import com.google.common.util.concurrent.SettableFuture;
-import com.hashnot.xchange.async.account.IAsyncAccountService;
+import com.hashnot.xchange.async.impl.AsyncSupport;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.account.AccountInfo;
 import com.xeiam.xchange.dto.trade.Wallet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import static com.hashnot.xchange.ext.util.BigDecimals.isZero;
@@ -22,13 +23,13 @@ import static com.hashnot.xchange.ext.util.Comparables.eq;
 /**
  * @author Rafał Krupiński
  */
-public class WalletMonitor implements IWalletMonitor, WalletMonitorMBean {
+public class WalletMonitor implements IWalletMonitor, IAccountInfoListener, WalletMonitorMBean {
     final protected Logger log = LoggerFactory.getLogger(getClass());
     private final Map<String, BigDecimal> wallet = new HashMap<>();
     private final Map<String, BigDecimal> walletView = Collections.unmodifiableMap(wallet);
 
     private final Exchange exchange;
-    final private IAsyncAccountService accountService;
+    final protected IAccountInfoMonitor accountInfoMonitor;
 
     @Override
     public BigDecimal getWallet(String currency) {
@@ -41,48 +42,61 @@ public class WalletMonitor implements IWalletMonitor, WalletMonitorMBean {
     }
 
     public Future<Map<String, BigDecimal>> update() {
-        SettableFuture<Map<String, BigDecimal>> resultFuture = SettableFuture.create();
-        accountService.getAccountInfo((future) -> {
-            try {
-                AccountInfo accountInfo = future.get();
-                List<Wallet> wallets = accountInfo.getWallets();
-                for (Wallet wallet : wallets) {
-                    BigDecimal current = wallet.getBalance();
-                    String currency = wallet.getCurrency();
-
-                    this.wallet.compute(currency, (key, previous) -> {
-                        BigDecimal result;
-                        if (isZero(current)) {
-                            if (previous == null)
-                                return null;
-                            else
-                                result = null;
-                        } else {
-                            if (eq(current, previous))
-                                return current;
-                            else
-                                result = current;
-                        }
-                        log.info("New wallet amount @{} {} = {}", exchange, currency, current);
-                        return result;
-                    });
+        Future<AccountInfo> updateFuture = accountInfoMonitor.update();
+        return new ForwardingFuture<Map<String, BigDecimal>>() {
+            @Override
+            protected Future<Map<String, BigDecimal>> delegate() {
+                SettableFuture<Map<String, BigDecimal>> resultFuture = SettableFuture.create();
+                try {
+                    resultFuture.set(unwrapWallets(AsyncSupport.get(updateFuture)));
+                } catch (IOException e) {
+                    log.warn("Error from {}", exchange, e);
+                    resultFuture.setException(e);
                 }
-                resultFuture.set(this.walletView);
-            } catch (InterruptedException e) {
-                log.warn("Interrupted!", e);
-                resultFuture.setException(e);
-            } catch (ExecutionException e) {
-                Throwable cause = e.getCause();
-                log.warn("Error from {}", exchange, cause);
-                resultFuture.setException(cause);
+                return resultFuture;
             }
-        });
-        return resultFuture;
+        };
     }
 
-    public WalletMonitor(Exchange exchange, IAsyncAccountService accountService) {
+    @Override
+    public void onAccountInfo(AccountInfoEvent evt) {
+        List<Wallet> wallets = evt.accountInfo.getWallets();
+        for (Wallet wallet : wallets) {
+            BigDecimal current = wallet.getBalance();
+            String currency = wallet.getCurrency();
+
+            this.wallet.compute(currency, (key, previous) -> {
+                BigDecimal result;
+                if (isZero(current)) {
+                    if (previous == null)
+                        return null;
+                    else
+                        result = null;
+                } else {
+                    if (eq(current, previous))
+                        return current;
+                    else
+                        result = current;
+                }
+                log.info("New wallet amount @{} {} = {}", exchange, currency, current);
+                return result;
+            });
+        }
+    }
+
+    protected Map<String, BigDecimal> unwrapWallets(AccountInfo info) {
+        Map<String, BigDecimal> result = new HashMap<>();
+        for (Wallet wallet : info.getWallets()) {
+            result.put(wallet.getCurrency(), wallet.getBalance());
+        }
+        return result;
+    }
+
+    public WalletMonitor(Exchange exchange, IAccountInfoMonitor accountInfoMonitor) {
+        this.accountInfoMonitor = accountInfoMonitor;
         this.exchange = exchange;
-        this.accountService = accountService;
+
+        accountInfoMonitor.addAccountInfoListener(this);
     }
 
     @Override

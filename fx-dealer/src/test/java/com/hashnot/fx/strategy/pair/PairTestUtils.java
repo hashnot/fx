@@ -7,6 +7,7 @@ import com.hashnot.xchange.event.account.IWalletMonitor;
 import com.hashnot.xchange.ext.util.Maps;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
+import com.xeiam.xchange.dto.account.AccountInfo;
 import com.xeiam.xchange.dto.marketdata.BaseMarketMetadata;
 import org.mockito.MockSettings;
 
@@ -58,7 +59,8 @@ public class PairTestUtils {
         when(walletMonitor.getWallet()).thenReturn(wallet);
 
         when(monitor.getWalletMonitor()).thenReturn(walletMonitor);
-        when(monitor.getMarketMetadata(p)).thenReturn(new BaseMarketMetadata(ONE.movePointLeft(SCALE), SCALE, feeFactor));
+        when(monitor.getMarketMetadata(p)).thenReturn(new BaseMarketMetadata(ONE.movePointLeft(SCALE), SCALE));
+        when(monitor.getAccountInfo()).thenReturn(new AccountInfo(null, feeFactor, null));
         when(monitor.getExchange()).thenReturn(x);
 
         IAsyncExchange ax = mock(IAsyncExchange.class);

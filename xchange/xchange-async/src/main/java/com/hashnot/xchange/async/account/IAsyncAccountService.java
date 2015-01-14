@@ -3,12 +3,9 @@ package com.hashnot.xchange.async.account;
 import com.xeiam.xchange.ExchangeException;
 import com.xeiam.xchange.NotAvailableFromExchangeException;
 import com.xeiam.xchange.NotYetImplementedForExchangeException;
-import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.account.AccountInfo;
-import com.xeiam.xchange.dto.marketdata.MarketMetadata;
 
 import java.math.BigDecimal;
-import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
@@ -50,7 +47,5 @@ public interface IAsyncAccountService {
      * @throws NotYetImplementedForExchangeException - Indication that the exchange supports the requested function or data, but it has not yet been implemented
      */
     void requestDepositAddress(String currency, Consumer<Future<String>> consumer, String... args);
-
-    Future<Map<CurrencyPair, ? extends MarketMetadata>> getMetadata(Consumer<Future<Map<CurrencyPair, ? extends MarketMetadata>>> consumer);
 
 }

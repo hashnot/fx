@@ -253,15 +253,19 @@ public class Dealer {
 
     BigDecimal profitableOpenPrice() {
         IExchangeMonitor openMonitor = data.getOpenExchange();
+        IExchangeMonitor closeMon = data.getCloseExchange();
+
         BigDecimal openBest = data.getBestOffers().get(openMonitor.getExchange());
-        BigDecimal closeBest = data.getBestOffers().get(data.getCloseExchange().getExchange());
+        BigDecimal closeBest = data.getBestOffers().get(closeMon.getExchange());
+
         MarketMetadata openMeta = openMonitor.getMarketMetadata(config.listing);
-        MarketMetadata closeMeta = data.getCloseExchange().getMarketMetadata(config.listing);
+        MarketMetadata closeMeta = closeMon.getMarketMetadata(config.listing);
 
         //BigDecimal openInitial = openBest.add(openMeta.getPriceStep().multiply(bigFactor(revert(config.side))));
 
-        BigDecimal closeNet = getNetPrice(closeBest, revert(config.side), closeMeta.getOrderFeeFactor()).setScale(closeMeta.getPriceScale(), HALF_EVEN);
-        BigDecimal openNet = getNetPrice(openBest, config.side, closeMeta.getOrderFeeFactor()).setScale(closeMeta.getPriceScale(), HALF_EVEN);
+        BigDecimal closeFeeFactor = closeMon.getAccountInfo().getTradingFee();;
+        BigDecimal closeNet = getNetPrice(closeBest, revert(config.side), closeFeeFactor).setScale(closeMeta.getPriceScale(), HALF_EVEN);
+        BigDecimal openNet = getNetPrice(openBest, config.side, closeFeeFactor).setScale(closeMeta.getPriceScale(), HALF_EVEN);
 
         BigDecimal diff = openBest.subtract(closeBest);
 
@@ -273,18 +277,19 @@ public class Dealer {
             return null;
         }
 
+        BigDecimal openFeeFactor = openMonitor.getAccountInfo().getTradingFee();
         BigDecimal factor;
         if (config.is(ASK))
-            factor = ONE.subtract(openMeta.getOrderFeeFactor()).divide(ONE.add(closeMeta.getOrderFeeFactor()), openMeta.getPriceScale(), HALF_EVEN);
+            factor = ONE.subtract(openFeeFactor).divide(ONE.add(closeFeeFactor), openMeta.getPriceScale(), HALF_EVEN);
         else
-            factor = ONE.add(closeMeta.getOrderFeeFactor()).divide(ONE.subtract(openMeta.getOrderFeeFactor()), openMeta.getPriceScale(), HALF_EVEN);
+            factor = ONE.add(closeFeeFactor).divide(ONE.subtract(openFeeFactor), openMeta.getPriceScale(), HALF_EVEN);
         BigDecimal priceCloseInitial = openBest.multiply(factor).setScale(openMeta.getPriceScale(), HALF_EVEN);
 
         BigDecimal priceOpen = orderStrategy.getPrice(priceCloseInitial, diff, openMeta.getPriceScale(), config.side);
 
         BigDecimal myOpen = priceOpen.divide(factor, openMeta.getPriceScale(), HALF_EVEN);
 
-        BigDecimal myOpenNet = getNetPrice(priceOpen, config.side, openMeta.getOrderFeeFactor()).setScale(openMeta.getPriceScale(), HALF_EVEN);
+        BigDecimal myOpenNet = getNetPrice(priceOpen, config.side, openFeeFactor).setScale(openMeta.getPriceScale(), HALF_EVEN);
 
         profitable = isFurther(myOpenNet, closeNet, config.side);
         log.info("open {} {} {} <=> {} {} close {}profitable", config.side, myOpen, myOpenNet, closeNet, closeBest, profitable ? "" : "not ");

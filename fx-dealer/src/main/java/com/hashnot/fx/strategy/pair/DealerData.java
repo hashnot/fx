@@ -63,7 +63,7 @@ public class DealerData {
         String closeOutCur = DealerConfig.incomingCurrency(side, listing);
 
         BigDecimal closeOutGross = closeExchange.getWalletMonitor().getWallet(closeOutCur);
-        BigDecimal closeOutNet = DealerHelper.applyFeeToWallet(closeOutGross, closeExchange.getMarketMetadata(listing));
+        BigDecimal closeOutNet = DealerHelper.applyFeeToWallet(closeOutGross, closeExchange.getAccountInfo());
 
         return getCloseAmount(side, closeOutNet, limitPrice);
     }
@@ -102,7 +102,7 @@ public class DealerData {
         for (LimitOrder order : closingOrders) {
             assert type != order.getType();
 
-            BigDecimal netPrice = Orders.getNetPrice(order.getLimitPrice(), type, closeExchange.getMarketMetadata(order.getCurrencyPair()).getOrderFeeFactor());
+            BigDecimal netPrice = Orders.getNetPrice(order.getLimitPrice(), type, closeExchange.getAccountInfo().getTradingFee());
             log.debug("order {} net {}", order, netPrice);
 
             if (isFurther(order.getLimitPrice(), priceLimit, order.getType()))
