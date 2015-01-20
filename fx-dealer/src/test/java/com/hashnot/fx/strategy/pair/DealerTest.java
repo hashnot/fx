@@ -11,7 +11,7 @@ import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.account.AccountInfo;
-import com.xeiam.xchange.dto.marketdata.BaseMarketMetadata;
+import com.xeiam.xchange.dto.marketdata.BaseTradeServiceHelper;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -89,7 +89,7 @@ public class DealerTest {
         dealer.updateBestOffers(asList(new BestOfferEvent(closePrice, closeSide)));
 
         verify(orderTracker, never()).addTradeListener(any());
-        verifyZeroInteractions(orderBookSideMonitor);
+//        verifyZeroInteractions(orderBookSideMonitor);
         assertEquals(new DealerData(closeMonitor, closeMonitor, map(closeExchange, closePrice)), data);
     }
 
@@ -388,7 +388,7 @@ public class DealerTest {
     private IExchangeMonitor m(String name, IWalletMonitor walletMon) {
         IExchangeMonitor m = mock(IExchangeMonitor.class, name);
         when(m.getWalletMonitor()).thenReturn(walletMon);
-        when(m.getMarketMetadata(any())).thenReturn(new BaseMarketMetadata(ONE.movePointLeft(2), 2));
+        when(m.getMarketMetadata(any())).thenReturn(new BaseTradeServiceHelper(ONE.movePointLeft(2), 2));
         when(m.getAccountInfo()).thenReturn(new AccountInfo(null, FEE, null));
         return m;
     }

@@ -22,7 +22,7 @@ import com.hashnot.xchange.event.trade.impl.UserTradesMonitor;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.account.AccountInfo;
-import com.xeiam.xchange.dto.marketdata.MarketMetadata;
+import com.xeiam.xchange.dto.marketdata.TradeServiceHelper;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,10 +31,7 @@ import javax.management.*;
 import java.lang.management.ManagementFactory;
 import java.util.Hashtable;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
  * @author Rafał Krupiński
@@ -62,7 +59,7 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange, IAccou
 
     final protected AbstractPollingMonitor[] closeables;
 
-    protected Map<CurrencyPair, ? extends MarketMetadata> metadata;
+    protected Map<CurrencyPair, ? extends TradeServiceHelper> metadata;
     protected AccountInfo accountInfo;
 
     public ExchangeMonitor(Exchange parent, ScheduledExecutorService executor, long rate) throws Exception {
@@ -78,6 +75,7 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange, IAccou
         openOrdersMonitor = new OpenOrdersMonitor(exchange, runnableScheduler);
         userTradesMonitor = new UserTradesMonitor(exchange, runnableScheduler);
         accountInfoMonitor = new AccountInfoMonitor(exchange, accountService);
+        accountInfoMonitor.addAccountInfoListener(this);
 
         WalletMonitor walletMonitor = new WalletMonitor(exchange, accountInfoMonitor);
         tickerMonitor = new TickerMonitor(marketDataService, exchange, runnableScheduler);
@@ -107,7 +105,7 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange, IAccou
         server.registerMBean(object, new ObjectName(domain, properties));
     }
 
-    public MarketMetadata getMarketMetadata(CurrencyPair pair) {
+    public TradeServiceHelper getMarketMetadata(CurrencyPair pair) {
         return metadata.get(pair);
     }
 
@@ -149,8 +147,11 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange, IAccou
 
     @Override
     public void start() throws Exception {
+        exchange.init();
         exchangeScheduler = executor.scheduleAtFixedRate(runnableScheduler, 0, rate, TimeUnit.MILLISECONDS);
+        Future<AccountInfo> accountInfoFuture = accountInfoMonitor.update();
         metadata = tradeService.getMetadata(null).get();
+        accountInfoFuture.get();
     }
 
     @Override

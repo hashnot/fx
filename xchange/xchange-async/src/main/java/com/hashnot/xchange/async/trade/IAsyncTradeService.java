@@ -2,7 +2,7 @@ package com.hashnot.xchange.async.trade;
 
 import com.hashnot.xchange.ext.trade.IOrderPlacementListener;
 import com.xeiam.xchange.currency.CurrencyPair;
-import com.xeiam.xchange.dto.marketdata.MarketMetadata;
+import com.xeiam.xchange.dto.marketdata.TradeServiceHelper;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.dto.trade.MarketOrder;
 import com.xeiam.xchange.dto.trade.OpenOrders;
@@ -44,6 +44,6 @@ public interface IAsyncTradeService {
 
     void removeLimitOrderPlacedListener(IOrderPlacementListener listener);
 
-    Future<Map<CurrencyPair, ? extends MarketMetadata>> getMetadata(Consumer<Future<Map<CurrencyPair, ? extends MarketMetadata>>> consumer);
+    Future<Map<CurrencyPair, ? extends TradeServiceHelper>> getMetadata(Consumer<Future<Map<CurrencyPair, ? extends TradeServiceHelper>>> consumer);
 
 }

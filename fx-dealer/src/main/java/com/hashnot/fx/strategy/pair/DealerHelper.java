@@ -2,7 +2,7 @@ package com.hashnot.fx.strategy.pair;
 
 import com.hashnot.xchange.event.IExchangeMonitor;
 import com.xeiam.xchange.dto.account.AccountInfo;
-import com.xeiam.xchange.dto.marketdata.MarketMetadata;
+import com.xeiam.xchange.dto.marketdata.TradeServiceHelper;
 
 import java.math.BigDecimal;
 
@@ -22,13 +22,13 @@ public class DealerHelper {
         return openOutGross.multiply(ONE.subtract(feeFactor));
     }
 
-    public static boolean checkMinima(BigDecimal openAmountActual, MarketMetadata meta) {
+    public static boolean checkMinima(BigDecimal openAmountActual, TradeServiceHelper meta) {
         return !(lt(openAmountActual, LOW_LIMIT)
                 || lt(openAmountActual, meta.getAmountMinimum())
         );
     }
 
-    public static int getScale(MarketMetadata meta1, MarketMetadata meta2) {
+    public static int getScale(TradeServiceHelper meta1, TradeServiceHelper meta2) {
         int s1 = meta1.getPriceScale();
         int s2 = meta2.getPriceScale();
         return Math.min(s1, s2);

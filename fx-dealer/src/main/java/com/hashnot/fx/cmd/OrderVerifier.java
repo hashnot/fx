@@ -4,8 +4,8 @@ import com.hashnot.fx.framework.IStrategy;
 import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.ext.util.Tickers;
 import com.xeiam.xchange.currency.CurrencyPair;
-import com.xeiam.xchange.dto.marketdata.MarketMetadata;
 import com.xeiam.xchange.dto.marketdata.Ticker;
+import com.xeiam.xchange.dto.marketdata.TradeServiceHelper;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 
 import javax.inject.Inject;
@@ -42,7 +42,7 @@ public class OrderVerifier implements IStrategy {
         Future<Ticker> future = mon.getAsyncExchange().getMarketDataService().getTicker(pair, null);
         Ticker ticker = future.get();
         BigDecimal topPrice = Tickers.getPrice(ticker, ASK);
-        MarketMetadata meta = mon.getMarketMetadata(pair);
+        TradeServiceHelper meta = mon.getMarketMetadata(pair);
 
         BigDecimal myPrice = topPrice.subtract(meta.getPriceStep());
 

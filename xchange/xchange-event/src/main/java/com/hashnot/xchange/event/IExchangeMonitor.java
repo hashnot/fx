@@ -10,7 +10,7 @@ import com.hashnot.xchange.event.trade.IUserTradesMonitor;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.account.AccountInfo;
-import com.xeiam.xchange.dto.marketdata.MarketMetadata;
+import com.xeiam.xchange.dto.marketdata.TradeServiceHelper;
 
 /**
  * @author Rafał Krupiński
@@ -29,7 +29,7 @@ public interface IExchangeMonitor {
 
     IOrderTracker getOrderTracker();
 
-    MarketMetadata getMarketMetadata(CurrencyPair pair);
+    TradeServiceHelper getMarketMetadata(CurrencyPair pair);
 
     /**
      * @return cached AccountInfo, updated by AccountInfoMonitor

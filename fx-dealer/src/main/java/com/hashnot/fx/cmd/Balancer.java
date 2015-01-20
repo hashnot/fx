@@ -12,8 +12,8 @@ import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.account.AccountInfo;
-import com.xeiam.xchange.dto.marketdata.MarketMetadata;
 import com.xeiam.xchange.dto.marketdata.Ticker;
+import com.xeiam.xchange.dto.marketdata.TradeServiceHelper;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.dto.trade.Wallet;
 import org.slf4j.Logger;
@@ -51,7 +51,7 @@ public class Balancer implements IStrategy {
 
     private Map<Market, Ticker> tickers;
     private Map<Exchange, AccountInfo> infos;
-    private Map<Market, MarketMetadata> marketMetadata;
+    private Map<Market, TradeServiceHelper> marketMetadata;
 
     @Override
     public void init(Collection<IExchangeMonitor> exchangeMonitors, Collection<CurrencyPair> pairs) throws Exception {
@@ -90,8 +90,8 @@ public class Balancer implements IStrategy {
             }
             x.getTradeService().getMetadata((a) -> {
                 try {
-                    Map<CurrencyPair, ? extends MarketMetadata> xmeta = AsyncSupport.get(a);
-                    for (Map.Entry<CurrencyPair, ? extends MarketMetadata> e : xmeta.entrySet()) {
+                    Map<CurrencyPair, ? extends TradeServiceHelper> xmeta = AsyncSupport.get(a);
+                    for (Map.Entry<CurrencyPair, ? extends TradeServiceHelper> e : xmeta.entrySet()) {
                         marketMetadata.put(new Market(exchangeMonitor.getExchange(), e.getKey()), e.getValue());
                     }
                 } catch (IOException e) {
@@ -139,7 +139,7 @@ public class Balancer implements IStrategy {
             Ticker ticker = tickers.get(market);
             if (ticker == null) return;
             log.info("{}\tASK {}\tBID {}", ticker.getCurrencyPair(), ticker.getAsk(), ticker.getBid());
-            MarketMetadata meta = marketMetadata.get(market);
+            TradeServiceHelper meta = marketMetadata.get(market);
             log.info("{}", meta);
             BigDecimal feeFactor = infos.get(market.exchange).getTradingFee();
             describeWallet(wallets, pair, ticker.getAsk(), feeFactor);
