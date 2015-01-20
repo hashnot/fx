@@ -142,7 +142,12 @@ public class PairEventManager implements Listener, Runnable {
     }
 
     private void handleOrderBook(List<EventWrapper> orderBookEvents) {
-        dealer.orderBookSideChanged((OrderBookSideUpdateEvent) orderBookEvents.get(orderBookEvents.size() - 1).event);
+        Map<MarketSide, OrderBookSideUpdateEvent> events = new LinkedHashMap<>();
+        for (EventWrapper event : orderBookEvents) {
+            OrderBookSideUpdateEvent e = (OrderBookSideUpdateEvent) event.event;
+            events.put(e.source, e);
+        }
+        dealer.onOrderBookSideEvents(events.values());
     }
 
     private void handleBestOffer(List<EventWrapper> bestOfferEvents) {

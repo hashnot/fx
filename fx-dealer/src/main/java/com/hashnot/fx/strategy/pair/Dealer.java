@@ -73,42 +73,48 @@ public class Dealer {
     protected void updateBestOffer(Exchange eventExchange, BigDecimal newPrice) {
         if (!hasMinimumMoney(monitors.get(eventExchange), newPrice, config)) {
             log.debug("Ignore exchange {} without enough money", eventExchange);
+            data.getBestOffers().remove(eventExchange);
             return;
         }
 
         BigDecimal oldPrice = data.getBestOffers().put(eventExchange, newPrice);
 
-        // don't update the order if the new 3rd party order is not better
+        // don't update the order if the new order is not better
         if (eq(oldPrice, newPrice)) {
             log.warn("Price didn't change");
             return;
         }
-
-        IExchangeMonitor openMonitor = data.getOpenExchange();
-        IExchangeMonitor closeMonitor = data.getCloseExchange();
-        log.info("Best offer {}@{}; mine {}@{}", newPrice, eventExchange, data.getOpenPrice(), openMonitor);
-
-        // if the open exchange has changed - cancel
-        // if close - check profitability
-
-        // it's important to first update open before close exchange,
-        // because we register ourselves as a listener for close order book if close != open
 
         Collections.MinMax<Map.Entry<Exchange, BigDecimal>> minMax = Collections.minMax(data.getBestOffers().entrySet(), offerComparator);
 
         Exchange newOpenExchange = minMax.min.getKey();
         Exchange newCloseExchange = minMax.max.getKey();
 
+        IExchangeMonitor newOpenMonitor = monitors.get(newOpenExchange);
+        IExchangeMonitor newCloseMonitor = monitors.get(newCloseExchange);
+
+        IExchangeMonitor openMonitor = data.getOpenExchange();
+        IExchangeMonitor closeMonitor = data.getCloseExchange();
+        log.info("new offer {}@{}; mine {}@{}; best {}@{} worst {}@{}",
+                newPrice, eventExchange,
+                data.getOpenPrice(), openMonitor,
+                data.getBestOffers().get(newCloseExchange), newCloseExchange,
+                data.getBestOffers().get(newOpenExchange), newOpenExchange
+        );
+
+        // if the close exchange has changed - cancel
+        // if open - check profitability
+
         if (newOpenExchange.equals(newCloseExchange)) {
             log.info("open = close = {}", newCloseExchange);
             cancel();
-        }
-
-        if (!newOpenExchange.equals(openMonitor.getExchange())) {
-            if (data.state == DealerState.Waiting) {
+        } else if (!newOpenMonitor.equals(openMonitor)) {
+            if (data.state != DealerState.NotProfitable) {
+                log.debug("new open");
                 update();
             }
-        } else if (!newCloseExchange.equals(closeMonitor.getExchange())) {
+        } else if (!newCloseMonitor.equals(closeMonitor)) {
+            log.debug("new close");
             cancel();
             // cannot open because we don't have current order book from the closing exchange
         } else {
@@ -123,14 +129,14 @@ public class Dealer {
             }
         }
 
-        data.setOpenExchange(monitors.get(newOpenExchange));
-        data.setCloseExchange(monitors.get(newCloseExchange));
+        data.setOpenExchange(newOpenMonitor);
+        data.setCloseExchange(newCloseMonitor);
 
-        if (!newCloseExchange.equals(closeMonitor.getExchange()))
-            updateCloseMarket(closeMonitor);
+        if (!newCloseMonitor.equals(closeMonitor))
+            updateCloseMarket(openMonitor, closeMonitor);
     }
 
-    private void updateCloseMarket(IExchangeMonitor oldCloseMonitor) {
+    private void updateCloseMarket(IExchangeMonitor oldOpenMonitor, IExchangeMonitor oldCloseMonitor) {
         IExchangeMonitor newCloseMonitor = data.getCloseExchange();
         IExchangeMonitor newOpenMonitor = data.getOpenExchange();
         log.debug("open {} old close {} new close {}", newOpenMonitor, oldCloseMonitor, newCloseMonitor);
@@ -148,6 +154,11 @@ public class Dealer {
             log.debug("Add OBL to {}", marketSide);
             orderBookSideMonitor.addOrderBookSideListener(listener, marketSide);
         }
+    }
+
+    public void onOrderBookSideEvents(Collection<OrderBookSideUpdateEvent> events) {
+        for (OrderBookSideUpdateEvent event : events)
+            orderBookSideChanged(event);
     }
 
     /**
@@ -298,8 +309,20 @@ public class Dealer {
     }
 
     void update() {
-        onCancel = this::openIfProfitable;
-        cancel();
+        switch (data.state) {
+            case NotProfitable:
+                throw new IllegalStateException(DealerState.NotProfitable.name());
+            case Opening:
+                onOpen = this::update;
+                break;
+            case Cancelling:
+                onCancel = () -> {
+                    openIfProfitable();
+                    onCancel = null;
+                };
+            case Waiting:
+                cancel();
+        }
     }
 
     Runnable onOpen;
@@ -326,7 +349,6 @@ public class Dealer {
         data.state = DealerState.Waiting;
         if (onOpen != null) {
             onOpen.run();
-            onOpen = null;
         }
     }
 
@@ -337,7 +359,10 @@ public class Dealer {
                 return true;
             case Opening:
                 log.warn("Cancel while opening");
-                onOpen = this::doCancel;
+                onOpen = () -> {
+                    doCancel();
+                    onOpen = null;
+                };
                 return true;
             case Cancelling:
             case NotProfitable:
@@ -371,7 +396,6 @@ public class Dealer {
         data.openExchange.getOrderTracker().removeTradeListener(listener);
         if (onCancel != null) {
             onCancel.run();
-            onCancel = null;
         }
     }
 

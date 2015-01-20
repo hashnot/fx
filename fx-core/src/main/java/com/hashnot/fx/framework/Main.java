@@ -47,7 +47,7 @@ public class Main {
         Injector injector = Guice.createInjector(new AbstractModule() {
             @Override
             protected void configure() {
-                bind(ScheduledExecutorService.class).toInstance(scheduler);
+                bind(ScheduledExecutorService.class).toProvider(Main::scheduler);
                 bind(Runnable.class).annotatedWith(Names.named(EXIT_HOOK)).toInstance(framework::stop);
                 bind(MBeanServer.class).toProvider(ManagementFactory::getPlatformMBeanServer);
             }

@@ -3,6 +3,8 @@ package com.hashnot.fx.strategy.pair;
 import com.hashnot.fx.framework.IOrderBookSideMonitor;
 import com.hashnot.fx.framework.MarketSide;
 import com.hashnot.fx.framework.OrderBookSideUpdateEvent;
+import com.hashnot.xchange.async.IAsyncExchange;
+import com.hashnot.xchange.async.trade.IAsyncTradeService;
 import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.event.trade.IOrderTracker;
 import com.xeiam.xchange.Exchange;
@@ -16,6 +18,7 @@ import org.junit.runners.Parameterized;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static com.hashnot.fx.strategy.pair.DealerTest.orderOpenStrategy;
@@ -47,14 +50,21 @@ public class PairOrderBookSideListenerTest {
         PollingTradeService tradeService = mock(PollingTradeService.class);
 
         Exchange openExchange = mock(Exchange.class);
-        when(openExchange.getPollingTradeService()).thenReturn(tradeService);
+//        when(openExchange.getPollingTradeService()).thenReturn(tradeService);
+        IAsyncExchange openAExchange = mock(IAsyncExchange.class);
+        IAsyncTradeService asyncTradeService = mock(IAsyncTradeService.class);
+        when(openAExchange.getTradeService()).thenReturn(asyncTradeService);
 
         IExchangeMonitor openMonitor = getExchangeMonitor(openExchange);
+        when(openMonitor.getAsyncExchange()).thenReturn(openAExchange);
         IOrderTracker orderTracker = mock(IOrderTracker.class);
         when(openMonitor.getOrderTracker()).thenReturn(orderTracker);
 
         Exchange closeExchange = mock(Exchange.class);
         IExchangeMonitor closeMonitor = getExchangeMonitor(closeExchange);
+
+        Listener listener = mock(Listener.class);
+        when(listener.onOpen()).thenReturn(mock(Consumer.class));
 
         Map<Exchange, IExchangeMonitor> monitors = keys(openExchange, closeExchange).map(openMonitor, closeMonitor);
 
@@ -69,6 +79,7 @@ public class PairOrderBookSideListenerTest {
 
         DealerConfig config = new DealerConfig(side, p);
         Dealer dealer = new Dealer(orderBookSideMonitor, monitors, config, orderOpenStrategy, orderCloseStrategy, data);
+        dealer.setListener(listener);
 
         LimitOrder openOrder = new LimitOrder(side, ONE, p, null, null, openPrice);
         MarketSide closeSide = new MarketSide(closeExchange, p, side);
