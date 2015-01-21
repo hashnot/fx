@@ -132,11 +132,15 @@ public class Dealer {
         data.setOpenExchange(newOpenMonitor);
         data.setCloseExchange(newCloseMonitor);
 
-        if (!newCloseMonitor.equals(closeMonitor))
-            updateCloseMarket(openMonitor, closeMonitor);
+        if (
+            // exit initial state
+                (closeMonitor != null && closeMonitor.equals(openMonitor) && !newCloseMonitor.equals(newOpenMonitor)) ||
+
+                        !newCloseMonitor.equals(closeMonitor))
+            updateCloseMarket(closeMonitor);
     }
 
-    private void updateCloseMarket(IExchangeMonitor oldOpenMonitor, IExchangeMonitor oldCloseMonitor) {
+    private void updateCloseMarket(IExchangeMonitor oldCloseMonitor) {
         IExchangeMonitor newCloseMonitor = data.getCloseExchange();
         IExchangeMonitor newOpenMonitor = data.getOpenExchange();
         log.debug("open {} old close {} new close {}", newOpenMonitor, oldCloseMonitor, newCloseMonitor);

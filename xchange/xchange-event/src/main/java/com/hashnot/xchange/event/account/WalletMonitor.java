@@ -65,22 +65,9 @@ public class WalletMonitor implements IWalletMonitor, IAccountInfoListener, Wall
             BigDecimal current = wallet.getBalance();
             String currency = wallet.getCurrency();
 
-            this.wallet.compute(currency, (key, previous) -> {
-                BigDecimal result;
-                if (isZero(current)) {
-                    if (previous == null)
-                        return null;
-                    else
-                        result = null;
-                } else {
-                    if (eq(current, previous))
-                        return current;
-                    else
-                        result = current;
-                }
+            BigDecimal previous = this.wallet.put(currency, current);
+            if (!eq(current, previous) && !isZero(current))
                 log.info("New wallet amount @{} {} = {}", exchange, currency, current);
-                return result;
-            });
         }
     }
 

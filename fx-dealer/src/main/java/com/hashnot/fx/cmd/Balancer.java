@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
-import static com.hashnot.xchange.ext.util.BigDecimals.isZero;
 import static com.hashnot.xchange.ext.util.Comparables.*;
 import static com.hashnot.xchange.ext.util.Orders.revert;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
@@ -114,10 +113,8 @@ public class Balancer implements IStrategy {
             allWallets.put(e.getKey(), walletMap);
             for (Wallet wallet : wallets) {
                 BigDecimal balance = wallet.getBalance();
-                if (!isZero(balance)) {
-                    log.debug("{}", wallet);
-                    walletMap.put(wallet.getCurrency(), balance);
-                }
+                log.debug("{}", wallet);
+                walletMap.put(wallet.getCurrency(), balance);
             }
         }
 
@@ -131,65 +128,60 @@ public class Balancer implements IStrategy {
         exitHook.run();
     }
 
-    private void handleMarket(Market market,Map<String, BigDecimal>wallets ) {
+    private void handleMarket(Market market, Map<String, BigDecimal> wallets) {
         CurrencyPair pair = market.listing;
+        Ticker ticker = tickers.get(market);
+        if (ticker == null) return;
+        log.info("{}\tASK {}\tBID {}", ticker.getCurrencyPair(), ticker.getAsk(), ticker.getBid());
+        TradeServiceHelper meta = marketMetadata.get(market);
+        log.info("{}", meta);
+        BigDecimal feeFactor = infos.get(market.exchange).getTradingFee();
+        describeWallet(wallets, pair, ticker.getAsk(), feeFactor);
 
+        String base = pair.baseSymbol;
+        BigDecimal baseWallet = wallets.get(base);
+        BigDecimal counterWallet = wallets.get(pair.counterSymbol);
+        BigDecimal netPrice = Orders.getNetPrice(ticker.getAsk(), BID, feeFactor);
+        BigDecimal netCounterWalletInBase = counterWallet.divide(netPrice, counterWallet.scale(), ROUNDING);
 
+        BigDecimal minTrade = meta.getAmountMinimum();
+        BigDecimal lowThreshold = valueOf(2).multiply(minTrade);
+        // if both wallets are at least 2 * min trade. leave it as is
+        if (gte(baseWallet, lowThreshold) && gte(netCounterWalletInBase, lowThreshold)) {
+            log.debug("{} >= {} && {} >= {}", baseWallet, lowThreshold, netCounterWalletInBase, lowThreshold);
+            return;
+        }
 
-            Ticker ticker = tickers.get(market);
-            if (ticker == null) return;
-            log.info("{}\tASK {}\tBID {}", ticker.getCurrencyPair(), ticker.getAsk(), ticker.getBid());
-            TradeServiceHelper meta = marketMetadata.get(market);
-            log.info("{}", meta);
-            BigDecimal feeFactor = infos.get(market.exchange).getTradingFee();
-            describeWallet(wallets, pair, ticker.getAsk(), feeFactor);
+        BigDecimal grossCounterWalletInBase = counterWallet.divide(ticker.getAsk(), counterWallet.scale(), ROUNDING);
+        BigDecimal total = baseWallet.add(grossCounterWalletInBase);
+        if (lt(total, lowThreshold)) {
+            log.warn("Total {} < {}", total, lowThreshold);
+            return;
+        }
 
-            String base = pair.baseSymbol;
-            BigDecimal baseWallet = wallets.get(base);
-            BigDecimal counterWallet = wallets.get(pair.counterSymbol);
-            BigDecimal netPrice = Orders.getNetPrice(ticker.getAsk(), BID, feeFactor);
-            BigDecimal netCounterWalletInBase = counterWallet.divide(netPrice, counterWallet.scale(), ROUNDING);
+        BigDecimal thresholdTotal = valueOf(4).multiply(minTrade);
+        BigDecimal midThreshold = valueOf(3).multiply(minTrade);
+        BigDecimal baseTarget;
+        if (gte(total, thresholdTotal))
+            baseTarget = total.divide(valueOf(2), ROUNDING);
+        else if (gte(total, midThreshold))
+            baseTarget = lowThreshold;
+        else
+            baseTarget = minTrade;
 
+        if (eq(baseWallet, baseTarget)) {
+            log.debug("base = target = {} && counter = {} ({})", baseWallet, counterWallet, grossCounterWalletInBase);
+            return;
+        }
 
-            BigDecimal minTrade = meta.getAmountMinimum();
-            BigDecimal lowThreshold = valueOf(2).multiply(minTrade);
-            // if both wallets are at least 2 * min trade. leave it as is
-            if (gte(baseWallet, lowThreshold) && gte(netCounterWalletInBase, lowThreshold)) {
-                log.debug("{} >= {} && {} >= {}", baseWallet, lowThreshold, netCounterWalletInBase, lowThreshold);
-                return;
-            }
+        Order.OrderType type = gt(baseWallet, baseTarget) ? ASK : BID;
+        BigDecimal amount = baseWallet.subtract(baseTarget).abs();
 
-            BigDecimal grossCounterWalletInBase = counterWallet.divide(ticker.getAsk(), counterWallet.scale(), ROUNDING);
-            BigDecimal total = baseWallet.add(grossCounterWalletInBase);
-            if (lt(total, lowThreshold)) {
-                log.warn("Total {} < {}", total, lowThreshold);
-                return;
-            }
-
-            BigDecimal thresholdTotal = valueOf(4).multiply(minTrade);
-            BigDecimal midThreshold = valueOf(3).multiply(minTrade);
-            BigDecimal baseTarget;
-            if (gte(total, thresholdTotal))
-                baseTarget = total.divide(valueOf(2), ROUNDING);
-            else if (gte(total, midThreshold))
-                baseTarget = lowThreshold;
-            else
-                baseTarget = minTrade;
-
-            if (eq(baseWallet, baseTarget)) {
-                log.debug("base = target = {} && counter = {} ({})", baseWallet, counterWallet, grossCounterWalletInBase);
-                return;
-            }
-
-            Order.OrderType type = gt(baseWallet, baseTarget) ? ASK : BID;
-            BigDecimal amount = baseWallet.subtract(baseTarget).abs();
-
-            LimitOrder order = new LimitOrder.Builder(type, pair).tradableAmount(amount).limitPrice(Tickers.getPrice(ticker, revert(type))).build();
-            Map<String, BigDecimal> walletSim = Orders.simulateTrade(order, wallets, infos.get(market.exchange));
-            log.info("Place {}", order);
-            log.info("Simulated wallet:");
-            describeWallet(walletSim, pair, ticker.getAsk(), feeFactor);
-
+        LimitOrder order = new LimitOrder.Builder(type, pair).tradableAmount(amount).limitPrice(Tickers.getPrice(ticker, revert(type))).build();
+        Map<String, BigDecimal> walletSim = Orders.simulateTrade(order, wallets, infos.get(market.exchange));
+        log.info("Place {}", order);
+        log.info("Simulated wallet:");
+        describeWallet(walletSim, pair, ticker.getAsk(), feeFactor);
     }
 
     public void describeWallet(Map<String, BigDecimal> wallets, CurrencyPair pair, BigDecimal grossPrice, BigDecimal feeFactor) {
