@@ -22,8 +22,8 @@ import com.hashnot.xchange.event.trade.impl.UserTradesMonitor;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.account.AccountInfo;
-import com.xeiam.xchange.dto.marketdata.TradeServiceHelper;
 import com.xeiam.xchange.dto.trade.LimitOrder;
+import com.xeiam.xchange.dto.trade.TradeMetaData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,7 +59,7 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange, IAccou
 
     final protected AbstractPollingMonitor[] closeables;
 
-    protected Map<CurrencyPair, ? extends TradeServiceHelper> metadata;
+    protected Map<CurrencyPair, ? extends TradeMetaData> metadata;
     protected AccountInfo accountInfo;
 
     public ExchangeMonitor(Exchange parent, ScheduledExecutorService executor, long rate) throws Exception {
@@ -105,7 +105,7 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange, IAccou
         server.registerMBean(object, new ObjectName(domain, properties));
     }
 
-    public TradeServiceHelper getMarketMetadata(CurrencyPair pair) {
+    public TradeMetaData getMarketMetadata(CurrencyPair pair) {
         return metadata.get(pair);
     }
 

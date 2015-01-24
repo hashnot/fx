@@ -13,8 +13,8 @@ import com.hashnot.xchange.ext.util.Comparators;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
-import com.xeiam.xchange.dto.marketdata.TradeServiceHelper;
 import com.xeiam.xchange.dto.trade.LimitOrder;
+import com.xeiam.xchange.dto.trade.TradeMetaData;
 import com.xeiam.xchange.dto.trade.UserTrade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -273,8 +273,8 @@ public class Dealer {
         BigDecimal openBest = data.getBestOffers().get(openMonitor.getExchange());
         BigDecimal closeBest = data.getBestOffers().get(closeMon.getExchange());
 
-        TradeServiceHelper openMeta = openMonitor.getMarketMetadata(config.listing);
-        TradeServiceHelper closeMeta = closeMon.getMarketMetadata(config.listing);
+        TradeMetaData openMeta = openMonitor.getMarketMetadata(config.listing);
+        TradeMetaData closeMeta = closeMon.getMarketMetadata(config.listing);
 
         //BigDecimal openInitial = openBest.add(openMeta.getPriceStep().multiply(bigFactor(revert(config.side))));
 
@@ -416,8 +416,8 @@ public class Dealer {
         BigDecimal openOutGross = openWallet.get(openOutgoingCur);
         BigDecimal closeOutGross = closeWallet.get(closeOutCur);
 
-        TradeServiceHelper openMetadata = data.getOpenExchange().getMarketMetadata(config.listing);
-        TradeServiceHelper closeMetadata = data.getCloseExchange().getMarketMetadata(config.listing);
+        TradeMetaData openMetadata = data.getOpenExchange().getMarketMetadata(config.listing);
+        TradeMetaData closeMetadata = data.getCloseExchange().getMarketMetadata(config.listing);
 
         // adjust amounts by dividing by two and check if it's not below minima
         {

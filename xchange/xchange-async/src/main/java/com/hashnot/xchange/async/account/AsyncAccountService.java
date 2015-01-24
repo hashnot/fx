@@ -1,7 +1,7 @@
 package com.hashnot.xchange.async.account;
 
 import com.xeiam.xchange.dto.account.AccountInfo;
-import com.xeiam.xchange.service.polling.PollingAccountService;
+import com.xeiam.xchange.service.polling.account.PollingAccountService;
 
 import java.math.BigDecimal;
 import java.util.concurrent.Executor;

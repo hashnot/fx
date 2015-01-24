@@ -10,7 +10,7 @@ import com.hashnot.xchange.event.trade.IOrderTracker;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.trade.LimitOrder;
-import com.xeiam.xchange.service.polling.PollingTradeService;
+import com.xeiam.xchange.service.polling.trade.PollingTradeService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;

@@ -9,8 +9,8 @@ import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.marketdata.Trades;
 import com.xeiam.xchange.dto.trade.UserTrade;
 import com.xeiam.xchange.dto.trade.UserTrades;
-import com.xeiam.xchange.service.polling.PollingTradeService;
-import com.xeiam.xchange.service.polling.trade.DefaultTradeHistoryParamsTimeSpan;
+import com.xeiam.xchange.service.polling.trade.PollingTradeService;
+import com.xeiam.xchange.service.polling.trade.params.DefaultTradeHistoryParamsTimeSpan;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
