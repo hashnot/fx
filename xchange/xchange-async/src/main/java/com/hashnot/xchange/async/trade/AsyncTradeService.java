@@ -131,7 +131,7 @@ public class AsyncTradeService implements IAsyncTradeService {
 
     @Override
     public String toString() {
-        return "AsyncTradeService" + "@" + exchange;
+        return "AsyncTradeService@" + exchange;
     }
 
 }

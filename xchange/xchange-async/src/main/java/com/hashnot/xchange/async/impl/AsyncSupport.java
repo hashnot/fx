@@ -1,6 +1,8 @@
 package com.hashnot.xchange.async.impl;
 
 import com.google.common.util.concurrent.SettableFuture;
+import com.xeiam.xchange.FrequencyLimitExceededException;
+import com.xeiam.xchange.NonceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,11 +20,17 @@ final public class AsyncSupport {
 
     public static <T> Future<T> call(Callable<T, IOException> call, Consumer<Future<T>> consumer, Executor executor) {
         SettableFuture<T> future = SettableFuture.create();
-        executor.execute(() -> doCall(call, consumer, future));
+        executor.execute(new CallableWrapper<>(executor, call, consumer, future));
         return future;
     }
 
-    protected static <T> void doCall(Callable<T, IOException> call, Consumer<Future<T>> consumer, SettableFuture<T> future) {
+    static class CallableWrapper<T, E extends IOException> implements Runnable {
+        final Executor executor;
+        final Callable<T, E> call;
+        final Consumer<Future<T>> consumer;
+        final SettableFuture<T> future;
+
+    protected void doCall(Consumer<Future<T>> consumer, SettableFuture<T> future) {
         try {
             T result = call.call();
             future.set(result);
@@ -34,6 +42,25 @@ final public class AsyncSupport {
         }
         if (consumer != null)
             consumer.accept(future);
+    }
+
+        CallableWrapper(Executor executor, Callable<T, E> call, Consumer<Future<T>> consumer, SettableFuture<T> future) {
+            this.executor = executor;
+            this.call = call;
+            this.consumer = consumer;
+            this.future = future;
+        }
+
+        @Override
+        public void run() {
+            try {
+                doCall(consumer, future);
+            } catch (NonceException | FrequencyLimitExceededException e) {
+                log.warn("Error from {}", call, e);
+                executor.execute(this);
+            }
+        }
+
     }
 
     public static <T> T get(Future<T> future) throws IOException {
