@@ -325,7 +325,7 @@ public class Dealer {
         BigDecimal closeNet = getNetPrice(closeBest, revert(config.side), closeFeeFactor).setScale(closeMeta.getPriceScale(), HALF_EVEN);
         BigDecimal openNet = getNetPrice(openBest, config.side, closeFeeFactor).setScale(closeMeta.getPriceScale(), HALF_EVEN);
 
-        BigDecimal diff = openBest.subtract(closeBest);
+        BigDecimal diff = openNet.subtract(closeNet);
 
         // ask -> diff > 0
         boolean profitable = isFurther(openNet, closeNet, config.side);
@@ -347,7 +347,7 @@ public class Dealer {
 
         BigDecimal myOpen = priceOpen.divide(factor, openMeta.getPriceScale(), HALF_EVEN);
 
-        BigDecimal myOpenNet = getNetPrice(priceOpen, config.side, openFeeFactor).setScale(openMeta.getPriceScale(), HALF_EVEN);
+        BigDecimal myOpenNet = getNetPrice(myOpen, config.side, openFeeFactor, openMeta);
 
         profitable = isFurther(myOpenNet, closeNet, config.side);
         log.info("open {} {} {} <=> {} {} close {}profitable", config.side, myOpen, myOpenNet, closeNet, closeBest, profitable ? "" : "not ");

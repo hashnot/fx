@@ -4,6 +4,7 @@ import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.account.AccountInfo;
 import com.xeiam.xchange.dto.trade.LimitOrder;
+import com.xeiam.xchange.dto.trade.TradeMetaData;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -51,6 +52,11 @@ public class Orders {
 
     public static BigDecimal getNetPrice(LimitOrder order, BigDecimal feePercent) {
         return getNetPrice(order.getLimitPrice(), order.getType(), feePercent);
+    }
+
+    public static BigDecimal getNetPrice(BigDecimal limitPrice, Order.OrderType type, BigDecimal feePercent, TradeMetaData meta) {
+        BigDecimal result = getNetPrice(limitPrice, type, feePercent);
+        return result.setScale(meta.getPriceScale(), RoundingMode.HALF_EVEN);
     }
 
     public static BigDecimal getNetPrice(BigDecimal limitPrice, Order.OrderType type, BigDecimal feePercent) {

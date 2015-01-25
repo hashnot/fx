@@ -30,19 +30,19 @@ final public class AsyncSupport {
         final Consumer<Future<T>> consumer;
         final SettableFuture<T> future;
 
-    protected void doCall(Consumer<Future<T>> consumer, SettableFuture<T> future) {
-        try {
-            T result = call.call();
-            future.set(result);
-        } catch (Exception e) {
-            future.setException(e);
-        } catch (Error e) {
-            log.warn("Error from {}", call, e);
-            throw e;
+        protected void doCall() {
+            try {
+                T result = call.call();
+                future.set(result);
+            } catch (Exception e) {
+                future.setException(e);
+            } catch (Error e) {
+                log.warn("Error from {}", call, e);
+                throw e;
+            }
+            if (consumer != null)
+                consumer.accept(future);
         }
-        if (consumer != null)
-            consumer.accept(future);
-    }
 
         CallableWrapper(Executor executor, Callable<T, E> call, Consumer<Future<T>> consumer, SettableFuture<T> future) {
             this.executor = executor;
@@ -54,13 +54,12 @@ final public class AsyncSupport {
         @Override
         public void run() {
             try {
-                doCall(consumer, future);
+                doCall();
             } catch (NonceException | FrequencyLimitExceededException e) {
                 log.warn("Error from {}", call, e);
                 executor.execute(this);
             }
         }
-
     }
 
     public static <T> T get(Future<T> future) throws IOException {
