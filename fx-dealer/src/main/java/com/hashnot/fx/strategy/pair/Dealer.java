@@ -8,11 +8,11 @@ import com.hashnot.fx.framework.OrderBookSideUpdateEvent;
 import com.hashnot.xchange.async.impl.AsyncSupport;
 import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.event.trade.UserTradeEvent;
-import com.hashnot.xchange.ext.util.Collections;
+import com.hashnot.xchange.ext.Market;
 import com.hashnot.xchange.ext.util.Comparators;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
-import com.xeiam.xchange.dto.Order;
+import com.xeiam.xchange.dto.Order.OrderType;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.dto.trade.TradeMetaData;
 import com.xeiam.xchange.dto.trade.UserTrade;
@@ -21,14 +21,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import static com.hashnot.fx.strategy.pair.DealerHelper.hasMinimumMoney;
 import static com.hashnot.xchange.ext.util.BigDecimals.TWO;
 import static com.hashnot.xchange.ext.util.Comparables.eq;
 import static com.hashnot.xchange.ext.util.Comparables.lt;
@@ -61,45 +57,71 @@ public class Dealer {
     private Comparator<Map.Entry<Exchange, BigDecimal>> offerComparator;
 
     public void updateBestOffers(Collection<BestOfferEvent> bestOfferEvents) {
+        // at least one best price has changed
+        boolean dirty = false;
+
         for (BestOfferEvent bestOfferEvent : bestOfferEvents) {
-            assertConfig(bestOfferEvent.source.side, bestOfferEvent.source.market.listing);
-            updateBestOffer(bestOfferEvent.source.market.exchange, bestOfferEvent.price);
+            MarketSide source = bestOfferEvent.source;
+            Market market = source.market;
+
+            assertConfig(source.side, market.listing);
+
+            BigDecimal newPrice = bestOfferEvent.price;
+            BigDecimal oldPrice = data.getBestOffers().put(market.exchange, newPrice);
+
+            // don't update the order if the new order is not better
+            if (eq(oldPrice, newPrice)) {
+                log.warn("offer didn't change");
+            } else {
+                dirty = true;
+                log.info("new offer {}@{}", newPrice, source);
+            }
         }
+
+        if (dirty)
+            updateExchanges();
+        else
+            log.warn("No offers changed");
     }
 
     /**
      * If the new price is the best, update internal state and change order book monitor to monitor new best market
      */
-    protected void updateBestOffer(Exchange eventExchange, BigDecimal newPrice) {
-        if (!hasMinimumMoney(monitors.get(eventExchange), newPrice, config)) {
-            log.debug("Ignore exchange {} without enough money", eventExchange);
-            data.getBestOffers().remove(eventExchange);
+    protected void updateExchanges() {
+        Map<Exchange, BigDecimal> bestOffers = data.getBestOffers();
+
+        Map<Exchange, BigDecimal> openCandidates = new HashMap<>();
+        Map<Exchange, BigDecimal> closeCandidates = new HashMap<>();
+
+        for (Map.Entry<Exchange, BigDecimal> e : bestOffers.entrySet()) {
+            Exchange x = e.getKey();
+            if (hasMinimumMoney(x, false)) {
+                openCandidates.put(x, e.getValue());
+            }
+
+            if (hasMinimumMoney(x, true)) {
+                closeCandidates.put(x, e.getValue());
+            }
+        }
+
+        if (openCandidates.isEmpty() || closeCandidates.isEmpty()) {
+            log.info("No exchange with minimum money @{}", config);
+            cancel();
             return;
         }
 
-        BigDecimal oldPrice = data.getBestOffers().put(eventExchange, newPrice);
-
-        // don't update the order if the new order is not better
-        if (eq(oldPrice, newPrice)) {
-            log.warn("Price didn't change");
-            return;
-        }
-
-        Collections.MinMax<Map.Entry<Exchange, BigDecimal>> minMax = Collections.minMax(data.getBestOffers().entrySet(), offerComparator);
-
-        Exchange newOpenExchange = minMax.min.getKey();
-        Exchange newCloseExchange = minMax.max.getKey();
+        Exchange newOpenExchange = Collections.min(openCandidates.entrySet(), offerComparator).getKey();
+        Exchange newCloseExchange = Collections.max(closeCandidates.entrySet(), offerComparator).getKey();
 
         IExchangeMonitor newOpenMonitor = monitors.get(newOpenExchange);
         IExchangeMonitor newCloseMonitor = monitors.get(newCloseExchange);
 
         IExchangeMonitor openMonitor = data.getOpenExchange();
         IExchangeMonitor closeMonitor = data.getCloseExchange();
-        log.info("new offer {}@{}; mine {}@{}; best {}@{} worst {}@{}",
-                newPrice, eventExchange,
+        log.info("best offer {}@{} worst {}@{}",
                 data.getOpenPrice(), openMonitor,
-                data.getBestOffers().get(newCloseExchange), newCloseExchange,
-                data.getBestOffers().get(newOpenExchange), newOpenExchange
+                bestOffers.get(newCloseExchange), newCloseExchange,
+                bestOffers.get(newOpenExchange), newOpenExchange
         );
 
         // if the close exchange has changed - cancel
@@ -120,6 +142,7 @@ public class Dealer {
         } else {
             // only if open and close exchange haven't changed
             if (data.state == DealerState.Waiting) {
+                BigDecimal newPrice = bestOffers.get(data.getOpenExchange().getExchange());
                 if (isFurther(data.openedOrder.getLimitPrice(), newPrice, config.side)) {
                     log.debug("My order fell from the top");
                     update();
@@ -158,6 +181,26 @@ public class Dealer {
             log.debug("Add OBL to {}", marketSide);
             orderBookSideMonitor.addOrderBookSideListener(listener, marketSide);
         }
+    }
+
+    protected boolean hasMinimumMoney(Exchange exchange, boolean revertSide) {
+        IExchangeMonitor monitor = monitors.get(exchange);
+        OrderType side = revertSide ? revert(config.side) : config.side;
+        OrderType revSide = revert(side);
+
+        String currency = DealerConfig.incomingCurrency(revSide, config.listing);
+        BigDecimal outAmount = monitor.getWalletMonitor().getWallet(currency);
+        BigDecimal amountMinimum = monitor.getMarketMetadata(config.listing).getAmountMinimum();
+        BigDecimal price = data.getBestOffers().get(monitor.getExchange());
+
+        BigDecimal baseAmount;
+        if (side == ASK)
+            baseAmount = outAmount;
+        else {
+            baseAmount = outAmount.divide(price, amountMinimum.scale(), HALF_EVEN);
+        }
+
+        return !lt(baseAmount, amountMinimum);
     }
 
     public void onOrderBookSideEvents(Collection<OrderBookSideUpdateEvent> events) {
@@ -416,30 +459,34 @@ public class Dealer {
         BigDecimal openOutGross = openWallet.get(openOutgoingCur);
         BigDecimal closeOutGross = closeWallet.get(closeOutCur);
 
+        if (config.is(BID))
+            openOutGross = openOutGross.divide(limitPrice, openWallet.get(closeOutCur).scale(), HALF_EVEN);
+        else
+            closeOutGross = closeOutGross.divide(limitPrice, closeWallet.get(openOutgoingCur).scale(), HALF_EVEN);
+        // now both wallets should be expressed in base currency
+
         TradeMetaData openMetadata = data.getOpenExchange().getMarketMetadata(config.listing);
         TradeMetaData closeMetadata = data.getCloseExchange().getMarketMetadata(config.listing);
 
         // adjust amounts by dividing by two and check if it's not below minima
         {
-            // amount of base currency
-            BigDecimal openBaseAmount = openWallet.get(config.listing.baseSymbol);
-            BigDecimal closeBaseAmount = closeWallet.get(config.listing.baseSymbol);
-
-            BigDecimal openBaseHalf = openBaseAmount.divide(TWO, FLOOR);
-            BigDecimal closeBaseHalf = closeBaseAmount.divide(TWO, FLOOR);
+            BigDecimal openOutHalf = openOutGross.divide(TWO, FLOOR);
+            BigDecimal closeOutHalf = closeOutGross.divide(TWO, FLOOR);
 
             BigDecimal openLowLimit = openMetadata.getAmountMinimum();
             BigDecimal closeLowLimit = closeMetadata.getAmountMinimum();
 
             // if half of the wallet is greater than minimum, open for half, if less, open for full amount but only if it's ASK (arbitrary, avoid wallet collision)
-            if (lt(openBaseHalf, openLowLimit) || lt(closeBaseHalf, closeLowLimit)) {
-                if (config.is(BID)) {
-                    log.info("Skip BID to avoid wallet collision over BID/ASK");
+            if (lt(openOutHalf, openLowLimit) || lt(closeOutHalf, closeLowLimit)) {
+                // TODO remove
+                OrderType skipSide = ASK;
+                if (config.is(skipSide)) {
+                    log.info("Skip {} to avoid wallet collision over BID/ASK", skipSide);
                     return null;
                 }
             } else {
-                openOutGross = openOutGross.divide(TWO, FLOOR);
-                closeOutGross = closeOutGross.divide(TWO, FLOOR);
+                openOutGross = openOutHalf;
+                closeOutGross = closeOutHalf;
             }
         }
 
@@ -457,17 +504,13 @@ public class Dealer {
         //                  openOut = counter
         //                  closeOut = base
 
-        BigDecimal openAmount = openOutGross;
-        if (config.is(BID))
-            openAmount = openOutGross.divide(limitPrice, openWallet.get(closeOutCur).scale(), HALF_EVEN);
+        BigDecimal closableAmount = data.getCloseAmount(config.side, openOutGross, limitPrice);
 
-        BigDecimal closableAmount = data.getCloseAmount(config.side, openAmount, limitPrice);
-
-        log.debug("open: {}", openAmount);
+        log.debug("open: {}", openOutGross);
         log.debug("close: {}", closeOutGross);
         log.debug("available: {}", closableAmount);
 
-        BigDecimal openAmountActual = Ordering.natural().min(openAmount, closableAmount, closeOutGross).setScale(DealerHelper.getScale(openMetadata, closeMetadata), FLOOR);
+        BigDecimal openAmountActual = Ordering.natural().min(openOutGross, closableAmount, closeOutGross).setScale(DealerHelper.getScale(openMetadata, closeMetadata), FLOOR);
 
         if (!DealerHelper.checkMinima(openAmountActual, openMetadata)) {
             log.debug("Amount {} less than minimum", openAmountActual);
@@ -478,14 +521,14 @@ public class Dealer {
         return new LimitOrder.Builder(config.side, config.listing).limitPrice(limitPrice).tradableAmount(openAmountActual).build();
     }
 
-    private void assertConfig(Order.OrderType side, CurrencyPair listing) {
+    private void assertConfig(OrderType side, CurrencyPair listing) {
         if (config.side != side)
             throw new IllegalArgumentException(side.name());
         if (!config.listing.equals(listing))
             throw new IllegalArgumentException(listing.toString());
     }
 
-    private boolean checkConfig(Order.OrderType side, CurrencyPair listing) {
+    private boolean checkConfig(OrderType side, CurrencyPair listing) {
         return config.side == side && config.listing.equals(listing);
     }
 

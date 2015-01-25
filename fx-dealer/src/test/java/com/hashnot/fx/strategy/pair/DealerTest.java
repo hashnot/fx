@@ -7,6 +7,7 @@ import com.hashnot.fx.uttl.BigDecimalMatcher;
 import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.event.account.IWalletMonitor;
 import com.hashnot.xchange.event.trade.IOrderTracker;
+import com.hashnot.xchange.ext.util.Maps;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order;
@@ -20,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +33,8 @@ import static com.hashnot.xchange.ext.util.BigDecimals._ONE;
 import static com.hashnot.xchange.ext.util.Maps.keys;
 import static com.hashnot.xchange.ext.util.Maps.map;
 import static com.hashnot.xchange.ext.util.Orders.*;
+import static com.xeiam.xchange.currency.Currencies.BTC;
+import static com.xeiam.xchange.currency.Currencies.EUR;
 import static com.xeiam.xchange.dto.Order.OrderType.ASK;
 import static com.xeiam.xchange.dto.Order.OrderType.BID;
 import static java.math.BigDecimal.ONE;
@@ -119,7 +123,7 @@ public class DealerTest {
         dealer.setListener(listener);
 
 
-        dealer.updateBestOffer(closeExchange, closePrice);
+        dealer.updateBestOffers(Arrays.asList(new BestOfferEvent(closePrice, new MarketSide(closeExchange, P, side))));
 
         verify(orderTracker, never()).addTradeListener(any());
 
@@ -153,7 +157,7 @@ public class DealerTest {
 
         // step 2: register first exchange - close
         MarketSide closeSide = new MarketSide(closeExchange, p, side);
-        dealer.updateBestOffer(closeExchange, closePrice);
+        dealer.updateBestOffers(Arrays.asList(new BestOfferEvent(closePrice, closeSide)));
 
         verify(orderTracker, never()).addTradeListener(any());
         verify(orderBookSideMonitor).addOrderBookSideListener(eq(listener), eq(closeSide));
@@ -204,8 +208,7 @@ public class DealerTest {
         //log.info("{}", data);
         Dealer dealer = createDealer(data, keys(openExchange, closeExchange).map(openMonitor, closeMonitor));
 
-        dealer.updateBestOffer(openExchange, closePrice.subtract(factor));
-        //log.info("{}", data);
+        dealer.updateBestOffers(Arrays.asList(new BestOfferEvent(closePrice.subtract(factor), new MarketSide(openExchange, P, side))));
 
         assertEquals(data.getOpenExchange(), closeMonitor);
         assertEquals(data.getCloseExchange(), openMonitor);
@@ -227,11 +230,39 @@ public class DealerTest {
         //log.info("{}", data);
         Dealer dealer = createDealer(data, keys(openExchange, closeExchange).map(openMonitor, closeMonitor));
 
-        dealer.updateBestOffer(closeExchange, closePrice.add(factor.multiply(TWO)));
-        //log.info("{}", data);
+        dealer.updateBestOffers(Arrays.asList(new BestOfferEvent(closePrice.add(factor.multiply(TWO)), new MarketSide(closeExchange, P, side))));
 
         assertEquals(data.getOpenExchange(), closeMonitor);
         assertEquals(data.getCloseExchange(), openMonitor);
+    }
+
+    @Test
+    public void testHasMinimumMoney() {
+        BigDecimal closePrice = TEN;
+        BigDecimal factor = side == ASK ? ONE : _ONE;
+        BigDecimal openPrice = closePrice.add(factor);
+        Exchange openExchange = mock(Exchange.class, X_OPEN);
+        Exchange closeExchange = mock(Exchange.class, X_CLOSE);
+
+        String inCur, outCur;
+        if (side == BID) {
+            inCur = BTC;
+            outCur = EUR;
+        } else {
+            inCur = EUR;
+            outCur = BTC;
+        }
+
+        IExchangeMonitor openMonitor = getExchangeMonitor(openExchange, M_OPEN, Maps.keys(inCur, outCur).map(ONE.movePointLeft(8), ONE));
+        IExchangeMonitor closeMonitor = getExchangeMonitor(closeExchange, M_CLOSE, Maps.keys(inCur, outCur).map(TEN,ONE.movePointLeft(8)));
+
+        Map<Exchange, BigDecimal> bestOffers = keys(openExchange, closeExchange).map(openPrice, closePrice);
+
+        DealerData data = new DealerData(openMonitor, closeMonitor, bestOffers);
+        Dealer dealer = createDealer(data, keys(openExchange, closeExchange).map(openMonitor, closeMonitor));
+
+        assertTrue(dealer.hasMinimumMoney(openExchange, false));
+        assertTrue(dealer.hasMinimumMoney(closeExchange, true));
     }
 
     protected DealerData data(IExchangeMonitor exchange, BigDecimal price) {

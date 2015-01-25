@@ -3,6 +3,7 @@ package com.hashnot.xchange.event;
 import com.hashnot.xchange.async.IAsyncExchange;
 import com.hashnot.xchange.async.account.AsyncAccountService;
 import com.hashnot.xchange.async.account.IAsyncAccountService;
+import com.hashnot.xchange.async.impl.AsyncSupport;
 import com.hashnot.xchange.async.impl.RoundRobinScheduler;
 import com.hashnot.xchange.async.market.AsyncMarketDataService;
 import com.hashnot.xchange.async.market.IAsyncMarketDataService;
@@ -28,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.management.*;
+import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.Hashtable;
 import java.util.Map;
@@ -147,11 +149,18 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange, IAccou
 
     @Override
     public void start() throws Exception {
-        exchange.init();
         exchangeScheduler = executor.scheduleAtFixedRate(runnableScheduler, 0, rate, TimeUnit.MILLISECONDS);
+        Future<Void> f = AsyncSupport.call(this::init, null, runnableScheduler);
+        f.get();
+
         Future<AccountInfo> accountInfoFuture = accountInfoMonitor.update();
         metadata = tradeService.getMetadata(null).get();
         accountInfoFuture.get();
+    }
+
+    protected Void init() throws IOException {
+        exchange.init();
+        return null;
     }
 
     @Override
