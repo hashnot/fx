@@ -1,5 +1,6 @@
 package com.hashnot.xchange.event;
 
+import com.hashnot.xchange.async.AsyncExchange;
 import com.hashnot.xchange.async.IAsyncExchange;
 import com.hashnot.xchange.async.account.AsyncAccountService;
 import com.hashnot.xchange.async.account.IAsyncAccountService;
@@ -38,7 +39,7 @@ import java.util.concurrent.*;
 /**
  * @author Rafał Krupiński
  */
-public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange, IAccountInfoListener {
+public class ExchangeMonitor implements IExchangeMonitor, IAccountInfoListener {
     final private static Logger log = LoggerFactory.getLogger(ExchangeMonitor.class);
 
     protected ScheduledFuture<?> exchangeScheduler;
@@ -48,15 +49,13 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange, IAccou
     private ScheduledExecutorService executor;
     private long rate;
 
+    final protected IAsyncExchange asyncExchange;
     final protected OrderBookMonitor orderBookMonitor;
     final protected UserTradesMonitor userTradesMonitor;
     final protected TickerMonitor tickerMonitor;
     final protected OpenOrdersMonitor openOrdersMonitor;
     final protected IWalletMonitor walletTracker;
     final protected OrderTracker orderTracker;
-    final protected IAsyncTradeService tradeService;
-    final protected IAsyncAccountService accountService;
-    final protected IAsyncMarketDataService marketDataService;
     final protected IAccountInfoMonitor accountInfoMonitor;
 
     final protected AbstractPollingMonitor[] closeables;
@@ -70,12 +69,13 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange, IAccou
         this.rate = rate;
 
         runnableScheduler = new RoundRobinScheduler(executor);
-        tradeService = new AsyncTradeService(runnableScheduler, exchange);
-        accountService = new AsyncAccountService(runnableScheduler, exchange.getPollingAccountService());
-        marketDataService = new AsyncMarketDataService(runnableScheduler, exchange.getPollingMarketDataService());
+        IAsyncTradeService tradeService = new AsyncTradeService(runnableScheduler, exchange);
+        IAsyncAccountService accountService = new AsyncAccountService(runnableScheduler, exchange.getPollingAccountService());
+        IAsyncMarketDataService marketDataService = new AsyncMarketDataService(runnableScheduler, exchange.getPollingMarketDataService());
+        asyncExchange = new AsyncExchange(exchange, accountService, marketDataService, tradeService);
 
-        openOrdersMonitor = new OpenOrdersMonitor(exchange, runnableScheduler);
-        userTradesMonitor = new UserTradesMonitor(exchange, runnableScheduler);
+        openOrdersMonitor = new OpenOrdersMonitor(asyncExchange, runnableScheduler);
+        userTradesMonitor = new UserTradesMonitor(asyncExchange, runnableScheduler);
         accountInfoMonitor = new AccountInfoMonitor(exchange, accountService);
         accountInfoMonitor.addAccountInfoListener(this);
 
@@ -129,7 +129,7 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange, IAccou
         log.info("Cancelling all orders");
         Map<String, LimitOrder> monitored = orderTracker.getMonitored();
         CountDownLatch count = new CountDownLatch(monitored.size());
-        monitored.forEach((k, v) -> tradeService.cancelOrder(k, (future) -> count.countDown()));
+        monitored.forEach((k, v) -> asyncExchange.getTradeService().cancelOrder(k, (future) -> count.countDown()));
         try {
             count.await();
         } catch (InterruptedException e) {
@@ -154,7 +154,7 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange, IAccou
         f.get();
 
         Future<AccountInfo> accountInfoFuture = accountInfoMonitor.update();
-        metadata = tradeService.getMetadata(null).get();
+        metadata = asyncExchange.getTradeService().getMetadata(null).get();
         accountInfoFuture.get();
     }
 
@@ -208,11 +208,7 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange, IAccou
 
     @Override
     public IAsyncExchange getAsyncExchange() {
-        return this;
-    }
-
-    public IAsyncTradeService getTradeService() {
-        return tradeService;
+        return asyncExchange;
     }
 
     @Override
@@ -220,13 +216,4 @@ public class ExchangeMonitor implements IExchangeMonitor, IAsyncExchange, IAccou
         return orderTracker;
     }
 
-    @Override
-    public IAsyncAccountService getAccountService() {
-        return accountService;
-    }
-
-    @Override
-    public IAsyncMarketDataService getMarketDataService() {
-        return marketDataService;
-    }
 }

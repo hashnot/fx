@@ -5,13 +5,18 @@ import com.hashnot.xchange.async.impl.RunnableScheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
+ * @param <L> listener type
+ * @param <R> result type (wrapped)
+ * @param <I> intermediate (raw) result type
  * @author Rafał Krupiński
  */
-public abstract class AbstractParameterLessMonitor<L, R> extends AbstractPollingMonitor {
+public abstract class AbstractParameterLessMonitor<L, R, I> extends AbstractPollingMonitor {
     protected Logger log = LoggerFactory.getLogger(getClass());
 
     final private BiConsumer<L, R> listenerFunction;
@@ -24,13 +29,25 @@ public abstract class AbstractParameterLessMonitor<L, R> extends AbstractPolling
 
     @Override
     public void run() {
+        getData(this::handleResult);
+    }
+
+    protected final void handleResult(Future<I> future) {
         try {
-            R result = getData();
+            I intermediate = future.get();
+            R result = wrap(intermediate);
             listeners.fire(result, listenerFunction);
-        } catch (IOException e) {
-            log.warn("Error from {}", this, e);
+        } catch (InterruptedException e) {
+            log.warn("Interrupted!", e);
+        } catch (ExecutionException e) {
+            log.warn("Error from {}", this, e.getCause());
         }
     }
 
-    abstract protected R getData() throws IOException;
+    @SuppressWarnings("unchecked")
+    protected R wrap(I intermediate) {
+        return (R) intermediate;
+    }
+
+    abstract protected void getData(Consumer<Future<I>> consumer);
 }

@@ -35,7 +35,7 @@ public abstract class AbstractParametrizedMonitor<P, L, R, I> extends AbstractPo
         try {
             I intermediate = AsyncSupport.get(resultFuture);
             R result = wrap(param, intermediate);
-            this.listeners.fire(param, resultFuture, (l, i) -> listenerFunction.accept(l, result));
+            this.listeners.fire(param, result, (l, i) -> listenerFunction.accept(l, result));
         } catch (IOException e) {
             log.warn("Error from {} @{}", param, this, e);
         }
