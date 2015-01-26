@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingDeque;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -58,16 +57,17 @@ public class PairEventManager implements Listener, Runnable {
     }
 
     @Override
-    public Consumer<Future<Boolean>> onCancel() {
-        return f -> addEventHead(EventType.Cancel, f);
+    public void onCancel(Future<Boolean> f) {
+        addEventHead(EventType.Cancel, f);
     }
 
     @Override
-    public Consumer<Future<String>> onOpen() {
-        return f -> addEventHead(EventType.Open, f);
+    public void onOpen(Future<String> f) {
+        addEventHead(EventType.Open, f);
     }
 
     public void addEventHead(EventType type, Object event) {
+        log.debug("^{}", type);
         EventWrapper evt = new EventWrapper(type, event);
         int size;
         boolean success;

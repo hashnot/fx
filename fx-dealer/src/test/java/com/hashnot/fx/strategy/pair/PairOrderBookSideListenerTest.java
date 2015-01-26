@@ -10,7 +10,6 @@ import com.hashnot.xchange.event.trade.IOrderTracker;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.trade.LimitOrder;
-import com.xeiam.xchange.service.polling.trade.PollingTradeService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -18,7 +17,6 @@ import org.junit.runners.Parameterized;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static com.hashnot.fx.strategy.pair.DealerTest.orderOpenStrategy;
@@ -47,8 +45,6 @@ public class PairOrderBookSideListenerTest {
 
     @Test
     public void testOrderBookSideChanged() throws Exception {
-        PollingTradeService tradeService = mock(PollingTradeService.class);
-
         Exchange openExchange = mock(Exchange.class);
 //        when(openExchange.getPollingTradeService()).thenReturn(tradeService);
         IAsyncExchange openAExchange = mock(IAsyncExchange.class);
@@ -64,7 +60,6 @@ public class PairOrderBookSideListenerTest {
         IExchangeMonitor closeMonitor = getExchangeMonitor(closeExchange);
 
         Listener listener = mock(Listener.class);
-        when(listener.onOpen()).thenReturn(mock(Consumer.class));
 
         Map<Exchange, IExchangeMonitor> monitors = keys(openExchange, closeExchange).map(openMonitor, closeMonitor);
 

@@ -380,14 +380,13 @@ public class Dealer {
         data.state = DealerState.Opening;
         IExchangeMonitor x = data.openExchange;
         x.getOrderTracker().addTradeListener(listener);
-        x.getAsyncExchange().getTradeService().placeLimitOrder(data.openedOrder, listener.onOpen());
+        x.getAsyncExchange().getTradeService().placeLimitOrder(data.openedOrder, listener::onOpen);
     }
 
     public void handleOpened(Future<String> idf) {
         assert data.state == DealerState.Opening;
         try {
             data.openOrderId = AsyncSupport.get(idf);
-            listener.onOpen();
         } catch (IOException | RuntimeException e) {
             log.warn("Error from {}", data.openExchange, e);
             data.state = DealerState.NotProfitable;
@@ -396,6 +395,7 @@ public class Dealer {
         data.state = DealerState.Waiting;
         if (onOpen != null) {
             onOpen.run();
+            onOpen = null;
         }
     }
 
@@ -424,7 +424,7 @@ public class Dealer {
         assert data.state == DealerState.Waiting;
         log.info("Cancel @{} {} {}", data.getOpenExchange(), data.openOrderId, data.openedOrder);
         data.state = DealerState.Cancelling;
-        data.getOpenExchange().getAsyncExchange().getTradeService().cancelOrder(data.openOrderId, listener.onCancel());
+        data.getOpenExchange().getAsyncExchange().getTradeService().cancelOrder(data.openOrderId, listener::onCancel);
     }
 
     public void handleCanceled(Future<Boolean> future) {
