@@ -45,6 +45,10 @@ public final class Prices {
         return type == ASK ? MAX : MIN;
     }
 
+    public static java.math.BigDecimal getStep(int scale){
+        return java.math.BigDecimal.ONE.movePointLeft(scale);
+    }
+
     private Prices() {
     }
 }

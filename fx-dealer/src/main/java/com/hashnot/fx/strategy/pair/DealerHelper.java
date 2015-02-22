@@ -1,8 +1,8 @@
 package com.hashnot.fx.strategy.pair;
 
 import com.hashnot.xchange.event.IExchangeMonitor;
+import com.xeiam.xchange.dto.MarketMetaData;
 import com.xeiam.xchange.dto.account.AccountInfo;
-import com.xeiam.xchange.dto.trade.TradeMetaData;
 
 import java.math.BigDecimal;
 
@@ -22,13 +22,13 @@ public class DealerHelper {
         return openOutGross.multiply(ONE.subtract(feeFactor));
     }
 
-    public static boolean checkMinima(BigDecimal openAmountActual, TradeMetaData meta) {
+    public static boolean checkMinima(BigDecimal openAmountActual, MarketMetaData meta) {
         return !(lt(openAmountActual, LOW_LIMIT)
-                || lt(openAmountActual, meta.getAmountMinimum())
+                || lt(openAmountActual, meta.getMinimumAmount())
         );
     }
 
-    public static int getScale(TradeMetaData meta1, TradeMetaData meta2) {
+    public static int getScale(MarketMetaData meta1, MarketMetaData meta2) {
         int s1 = meta1.getPriceScale();
         int s2 = meta2.getPriceScale();
         return Math.min(s1, s2);
@@ -36,7 +36,7 @@ public class DealerHelper {
 
     public static boolean hasMinimumMoney(IExchangeMonitor monitor, BigDecimal price, DealerConfig config) {
         BigDecimal outAmount = monitor.getWalletMonitor().getWallet(config.outgoingCurrency());
-        BigDecimal amountMinimum = monitor.getMarketMetadata(config.listing).getAmountMinimum();
+        BigDecimal amountMinimum = monitor.getMarketMetadata(config.listing).getMinimumAmount();
 
         BigDecimal baseAmount;
         if (config.side == ASK)

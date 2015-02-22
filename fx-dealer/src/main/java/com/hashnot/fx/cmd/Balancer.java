@@ -10,11 +10,12 @@ import com.hashnot.xchange.ext.util.Orders;
 import com.hashnot.xchange.ext.util.Tickers;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
+import com.xeiam.xchange.dto.MarketMetaData;
+import com.xeiam.xchange.dto.MetaData;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.account.AccountInfo;
 import com.xeiam.xchange.dto.marketdata.Ticker;
 import com.xeiam.xchange.dto.trade.LimitOrder;
-import com.xeiam.xchange.dto.trade.TradeMetaData;
 import com.xeiam.xchange.dto.trade.Wallet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +51,7 @@ public class Balancer implements IStrategy {
 
     private Map<Market, Ticker> tickers;
     private Map<Exchange, AccountInfo> infos;
-    private Map<Market, TradeMetaData> marketMetadata;
+    private Map<Market, MarketMetaData> marketMetadata;
 
     @Override
     public void init(Collection<IExchangeMonitor> exchangeMonitors, Collection<CurrencyPair> pairs) throws Exception {
@@ -89,8 +90,8 @@ public class Balancer implements IStrategy {
             }
             x.getTradeService().getMetadata((a) -> {
                 try {
-                    Map<CurrencyPair, ? extends TradeMetaData> xmeta = AsyncSupport.get(a);
-                    for (Map.Entry<CurrencyPair, ? extends TradeMetaData> e : xmeta.entrySet()) {
+                    MetaData xmeta = AsyncSupport.get(a);
+                    for (Map.Entry<CurrencyPair, ? extends MarketMetaData> e : xmeta.getMarketMetaDataMap().entrySet()) {
                         marketMetadata.put(new Market(exchangeMonitor.getExchange(), e.getKey()), e.getValue());
                     }
                 } catch (IOException e) {
@@ -133,7 +134,7 @@ public class Balancer implements IStrategy {
         Ticker ticker = tickers.get(market);
         if (ticker == null) return;
         log.info("{}\tASK {}\tBID {}", ticker.getCurrencyPair(), ticker.getAsk(), ticker.getBid());
-        TradeMetaData meta = marketMetadata.get(market);
+        MarketMetaData meta = marketMetadata.get(market);
         log.info("{}", meta);
         BigDecimal feeFactor = infos.get(market.exchange).getTradingFee();
         describeWallet(wallets, pair, ticker.getAsk(), feeFactor);
@@ -144,7 +145,7 @@ public class Balancer implements IStrategy {
         BigDecimal netPrice = Orders.getNetPrice(ticker.getAsk(), BID, feeFactor);
         BigDecimal netCounterWalletInBase = counterWallet.divide(netPrice, counterWallet.scale(), ROUNDING);
 
-        BigDecimal minTrade = meta.getAmountMinimum();
+        BigDecimal minTrade = meta.getMinimumAmount();
         BigDecimal lowThreshold = valueOf(2).multiply(minTrade);
         // if both wallets are at least 2 * min trade. leave it as is
         if (gte(baseWallet, lowThreshold) && gte(netCounterWalletInBase, lowThreshold)) {

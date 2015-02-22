@@ -1,9 +1,9 @@
 package com.hashnot.xchange.async.account;
 
-import com.xeiam.xchange.ExchangeException;
-import com.xeiam.xchange.NotAvailableFromExchangeException;
-import com.xeiam.xchange.NotYetImplementedForExchangeException;
 import com.xeiam.xchange.dto.account.AccountInfo;
+import com.xeiam.xchange.exceptions.ExchangeException;
+import com.xeiam.xchange.exceptions.NotAvailableFromExchangeException;
+import com.xeiam.xchange.exceptions.NotYetImplementedForExchangeException;
 
 import java.math.BigDecimal;
 import java.util.concurrent.Future;
@@ -18,9 +18,9 @@ public interface IAsyncAccountService {
      * Get account info
      *
      * @param consumer the AccountInfo object, null if some sort of error occurred. Implementers should log the error.
-     * @throws com.xeiam.xchange.ExchangeException                     - Indication that the exchange reported some kind of error with the request or response
-     * @throws com.xeiam.xchange.NotAvailableFromExchangeException     - Indication that the exchange does not support the requested function or data
-     * @throws com.xeiam.xchange.NotYetImplementedForExchangeException - Indication that the exchange supports the requested function or data, but it has not yet been implemented
+     * @throws ExchangeException                     - Indication that the exchange reported some kind of error with the request or response
+     * @throws NotAvailableFromExchangeException     - Indication that the exchange does not support the requested function or data
+     * @throws NotYetImplementedForExchangeException - Indication that the exchange supports the requested function or data, but it has not yet been implemented
      */
     Future<AccountInfo> getAccountInfo(Consumer<Future<AccountInfo>> consumer);
 

@@ -2,11 +2,12 @@ package com.hashnot.fx.cmd;
 
 import com.hashnot.fx.framework.IStrategy;
 import com.hashnot.xchange.event.IExchangeMonitor;
+import com.hashnot.xchange.ext.util.Prices;
 import com.hashnot.xchange.ext.util.Tickers;
 import com.xeiam.xchange.currency.CurrencyPair;
+import com.xeiam.xchange.dto.MarketMetaData;
 import com.xeiam.xchange.dto.marketdata.Ticker;
 import com.xeiam.xchange.dto.trade.LimitOrder;
-import com.xeiam.xchange.dto.trade.TradeMetaData;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -42,11 +43,11 @@ public class OrderVerifier implements IStrategy {
         Future<Ticker> future = mon.getAsyncExchange().getMarketDataService().getTicker(pair, null);
         Ticker ticker = future.get();
         BigDecimal topPrice = Tickers.getPrice(ticker, ASK);
-        TradeMetaData meta = mon.getMarketMetadata(pair);
+        MarketMetaData meta = mon.getMarketMetadata(pair);
 
-        BigDecimal myPrice = topPrice.subtract(meta.getPriceStep());
+        BigDecimal myPrice = topPrice.subtract(Prices.getStep(meta.getPriceScale()));
 
-        LimitOrder order = new LimitOrder.Builder(ASK, pair).tradableAmount(meta.getAmountMinimum()).limitPrice(myPrice).build();
+        LimitOrder order = new LimitOrder.Builder(ASK, pair).tradableAmount(meta.getMinimumAmount()).limitPrice(myPrice).build();
         //String orderId = mon.getAsyncExchange().getTradeService().placeLimitOrder(order);
     }
 

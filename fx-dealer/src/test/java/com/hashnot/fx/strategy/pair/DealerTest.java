@@ -8,12 +8,13 @@ import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.event.account.IWalletMonitor;
 import com.hashnot.xchange.event.trade.IOrderTracker;
 import com.hashnot.xchange.ext.util.Maps;
+import com.hashnot.xchange.ext.util.Prices;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
+import com.xeiam.xchange.dto.MarketMetaData;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.account.AccountInfo;
 import com.xeiam.xchange.dto.trade.LimitOrder;
-import com.xeiam.xchange.dto.trade.TradeMetaData;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -180,7 +181,7 @@ public class DealerTest {
         DealerData data = new DealerData(openMonitor, closeMonitor, bestOffers);
         Dealer dealer = createDealer(data, keys(openExchange, closeExchange).map(openMonitor, closeMonitor));
 
-        BigDecimal expected = openPrice.add(bigFactor(revert(side)).multiply(openMonitor.getMarketMetadata(p).getPriceStep()));
+        BigDecimal expected = openPrice.add(bigFactor(revert(side)).multiply(Prices.getStep(openMonitor.getMarketMetadata(p).getPriceScale())));
 
         BigDecimal price = dealer.profitableOpenPrice();
         log.info("{}", price);
@@ -358,7 +359,7 @@ public class DealerTest {
 
         LimitOrder deal = dealer.deal(ONE);
 
-        if (side == BID) {
+        if (side == dealer.skipSide) {
             // skip BID
             assertNull(deal);
         } else {
@@ -381,7 +382,7 @@ public class DealerTest {
 
         LimitOrder deal = dealer.deal(ONE);
 
-        if (side == BID) {
+        if (side == dealer.skipSide) {
             // skip BID
             assertNull(deal);
         } else {
@@ -419,7 +420,7 @@ public class DealerTest {
     private IExchangeMonitor m(String name, IWalletMonitor walletMon) {
         IExchangeMonitor m = mock(IExchangeMonitor.class, name);
         when(m.getWalletMonitor()).thenReturn(walletMon);
-        when(m.getMarketMetadata(any())).thenReturn(new TradeMetaData(ONE.movePointLeft(2), 2));
+        when(m.getMarketMetadata(any())).thenReturn(new MarketMetaData(ONE.movePointLeft(2), ONE.movePointLeft(2), 2));
         when(m.getAccountInfo()).thenReturn(new AccountInfo(null, FEE, null));
         return m;
     }

@@ -7,8 +7,8 @@ import com.hashnot.xchange.event.account.IWalletMonitor;
 import com.hashnot.xchange.ext.util.Maps;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
+import com.xeiam.xchange.dto.MarketMetaData;
 import com.xeiam.xchange.dto.account.AccountInfo;
-import com.xeiam.xchange.dto.trade.TradeMetaData;
 import org.mockito.MockSettings;
 
 import java.math.BigDecimal;
@@ -59,7 +59,7 @@ public class PairTestUtils {
         when(walletMonitor.getWallet()).thenReturn(wallet);
 
         when(monitor.getWalletMonitor()).thenReturn(walletMonitor);
-        when(monitor.getMarketMetadata(p)).thenReturn(new TradeMetaData(ONE.movePointLeft(SCALE), SCALE));
+        when(monitor.getMarketMetadata(p)).thenReturn(new MarketMetaData(ZERO, ONE.movePointLeft(SCALE), SCALE));
         when(monitor.getAccountInfo()).thenReturn(new AccountInfo(null, feeFactor, null));
         when(monitor.getExchange()).thenReturn(x);
 

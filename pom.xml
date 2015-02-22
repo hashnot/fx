@@ -17,7 +17,7 @@
         <!--<v.htmlunit>2.15</v.htmlunit>-->
         <v.slf4j>1.7.10</v.slf4j>
         <v.logback>1.1.2</v.logback>
-        <v.xchange>2.2.0-SNAPSHOT</v.xchange>
+        <v.xchange>3.0.1-SNAPSHOT</v.xchange>
         <groupId.xchange>com.hashnot.xchange</groupId.xchange>
         <v.guava>18.0</v.guava>
     </properties>

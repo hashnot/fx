@@ -1,8 +1,8 @@
 package com.hashnot.xchange.async.impl;
 
 import com.google.common.util.concurrent.SettableFuture;
-import com.xeiam.xchange.FrequencyLimitExceededException;
-import com.xeiam.xchange.NonceException;
+import com.xeiam.xchange.exceptions.FrequencyLimitExceededException;
+import com.xeiam.xchange.exceptions.NonceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
