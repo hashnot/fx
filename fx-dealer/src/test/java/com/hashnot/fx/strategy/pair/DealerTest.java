@@ -11,9 +11,9 @@ import com.hashnot.xchange.ext.util.Maps;
 import com.hashnot.xchange.ext.util.Prices;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
-import com.xeiam.xchange.dto.MarketMetaData;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.account.AccountInfo;
+import com.xeiam.xchange.dto.meta.MarketMetaData;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -189,7 +189,7 @@ public class DealerTest {
 
         Map<String, BigDecimal> open = keys(p.baseSymbol, p.counterSymbol).map(TEN, TEN);
         //Map<String, BigDecimal> close = new HashMap<>(open);
-        Map<String, BigDecimal> wallet = simulateTrade(new LimitOrder(side, ONE, p, null, null, price), open, openMonitor.getAccountInfo());
+        Map<String, BigDecimal> wallet = simulateTrade(new LimitOrder(side, ONE, p, null, null, price), open, openMonitor.getMarketMetadata(P));
         log.debug("{}", wallet);
     }
 

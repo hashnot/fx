@@ -6,7 +6,7 @@ import com.hashnot.xchange.ext.trade.OrderCancelEvent;
 import com.hashnot.xchange.ext.trade.OrderPlacementEvent;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
-import com.xeiam.xchange.dto.MetaData;
+import com.xeiam.xchange.dto.meta.ExchangeMetaData;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.dto.trade.MarketOrder;
 import com.xeiam.xchange.dto.trade.OpenOrders;
@@ -118,8 +118,12 @@ public class AsyncTradeService implements IAsyncTradeService {
     }
 
     @Override
-    public Future<MetaData> getMetadata(Consumer<Future<MetaData>> consumer) {
-        return call(exchange::getMetaData, consumer, executor);
+    public Future<ExchangeMetaData> getMetadata(Consumer<Future<ExchangeMetaData>> consumer) {
+        return call(this::getMetaData, consumer, executor);
+    }
+
+    protected ExchangeMetaData getMetaData(){
+        return (ExchangeMetaData) exchange.getMetaData();
     }
 
     @Override

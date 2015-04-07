@@ -1,8 +1,8 @@
 package com.hashnot.fx.strategy.pair;
 
 import com.hashnot.xchange.event.IExchangeMonitor;
-import com.xeiam.xchange.dto.MarketMetaData;
 import com.xeiam.xchange.dto.account.AccountInfo;
+import com.xeiam.xchange.dto.meta.MarketMetaData;
 
 import java.math.BigDecimal;
 

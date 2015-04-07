@@ -10,11 +10,11 @@ import com.hashnot.xchange.ext.util.Orders;
 import com.hashnot.xchange.ext.util.Tickers;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
-import com.xeiam.xchange.dto.MarketMetaData;
-import com.xeiam.xchange.dto.MetaData;
 import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.account.AccountInfo;
 import com.xeiam.xchange.dto.marketdata.Ticker;
+import com.xeiam.xchange.dto.meta.ExchangeMetaData;
+import com.xeiam.xchange.dto.meta.MarketMetaData;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.dto.trade.Wallet;
 import org.slf4j.Logger;
@@ -90,7 +90,8 @@ public class Balancer implements IStrategy {
             }
             x.getTradeService().getMetadata((a) -> {
                 try {
-                    MetaData xmeta = AsyncSupport.get(a);
+                    ExchangeMetaData xmeta = AsyncSupport.get(a);
+                    log.info("meta from {}: {}", x, xmeta);
                     for (Map.Entry<CurrencyPair, ? extends MarketMetaData> e : xmeta.getMarketMetaDataMap().entrySet()) {
                         marketMetadata.put(new Market(exchangeMonitor.getExchange(), e.getKey()), e.getValue());
                     }
@@ -136,7 +137,7 @@ public class Balancer implements IStrategy {
         log.info("{}\tASK {}\tBID {}", ticker.getCurrencyPair(), ticker.getAsk(), ticker.getBid());
         MarketMetaData meta = marketMetadata.get(market);
         log.info("{}", meta);
-        BigDecimal feeFactor = infos.get(market.exchange).getTradingFee();
+        BigDecimal feeFactor = meta.getTradingFee();
         describeWallet(wallets, pair, ticker.getAsk(), feeFactor);
 
         String base = pair.baseSymbol;
@@ -179,7 +180,7 @@ public class Balancer implements IStrategy {
         BigDecimal amount = baseWallet.subtract(baseTarget).abs();
 
         LimitOrder order = new LimitOrder.Builder(type, pair).tradableAmount(amount).limitPrice(Tickers.getPrice(ticker, revert(type))).build();
-        Map<String, BigDecimal> walletSim = Orders.simulateTrade(order, wallets, infos.get(market.exchange));
+        Map<String, BigDecimal> walletSim = Orders.simulateTrade(order, wallets, meta);
         log.info("Place {}", order);
         log.info("Simulated wallet:");
         describeWallet(walletSim, pair, ticker.getAsk(), feeFactor);

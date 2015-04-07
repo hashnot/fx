@@ -1,9 +1,8 @@
 package com.hashnot.xchange.ext.util;
 
 import com.xeiam.xchange.currency.CurrencyPair;
-import com.xeiam.xchange.dto.MarketMetaData;
 import com.xeiam.xchange.dto.Order;
-import com.xeiam.xchange.dto.account.AccountInfo;
+import com.xeiam.xchange.dto.meta.MarketMetaData;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 
 import java.math.BigDecimal;
@@ -101,12 +100,12 @@ public class Orders {
     /**
      * Simulate wallet changes if the limit order is filled
      */
-    public static Map<String, BigDecimal> simulateTrade(LimitOrder order, Map<String, BigDecimal> wallet, AccountInfo info) {
+    public static Map<String, BigDecimal> simulateTrade(LimitOrder order, Map<String, BigDecimal> wallet, MarketMetaData meta) {
         Map<String, BigDecimal> result = new HashMap<>(wallet);
 
         BigDecimal factor = bigFactor(order.getType());
         BigDecimal amount = order.getTradableAmount();
-        BigDecimal value = getNetPrice(order, info.getTradingFee()).multiply(amount);
+        BigDecimal value = getNetPrice(order, meta.getTradingFee()).multiply(amount);
 
         String baseSymbol = order.getCurrencyPair().baseSymbol;
         result.put(baseSymbol, result.get(baseSymbol).subtract(amount.multiply(factor)));

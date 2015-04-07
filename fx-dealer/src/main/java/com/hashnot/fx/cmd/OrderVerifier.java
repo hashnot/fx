@@ -5,8 +5,8 @@ import com.hashnot.xchange.event.IExchangeMonitor;
 import com.hashnot.xchange.ext.util.Prices;
 import com.hashnot.xchange.ext.util.Tickers;
 import com.xeiam.xchange.currency.CurrencyPair;
-import com.xeiam.xchange.dto.MarketMetaData;
 import com.xeiam.xchange.dto.marketdata.Ticker;
+import com.xeiam.xchange.dto.meta.MarketMetaData;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 
 import javax.inject.Inject;

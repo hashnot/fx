@@ -15,8 +15,8 @@ import javax.management.MBeanServer;
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -75,13 +75,18 @@ public class Main {
 
     public void start() {
         Runtime.getRuntime().addShutdownHook(shutdownHook);
-        try {
-            for (IExchangeMonitor monitor : monitors) {
+        for (IExchangeMonitor monitor : monitors) {
+            try {
                 monitor.start();
+            } catch (Exception e) {
+                log.error("Exception while starting {}", monitor, e);
+                stop();
             }
-            strategy.init(monitors, Arrays.asList(pair));
+        }
+        try {
+            strategy.init(monitors, Collections.singletonList(pair));
         } catch (Exception e) {
-            log.error("Exception during the start", e);
+            log.error("Exception while starting {}", strategy, e);
             stop();
         }
     }

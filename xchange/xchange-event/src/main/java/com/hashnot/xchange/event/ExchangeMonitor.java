@@ -17,15 +17,18 @@ import com.hashnot.xchange.event.market.impl.OrderBookMonitor;
 import com.hashnot.xchange.event.market.impl.TickerMonitor;
 import com.hashnot.xchange.event.trade.IOpenOrdersMonitor;
 import com.hashnot.xchange.event.trade.IOrderTracker;
+import com.hashnot.xchange.event.trade.ITrackingTradeService;
 import com.hashnot.xchange.event.trade.IUserTradesMonitor;
 import com.hashnot.xchange.event.trade.impl.OpenOrdersMonitor;
 import com.hashnot.xchange.event.trade.impl.OrderTracker;
+import com.hashnot.xchange.event.trade.impl.TrackingTradeService;
 import com.hashnot.xchange.event.trade.impl.UserTradesMonitor;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.account.AccountInfo;
+import com.xeiam.xchange.dto.meta.ExchangeMetaData;
+import com.xeiam.xchange.dto.meta.MarketMetaData;
 import com.xeiam.xchange.dto.trade.LimitOrder;
-import com.xeiam.xchange.dto.trade.TradeMetaData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,10 +60,11 @@ public class ExchangeMonitor implements IExchangeMonitor, IAccountInfoListener {
     final protected IWalletMonitor walletTracker;
     final protected OrderTracker orderTracker;
     final protected IAccountInfoMonitor accountInfoMonitor;
+    final protected TrackingTradeService trackingTradeService;
 
     final protected AbstractPollingMonitor[] closeables;
 
-    protected Map<CurrencyPair, ? extends TradeMetaData> metadata;
+    protected ExchangeMetaData metadata;
     protected AccountInfo accountInfo;
 
     public ExchangeMonitor(Exchange parent, ScheduledExecutorService executor, long rate) throws Exception {
@@ -85,6 +89,8 @@ public class ExchangeMonitor implements IExchangeMonitor, IAccountInfoListener {
 
         orderTracker = new OrderTracker(userTradesMonitor);
         walletTracker = new WalletTracker(orderTracker, walletMonitor);
+        trackingTradeService = new TrackingTradeService(asyncExchange);
+        orderTracker.addTradeListener(trackingTradeService);
 
         tradeService.addLimitOrderPlacedListener(orderTracker);
         closeables = new AbstractPollingMonitor[]{openOrdersMonitor, userTradesMonitor, tickerMonitor, orderBookMonitor};
@@ -107,8 +113,8 @@ public class ExchangeMonitor implements IExchangeMonitor, IAccountInfoListener {
         server.registerMBean(object, new ObjectName(domain, properties));
     }
 
-    public TradeMetaData getMarketMetadata(CurrencyPair pair) {
-        return metadata.get(pair);
+    public MarketMetaData getMarketMetadata(CurrencyPair pair) {
+        return metadata.getMarketMetaDataMap().get(pair);
     }
 
     /**
@@ -159,7 +165,7 @@ public class ExchangeMonitor implements IExchangeMonitor, IAccountInfoListener {
     }
 
     protected Void init() throws IOException {
-        exchange.init();
+        exchange.remoteInit();
         return null;
     }
 
@@ -214,6 +220,11 @@ public class ExchangeMonitor implements IExchangeMonitor, IAccountInfoListener {
     @Override
     public IOrderTracker getOrderTracker() {
         return orderTracker;
+    }
+
+    @Override
+    public ITrackingTradeService getTrackingTradeService() {
+        return trackingTradeService;
     }
 
 }
