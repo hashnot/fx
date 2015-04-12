@@ -341,7 +341,7 @@ public class Dealer {
 
         //BigDecimal openInitial = openBest.add(openMeta.getPriceStep().multiply(bigFactor(revert(config.side))));
 
-        BigDecimal closeFeeFactor = closeMon.getAccountInfo().getTradingFee();
+        BigDecimal closeFeeFactor = closeMeta.getTradingFee();
         BigDecimal closeNet = getNetPrice(closeBest, revert(config.side), closeFeeFactor).setScale(closeMeta.getPriceScale(), HALF_EVEN);
         BigDecimal openNet = getNetPrice(openBest, config.side, closeFeeFactor).setScale(closeMeta.getPriceScale(), HALF_EVEN);
 
@@ -355,17 +355,18 @@ public class Dealer {
             return null;
         }
 
-        BigDecimal openFeeFactor = openMonitor.getAccountInfo().getTradingFee();
+        BigDecimal openFeeFactor = openMeta.getTradingFee();
         BigDecimal factor;
+        int openPriceScale = openMeta.getPriceScale();
         if (config.is(ASK))
-            factor = ONE.subtract(openFeeFactor).divide(ONE.add(closeFeeFactor), openMeta.getPriceScale(), HALF_EVEN);
+            factor = ONE.subtract(openFeeFactor).divide(ONE.add(closeFeeFactor), openPriceScale, HALF_EVEN);
         else
-            factor = ONE.add(closeFeeFactor).divide(ONE.subtract(openFeeFactor), openMeta.getPriceScale(), HALF_EVEN);
-        BigDecimal priceCloseInitial = openBest.multiply(factor).setScale(openMeta.getPriceScale(), HALF_EVEN);
+            factor = ONE.add(closeFeeFactor).divide(ONE.subtract(openFeeFactor), openPriceScale, HALF_EVEN);
+        BigDecimal priceCloseInitial = openBest.multiply(factor).setScale(openPriceScale, HALF_EVEN);
 
-        BigDecimal priceOpen = orderStrategy.getPrice(priceCloseInitial, diff, openMeta.getPriceScale(), config.side);
+        BigDecimal priceOpen = orderStrategy.getPrice(priceCloseInitial, diff, openPriceScale, config.side);
 
-        BigDecimal myOpen = priceOpen.divide(factor, openMeta.getPriceScale(), HALF_EVEN);
+        BigDecimal myOpen = priceOpen.divide(factor, openPriceScale, HALF_EVEN);
 
         BigDecimal myOpenNet = getNetPrice(myOpen, config.side, openFeeFactor, openMeta);
 

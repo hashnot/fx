@@ -1,7 +1,6 @@
 package com.hashnot.fx.strategy.pair;
 
 import com.hashnot.xchange.event.IExchangeMonitor;
-import com.xeiam.xchange.dto.account.AccountInfo;
 import com.xeiam.xchange.dto.meta.MarketMetaData;
 
 import java.math.BigDecimal;
@@ -17,7 +16,7 @@ import static java.math.BigDecimal.ONE;
 public class DealerHelper {
     private static final BigDecimal LOW_LIMIT = new BigDecimal(".001");
 
-    public static BigDecimal applyFeeToWallet(BigDecimal openOutGross, AccountInfo info) {
+    public static BigDecimal applyFeeToWallet(BigDecimal openOutGross, MarketMetaData info) {
         BigDecimal feeFactor = info.getTradingFee();
         return openOutGross.multiply(ONE.subtract(feeFactor));
     }
