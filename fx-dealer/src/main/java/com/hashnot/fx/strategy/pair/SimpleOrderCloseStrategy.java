@@ -1,14 +1,18 @@
 package com.hashnot.fx.strategy.pair;
 
-import com.hashnot.xchange.async.trade.IAsyncTradeService;
+import com.hashnot.xchange.event.trade.IOrderTradesListener;
+import com.hashnot.xchange.event.trade.ITrackingTradeService;
+import com.hashnot.xchange.event.trade.UserTradeEvent;
+import com.hashnot.xchange.ext.trade.OrderCancelEvent;
+import com.hashnot.xchange.ext.trade.OrderPlacementEvent;
 import com.hashnot.xchange.ext.util.Orders;
 import com.xeiam.xchange.dto.trade.LimitOrder;
+import com.xeiam.xchange.dto.trade.MarketOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 import static com.xeiam.xchange.dto.trade.LimitOrder.Builder.from;
 import static java.math.BigDecimal.ZERO;
@@ -16,12 +20,12 @@ import static java.math.BigDecimal.ZERO;
 /**
  * @author Rafał Krupiński
  */
-public class SimpleOrderCloseStrategy {
+public class SimpleOrderCloseStrategy implements IOrderTradesListener {
     final private static Logger log = LoggerFactory.getLogger(SimpleOrderCloseStrategy.class);
-
+    IOrderTradesListener orderTradesListener;
 
     // TODO make less orders
-    public void placeOrder(BigDecimal amountLimit, List<LimitOrder> closingOrders, IAsyncTradeService tradeService) {
+    public void placeOrder(BigDecimal amountLimit, List<LimitOrder> closingOrders, ITrackingTradeService tradeService) {
         BigDecimal totalAmount = ZERO;
         for (LimitOrder order : closingOrders) {
             BigDecimal newAmount = totalAmount.add(order.getTradableAmount());
@@ -41,17 +45,37 @@ public class SimpleOrderCloseStrategy {
         }
     }
 
-    private void placeOrder(LimitOrder order, IAsyncTradeService tradeService) {
-        tradeService.placeLimitOrder(order, (future) -> {
-            try {
-                String id = future.get();
-                log.info("Open {} {} @{}", id, order, tradeService);
-            } catch (InterruptedException e) {
-                log.warn("Interrupted!", e);
-            } catch (ExecutionException e) {
-                log.warn("Error from {} {}", tradeService, e.getCause(), order);
-            }
-        });
+    private void placeOrder(LimitOrder order, ITrackingTradeService tradeService) {
+        tradeService.placeLimitOrder(order, orderTradesListener);
     }
 
+    @Override
+    public void limitOrderPlaced(OrderPlacementEvent<LimitOrder> orderPlacementEvent) {
+        log.debug("limit order: {}" + orderPlacementEvent.id);
+    }
+
+    @Override
+    public void marketOrderPlaced(OrderPlacementEvent<MarketOrder> orderPlacementEvent) {
+        log.debug("market order: {}" + orderPlacementEvent.id);
+    }
+
+    @Override
+    public void orderCanceled(OrderCancelEvent orderCancelEvent) {
+        log.debug("order cancelled: {}" + orderCancelEvent.id);
+    }
+
+    @Override
+    public void trade(UserTradeEvent userTradeEvent) {
+        log.debug("trade: {}" + userTradeEvent.trade);
+    }
+
+    @Override
+    public void orderPlacementFailed(LimitOrder order) {
+        log.warn("Order failed {}", order);
+    }
+
+    @Override
+    public void orderPlacementFailed(MarketOrder order) {
+        log.warn("Order failed {}", order);
+    }
 }

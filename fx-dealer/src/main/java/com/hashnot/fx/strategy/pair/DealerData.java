@@ -11,10 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.hashnot.xchange.ext.util.Comparables.gte;
 import static com.hashnot.xchange.ext.util.Comparables.lt;
@@ -44,6 +41,8 @@ public class DealerData {
 
     public DealerState state = DealerState.NotProfitable;
 
+    protected List<String> closingOrderIds = new LinkedList<>();
+
     /**
      * Call after open closing orders or order has changed
      *
@@ -63,7 +62,7 @@ public class DealerData {
         String closeOutCur = DealerConfig.incomingCurrency(side, listing);
 
         BigDecimal closeOutGross = closeExchange.getWalletMonitor().getWallet(closeOutCur);
-        BigDecimal closeOutNet = DealerHelper.applyFeeToWallet(closeOutGross, closeExchange.getAccountInfo());
+        BigDecimal closeOutNet = DealerHelper.applyFeeToWallet(closeOutGross, closeExchange.getMarketMetadata(listing));
 
         return getCloseAmount(side, closeOutNet, limitPrice);
     }
@@ -102,7 +101,8 @@ public class DealerData {
         for (LimitOrder order : closingOrders) {
             assert type != order.getType();
 
-            BigDecimal netPrice = Orders.getNetPrice(order.getLimitPrice(), type, closeExchange.getAccountInfo().getTradingFee());
+            BigDecimal tradingFee = closeExchange.getMarketMetadata(order.getCurrencyPair()).getTradingFee();
+            BigDecimal netPrice = Orders.getNetPrice(order.getLimitPrice(), type, tradingFee);
             log.debug("order {} net {}", order, netPrice);
 
             if (isFurther(order.getLimitPrice(), priceLimit, order.getType()))
@@ -148,6 +148,14 @@ public class DealerData {
 
     public void setOpenExchange(IExchangeMonitor openExchange) {
         this.openExchange = openExchange;
+    }
+
+    public List<String> getClosingOrderIds() {
+        return closingOrderIds;
+    }
+
+    public boolean in(DealerState state) {
+        return this.state == state;
     }
 
     @Override

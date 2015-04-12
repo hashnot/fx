@@ -5,6 +5,10 @@ import com.hashnot.fx.framework.MarketSide;
 import com.hashnot.fx.framework.OrderBookSideUpdateEvent;
 import com.hashnot.xchange.event.trade.UserTradeEvent;
 import com.hashnot.xchange.ext.event.Event;
+import com.hashnot.xchange.ext.trade.OrderCancelEvent;
+import com.hashnot.xchange.ext.trade.OrderPlacementEvent;
+import com.xeiam.xchange.dto.trade.LimitOrder;
+import com.xeiam.xchange.dto.trade.MarketOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -106,6 +110,12 @@ public class PairEventManager implements Listener, Runnable {
                     case Cancel:
                         handleCancel(all);
                         break;
+                    case FailMarket:
+                        handleFailMarket(all);
+                        break;
+                    case FailLimit:
+                        handleFailLimit(all);
+                        break;
                     default:
                         throw new IllegalArgumentException(event.toString());
                 }
@@ -162,7 +172,7 @@ public class PairEventManager implements Listener, Runnable {
     private void handleOpen(List<EventWrapper> events) {
         for (EventWrapper event : events) {
             @SuppressWarnings("unchecked")
-            Future<String> f = (Future<String>) event.event;
+            OrderPlacementEvent f = (OrderPlacementEvent) event.event;
             dealer.handleOpened(f);
         }
     }
@@ -175,16 +185,57 @@ public class PairEventManager implements Listener, Runnable {
         }
     }
 
+    private void handleFailMarket(List<EventWrapper> all) {
+        for (EventWrapper eventWrapper : all) {
+            MarketOrder order = (MarketOrder) eventWrapper.event;
+            dealer.orderPlacementFailed(order);
+        }
+    }
+
+    private void handleFailLimit(List<EventWrapper> all) {
+        for (EventWrapper eventWrapper : all) {
+            LimitOrder order = (LimitOrder) eventWrapper.event;
+            dealer.orderPlacementFailed(order);
+        }
+    }
+
     public PairEventManager(Dealer dealer) {
         this.dealer = dealer;
     }
 
-    static enum EventType {
+    @Override
+    public void limitOrderPlaced(OrderPlacementEvent<LimitOrder> orderPlacementEvent) {
+        addEventHead(EventType.Open, orderPlacementEvent);
+    }
+
+    @Override
+    public void marketOrderPlaced(OrderPlacementEvent<MarketOrder> orderPlacementEvent) {
+        addEventHead(EventType.Open, orderPlacementEvent);
+    }
+
+    @Override
+    public void orderCanceled(OrderCancelEvent orderCancelEvent) {
+        addEventHead(EventType.Cancel, orderCancelEvent);
+    }
+
+    @Override
+    public void orderPlacementFailed(LimitOrder order) {
+        addEventHead(EventType.FailLimit, order);
+    }
+
+    @Override
+    public void orderPlacementFailed(MarketOrder order) {
+        addEventHead(EventType.FailMarket, order);
+    }
+
+    enum EventType {
         BestOffer,
         OrderBook,
         Trade,
         Cancel,
-        Open
+        Open,
+        FailLimit,
+        FailMarket
     }
 
     static class EventWrapper {

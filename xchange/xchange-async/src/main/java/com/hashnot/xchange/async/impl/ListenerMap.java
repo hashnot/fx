@@ -45,6 +45,10 @@ public class ListenerMap<K, L> {
         });
     }
 
+    public void removeListeners(K key) {
+        listeners.remove(key);
+    }
+
     public void removeListener(K key, L listener) {
         listeners.computeIfPresent(key, (k, listeners) -> {
             if (listeners != null) {
